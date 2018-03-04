@@ -1,0 +1,13 @@
+{
+    "ngrams": {
+        "1": 5, 
+        "2": 3, 
+        "3": 2,
+        "4": 2
+    },
+    "locations": {
+        "cities_file": "data/villes_france_cleaned.csv",
+        "depart_file": "data/departement.csv",
+        "region_file": "data/region.csv"
+    }
+}
