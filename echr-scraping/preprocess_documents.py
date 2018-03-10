@@ -250,14 +250,16 @@ def select_parser(doc):
         return PARSER['new']
 
 def main(args):
-    try:
-        if args.f:
-            shutil.rmtree(args.output_folder)
-        os.mkdir(args.output_folder)
-    except Exception as e:
-        print(e)
-        exit(1)
-
+    
+    if not args.u:
+        try:
+            if args.f:
+                shutil.rmtree(args.output_folder)
+            os.mkdir(args.output_folder)
+        except Exception as e:
+            print(e)
+            exit(1)
+            
     stats = {
         'parser_type':{
             'OLD': 0,
@@ -265,26 +267,42 @@ def main(args):
         }
     }
 
-    #'''
+    with open('./raw_cases_info.json', 'r') as f:
+        content = f.read()
+        cases = json.loads(content)
+        cases_index = {c['itemid']:i for i,c in enumerate(cases)}
+        f.close()
+
+    update = args.u
     files = [os.path.join(args.input_folder, f) for f in listdir(args.input_folder) if isfile(join(args.input_folder, f)) if '.docx' in f]
     for i, p in enumerate(files):
-        try:
-            p_ = updateZip(p)
-            doc = Document(p_)
-            parser = select_parser(doc)
-            stats['parser_type'][parser] += 1
-            id_doc = p.split('/')[-1].split('.')[0]
-            print('Process document {}/{}'.format(i, len(files)))
-            if parser == 'NEW':
-                parsed = parse_document(doc)
-                with open(os.path.join(args.output_folder, '{}_parsed.json'.format(id_doc)), 'w') as outfile:
-                    json.dump(parsed, outfile, indent=4, sort_keys=True)
-                with open(os.path.join(args.output_folder, '{}_text_without_conclusion.txt'.format(id_doc)), 'w') as toutfile:
-                    toutfile.write(json_to_text(parsed, True, ['conclusion']).encode('utf-8'))
-            else:
-                raise Exception("OLD parser is not available yet.")
-        except Exception as e:
-            print("{} {}".format(p, e))
+        id_doc = p.split('/')[-1].split('.')[0]
+        print('Process document {} {}/{}'.format(id_doc, i, len(files)))
+        filename_parsed = os.path.join(args.output_folder, '{}_parsed.json'.format(id_doc))
+        if not update or not os.path.isfile(filename_parsed):
+            try:
+                p_ = updateZip(p)
+                doc = Document(p_)
+                parser = select_parser(doc)
+                stats['parser_type'][parser] += 1
+                if parser == 'NEW':
+                    parsed = parse_document(doc)
+                    parsed.update(cases[cases_index[id_doc]])
+                    with open(os.path.join(args.output_folder, '{}_text_without_conclusion.txt'.format(id_doc)), 'w') as toutfile:
+                        toutfile.write(json_to_text(parsed, True, ['conclusion']).encode('utf-8'))
+                    parsed['documents'] = ['{}.docx'.format(id_doc)]
+                    parsed['content'] = {
+                        '{}.docx'.format(id_doc): parsed['elements']
+                    }
+                    del parsed['elements']
+                    with open(filename_parsed, 'w') as outfile:
+                        json.dump(parsed, outfile, indent=4, sort_keys=True)
+                else:
+                    raise Exception("OLD parser is not available yet.")
+            except Exception as e:
+                print("{} {}".format(p, e))
+        else:
+            print('Skip document because it is already processed')
     #'''
     '''
     p = './raw_documents/001-72878.docx'
@@ -326,6 +344,7 @@ if __name__ == "__main__":
     parser.add_argument('--input_folder', type=str, default="./raw_documents")
     parser.add_argument('--output_folder', type=str, default="./preprocessed_documents")
     parser.add_argument('-f', action='store_true')
+    parser.add_argument('-u', action='store_true')
     args = parse_args(parser)
 
     main(args)

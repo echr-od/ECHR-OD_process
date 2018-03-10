@@ -13,6 +13,98 @@ from docx.text.run import Run
 import zipfile
 from collections import Counter
 
+def generate_dataset(cases, keys, keys_list, encoded_outcomes, feature_index, feature_to_encoded, path, name, offset, force=False):
+    output_path = os.path.join(path, name)
+    print(output_path)
+    try:
+        if args.f:
+            shutil.rmtree(output_path)
+    except Exception as e:
+        print(e)
+        #exit(1)
+
+    try:
+        os.mkdir(output_path)
+    except Exception as e:
+        print(e)
+        exit(1)
+
+    dataset_size = 0
+    dataset_full_doc_id = []
+    with open(os.path.join(output_path, 'descriptive.txt'), 'w') as f_d, \
+        open(os.path.join(output_path, 'descriptive+BoW.txt'), 'w') as f_db, \
+        open(os.path.join(output_path, 'descriptive+TF_IDF.txt'), 'w') as f_dt, \
+        open(os.path.join(output_path, 'outcomes.txt'), 'w') as f:
+        for c in cases:
+            encoded_case = []
+            classes = []
+            for e in c['conclusion_']:
+                if e['type'] in ['violation', 'no-violation']:
+                    if 'article' in e and e['article'] in encoded_outcomes:
+                        g = encoded_outcomes[e['article']]
+                        classes.append('{}:{}'.format(g, 1 if e['type'] == 'violation' else 0))
+
+            classes = list(set(classes))
+            opposed_classes = any([e for e in classes if e.split(':')[0]+':'+ str(abs(1 - int(e.split(':')[-1]))) in classes])
+            if len(classes) > 0 and not opposed_classes:
+                f.write('0:{} '.format(feature_to_encoded[u'{}={}'.format('itemid', c['itemid'])]))
+                f.write(' '.join(classes) + '\n')
+                for k, v in c.iteritems():
+                    if k in keys: 
+                        encoded_case.append('{}:{}'.format(feature_index[k], feature_to_encoded[u'{}={}'.format(k, v)]))
+                    elif k in keys_list:
+                        for e in v:
+                            encoded_case.append('{}:{}'.format(feature_index[k], feature_to_encoded[u'{}_has_{}'.format(k, e)]))
+                f_d.write(' '.join(map(str, encoded_case)) + '\n')
+                f_db.write(' '.join(map(str, encoded_case)) + ' ')
+                f_dt.write(' '.join(map(str, encoded_case)) + ' ')
+                dataset_size += 1
+                dataset_full_doc_id.append(c['itemid'])
+                with open(os.path.join('processed_documents', '{}_normalized.txt_bow.txt'.format(c['itemid'])), 'r') as bow_doc:
+                    bow = bow_doc.read()
+                    bow = bow.split()
+                    bow = ['{}:{}'.format(offset + int(b.split(':')[0]), b.split(':')[1]) for b in bow]
+                    f_db.write(' '.join(map(str, bow)) + ' \n')
+                with open(os.path.join('processed_documents', '{}_normalized.txt_tfidf.txt'.format(c['itemid'])), 'r') as tfidf_doc:
+                    tfidf = tfidf_doc.read()
+                    tfidf = tfidf.split()
+                    tfidf = ['{}:{}'.format(offset + int(b.split(':')[0]), b.split(':')[1]) for b in tfidf]
+                    f_dt.write(' '.join(map(str, tfidf)) + ' \n')
+        f.close()
+        f_db.close()
+        f_dt.close()
+        f_d.close()
+
+    with open('./feature_to_id.dict', 'r') as d, open(os.path.join(output_path, 'features_text.json'), 'w') as f:
+        features = json.loads(d.read())
+        for k in features.keys():
+            features[k] = int(features[k]) + offset
+        json.dump(features, f, indent=4)
+        d.close()
+        f.close()
+
+    statistics = {
+        'multilabel':{
+            'dataset_size': dataset_size
+        }
+    }
+    with open(os.path.join(output_path, 'statistics_datasets.json'), 'w') as f:
+        json.dump(statistics, f, indent=4)
+        f.close()
+
+    with open(os.path.join(output_path, 'variables_descriptive.json'), 'w') as f:
+        json.dump(feature_index, f, indent=4)
+        f.close()
+
+    with open(os.path.join(output_path, 'features_descriptive.json'), 'w') as f:
+        json.dump(feature_to_encoded, f, indent=4)
+        f.close()
+
+    with open(os.path.join(output_path, 'outcomes_variables.json'), 'w') as f:
+        json.dump(encoded_outcomes, f, indent=4)
+        f.close()
+
+
 def main(args):
     try:
         if args.f:
@@ -37,7 +129,7 @@ def main(args):
         exit(1)
 
     # Filter the cases info to keep only the items in id_list
-    #cases = [c for c in cases if c['itemid'] in id_list]
+    cases = [c for c in cases if c['itemid'] in id_list]
 
     keys = [
         "itemid",
@@ -84,14 +176,6 @@ def main(args):
                 feature_to_encoded[u'{}_has_{}'.format(k, v)] = count
             count += 1
 
-    with open(os.path.join(args.output_folder, 'variables.json'), 'w') as f:
-        json.dump(feature_index, f, indent=4)
-        f.close()
-
-    with open(os.path.join(args.output_folder, 'features.json'), 'w') as f:
-        json.dump(feature_to_encoded, f, indent=4)
-        f.close()
-
     # Encode conclusions
     outcomes = {}
     for i, c in enumerate(cases):
@@ -119,47 +203,20 @@ def main(args):
         encoded_outcomes[i] = count
         count +=1
 
-    with open(os.path.join(args.output_folder, 'outcomes_variables.json'), 'w') as f:
-        json.dump(encoded_outcomes, f, indent=4)
-        f.close()
+    offset = len(feature_to_encoded)
+    #print('OFFSET: {}'.format(offset))
 
-    dataset_size = 0
-    with open(os.path.join(args.output_folder, 'full_descriptive.txt'), 'w') as f_d:
-        with open(os.path.join(args.output_folder, 'full_outcomes.txt'), 'w') as f:
-            for c in cases:
-                encoded_case = []
-                classes = []
-                for e in c['conclusion_']:
-                    if e['type'] in ['violation', 'no-violation']:
-                        if 'article' in e and e['article'] in encoded_outcomes:
-                            g = encoded_outcomes[e['article']]
-                            classes.append('{}:{}'.format(g, 1 if e['type'] == 'violation' else 0))
-
-                classes = list(set(classes))
-                opposed_classes = any([e for e in classes if e.split(':')[0]+':'+ str(abs(1 - int(e.split(':')[-1]))) in classes])
-                if len(classes) > 0 and not opposed_classes:
-                    f.write('0:{} '.format(feature_to_encoded[u'{}={}'.format('itemid', c['itemid'])]))
-                    f.write(' '.join(classes) + '\n')
-                    for k, v in c.iteritems():
-                        if k in keys: 
-                            encoded_case.append('{}:{}'.format(feature_index[k], feature_to_encoded[u'{}={}'.format(k, v)]))
-                        elif k in keys_list:
-                            for e in v:
-                                encoded_case.append('{}:{}'.format(feature_index[k], feature_to_encoded[u'{}_has_{}'.format(k, e)]))
-                    f_d.write(' '.join(map(str, encoded_case)) + '\n')
-                    dataset_size += 1
-            f.close()
-        f_d.close()
-
-    statistics = {
-        'multilabel':{
-            'dataset_size': dataset_size
-        }
-    }
-    with open(os.path.join(args.output_folder, 'statistics_datasets.json'), 'w') as f:
-        json.dump(statistics, f, indent=4)
-        f.close()
-
+    generate_dataset(
+        cases=cases,
+        keys=keys,
+        keys_list=keys_list,
+        encoded_outcomes=encoded_outcomes,
+        feature_index=feature_index,
+        feature_to_encoded=feature_to_encoded,
+        path=args.output_folder, 
+        name='multilabel', 
+        offset=offset, 
+        force=args.f)
         #'''
 def parse_args(parser):
     args = parser.parse_args()
