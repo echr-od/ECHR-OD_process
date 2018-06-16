@@ -382,8 +382,8 @@ def parse_args(parser):
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description='Filter and format ECHR cases information')
-    parser.add_argument('--input_folder', type=str, default="./raw_cases_info")
-    parser.add_argument('--output_folder', type=str, default="./cases_info")
+    parser.add_argument('--input_folder', type=str, default="./build/echr_database/raw_cases_info")
+    parser.add_argument('--output_folder', type=str, default="./build/echr_database/cases_info")
     parser.add_argument('-f', action='store_true')
     args = parse_args(parser)
 
