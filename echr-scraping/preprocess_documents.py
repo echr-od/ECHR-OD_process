@@ -149,6 +149,7 @@ class Node:
         self.elements = []
 
 
+
 def parse_document(doc):
     parsed = {}
     result = []
@@ -267,7 +268,7 @@ def main(args):
         }
     }
 
-    with open('./raw_cases_info.json', 'r') as f:
+    with open('./cases_info/raw_cases_info.json', 'r') as f:
         content = f.read()
         cases = json.loads(content)
         cases_index = {c['itemid']:i for i,c in enumerate(cases)}

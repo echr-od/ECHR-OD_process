@@ -13,14 +13,13 @@ from docx.text.run import Run
 import zipfile
 from collections import Counter
 
-def generate_dataset(cases, keys, keys_list, encoded_outcomes, feature_index, feature_to_encoded, path, name, offset, force=False):
+def generate_dataset(cases, keys, keys_list, encoded_outcomes, feature_index, feature_to_encoded, path, name, offset, processed_folder, filter_classes=None, force=False):
     output_path = os.path.join(path, name)
-    print(output_path)
     try:
         if args.f:
             shutil.rmtree(output_path)
     except Exception as e:
-        print(e)
+        pass #print(e)
         #exit(1)
 
     try:
@@ -31,18 +30,24 @@ def generate_dataset(cases, keys, keys_list, encoded_outcomes, feature_index, fe
 
     dataset_size = 0
     dataset_full_doc_id = []
+    min_feature = len(cases[0])
+    max_feature = len(cases[0])
+    avg_feature = 0
+    prevalence = {}
     with open(os.path.join(output_path, 'descriptive.txt'), 'w') as f_d, \
         open(os.path.join(output_path, 'descriptive+BoW.txt'), 'w') as f_db, \
         open(os.path.join(output_path, 'descriptive+TF_IDF.txt'), 'w') as f_dt, \
         open(os.path.join(output_path, 'outcomes.txt'), 'w') as f:
         for c in cases:
+            nb_features = 0
             encoded_case = []
             classes = []
-            for e in c['conclusion_']:
+            for e in c['conclusion']:
                 if e['type'] in ['violation', 'no-violation']:
                     if 'article' in e and e['article'] in encoded_outcomes:
                         g = encoded_outcomes[e['article']]
-                        classes.append('{}:{}'.format(g, 1 if e['type'] == 'violation' else 0))
+                        if filter_classes is None or e['article'] in filter_classes:
+                            classes.append('{}:{}'.format(g, 1 if e['type'] == 'violation' else 0))
 
             classes = list(set(classes))
             opposed_classes = any([e for e in classes if e.split(':')[0]+':'+ str(abs(1 - int(e.split(':')[-1]))) in classes])
@@ -55,27 +60,35 @@ def generate_dataset(cases, keys, keys_list, encoded_outcomes, feature_index, fe
                     elif k in keys_list:
                         for e in v:
                             encoded_case.append('{}:{}'.format(feature_index[k], feature_to_encoded[u'{}_has_{}'.format(k, e)]))
+
+                nb_features += len(encoded_case)
                 f_d.write(' '.join(map(str, encoded_case)) + '\n')
                 f_db.write(' '.join(map(str, encoded_case)) + ' ')
                 f_dt.write(' '.join(map(str, encoded_case)) + ' ')
                 dataset_size += 1
                 dataset_full_doc_id.append(c['itemid'])
-                with open(os.path.join('processed_documents', '{}_normalized.txt_bow.txt'.format(c['itemid'])), 'r') as bow_doc:
+                with open(os.path.join(processed_folder, '{}_bow.txt'.format(c['itemid'])), 'r') as bow_doc:
                     bow = bow_doc.read()
                     bow = bow.split()
                     bow = ['{}:{}'.format(offset + int(b.split(':')[0]), b.split(':')[1]) for b in bow]
                     f_db.write(' '.join(map(str, bow)) + ' \n')
-                with open(os.path.join('processed_documents', '{}_normalized.txt_tfidf.txt'.format(c['itemid'])), 'r') as tfidf_doc:
+                    nb_features += len(bow)
+                with open(os.path.join(processed_folder, '{}_tfidf.txt'.format(c['itemid'])), 'r') as tfidf_doc:
                     tfidf = tfidf_doc.read()
                     tfidf = tfidf.split()
                     tfidf = ['{}:{}'.format(offset + int(b.split(':')[0]), b.split(':')[1]) for b in tfidf]
                     f_dt.write(' '.join(map(str, tfidf)) + ' \n')
+
+                max_feature = nb_features if nb_features > max_feature else max_feature
+                min_feature = nb_features if nb_features < min_feature else min_feature
+                avg_feature += nb_features
+
         f.close()
         f_db.close()
         f_dt.close()
         f_d.close()
 
-    with open('./feature_to_id.dict', 'r') as d, open(os.path.join(output_path, 'features_text.json'), 'w') as f:
+    with open(os.path.join(processed_folder, 'feature_to_id.dict'), 'r') as d, open(os.path.join(output_path, 'features_text.json'), 'w') as f:
         features = json.loads(d.read())
         for k in features.keys():
             features[k] = int(features[k]) + offset
@@ -84,8 +97,12 @@ def generate_dataset(cases, keys, keys_list, encoded_outcomes, feature_index, fe
         f.close()
 
     statistics = {
-        'multilabel':{
-            'dataset_size': dataset_size
+        name:{
+            'dataset_size': dataset_size,
+            'min_feature': min_feature,
+            'max_feature': max_feature,
+            'avg_feature': float(avg_feature) / dataset_size if dataset_size > 0 else 0,
+            'prevalence': prevalence
         }
     }
     with open(os.path.join(output_path, 'statistics_datasets.json'), 'w') as f:
@@ -107,12 +124,10 @@ def generate_dataset(cases, keys, keys_list, encoded_outcomes, feature_index, fe
 
 def main(args):
     try:
-        if args.f:
-            shutil.rmtree(args.output_folder)
         os.mkdir(args.output_folder)
     except Exception as e:
         print(e)
-        exit(1)
+        #exit(1)
 
     # Get the list of cases s.t. we have a BoW and TF-IDF representation
     files = [os.path.join(args.processed_folder, f) for f in listdir(args.processed_folder) if isfile(join(args.processed_folder, f)) if '_bow.txt' in f]
@@ -130,11 +145,12 @@ def main(args):
 
     # Filter the cases info to keep only the items in id_list
     cases = [c for c in cases if c['itemid'] in id_list]
+    #print(cases)
 
     keys = [
         "itemid",
         "respondent", 
-        "Rank", 
+        "rank", 
         "applicability", 
         "decisiondate", 
         "doctypebranch", 
@@ -179,7 +195,7 @@ def main(args):
     # Encode conclusions
     outcomes = {}
     for i, c in enumerate(cases):
-        ccl = c['conclusion_']
+        ccl = c['conclusion']
         for e in ccl:
             if e['type'] in ['violation', 'no-violation']:
                 #print(c['itemid'], e)
@@ -195,6 +211,7 @@ def main(args):
                 outcomes[e['article']]['total'] += 1
         # Determine output
 
+    # TODO: Put in arguments
     outcomes = {k:v for k,v in outcomes.iteritems() if v['total'] > 100}
 
     encoded_outcomes = {}
@@ -214,8 +231,10 @@ def main(args):
         feature_index=feature_index,
         feature_to_encoded=feature_to_encoded,
         path=args.output_folder, 
-        name='multilabel', 
-        offset=offset, 
+        name=args.name, 
+        offset=offset,
+        processed_folder=args.processed_folder,
+        filter_classes=None if args.articles == [] else args.articles,
         force=args.f)
         #'''
 def parse_args(parser):
@@ -226,9 +245,11 @@ def parse_args(parser):
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description='Filter and format ECHR cases information')
-    parser.add_argument('--processed_folder', type=str, default="./processed_documents")
-    parser.add_argument('--cases_info', type=str, default="./raw_cases_info.json")
+    parser.add_argument('--processed_folder', type=str, default="./processed_documents/all")
+    parser.add_argument('--cases_info', type=str, default="./cases_info/raw_cases_info.json")
     parser.add_argument('--output_folder', type=str, default="./datasets_documents")
+    parser.add_argument('--name', type=str, default='multilabel')
+    parser.add_argument('--articles', type=list, default=[])
     parser.add_argument('-f', action='store_true')
     args = parse_args(parser)
 

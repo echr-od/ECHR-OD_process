@@ -58,7 +58,7 @@ def parse_args(parser):
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description='Filter and format ECHR cases information')
-    parser.add_argument('--input_file', type=str, default="./raw_cases_info.json")
+    parser.add_argument('--input_file', type=str, default="./cases_info/raw_cases_info.json")
     parser.add_argument('--output_folder', type=str, default="./raw_documents")
     parser.add_argument('-f', action='store_true')
     parser.add_argument('-u', action='store_true')

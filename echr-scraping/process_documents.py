@@ -90,30 +90,44 @@ def main(args):
         print('Cannot load configuration file. Details: {}'.format(e))
         exit(5)
 
+    cases_index = {}
+    with open(args.cases_info, 'r') as f:
+        content = f.read()
+        cases = json.loads(content)
+        cases_index = {c['itemid']:i for i,c in enumerate(cases)}
+        f.close()
+
+
     if not args.u:
         try:
             if args.f:
                 shutil.rmtree(args.output_folder)
+        except Exception as e:
+            print(e)
+
+        try:
             os.mkdir(args.output_folder)
         except Exception as e:
             print(e)
             exit(1)
 
     update = args.u
-    files = [os.path.join(args.input_folder, f) for f in listdir(args.input_folder) if isfile(join(args.input_folder, f)) if '_normalized.txt' in f]
+    files = [os.path.join(args.input_folder, f) for f in listdir(args.input_folder) \
+        if isfile(join(args.input_folder, f)) if '_normalized.txt' in f \
+        and f.split('/')[-1].split('_normalized.txt')[0] in cases_index.keys()]
     raw_corpus = []
     corpus_id = []
     for i, p in enumerate(files):
         try:
             print('Load document {}/{}'.format(i, len(files)))
-            doc_id = p.split('/')[-1].split('_text_without_conclusion.txt')[0]
+            doc_id = p.split('/')[-1].split('_normalized.txt')[0]
             raw_corpus.append(load_text_file(p).split())
             corpus_id.append(doc_id)
         except Exception as e:
             print(p, e)
 
-    data = json.load(open('./full_dictionary.txt'))
-    f = [t for t in data.keys()]
+    #data = json.load(open('./full_dictionary.txt'))
+    f = [t for doc in raw_corpus for t in doc]
     f = Counter(f)
     # Load the raw dictionnary
     f = f.most_common(args.limit_tokens)
@@ -124,8 +138,8 @@ def main(args):
 
     #dictionary = corpora.Dictionary([all_grams])
     dictionary = corpora.Dictionary([words])
-    dictionary.save('dictionary.dict')
-    with open('./feature_to_id.dict', 'w') as outfile:
+    dictionary.save(os.path.join(args.output_folder,'dictionary.dict'))
+    with open(os.path.join(args.output_folder, './feature_to_id.dict'), 'w') as outfile:
         json.dump(dictionary.token2id, outfile, indent=4, sort_keys=True)
     #print(dictionary.token2id)
     corpus = [dictionary.doc2bow(text) for text in raw_corpus]
@@ -154,7 +168,8 @@ def parse_args(parser):
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description='Turn a collection of documents into a BoW and TF-IDF representation.')
     parser.add_argument('--input_folder', type=str, default="./raw_normalized_documents")
-    parser.add_argument('--output_folder', type=str, default="./processed_documents")
+    parser.add_argument('--output_folder', type=str, default="./processed_documents/all")
+    parser.add_argument('--cases_info', type=str, default="./cases_info/raw_cases_info.json")
     parser.add_argument('--limit_tokens', type=int, default="100000")
     parser.add_argument('-f', action='store_true')
     parser.add_argument('-u', action='store_true')
