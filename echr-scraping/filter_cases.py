@@ -104,6 +104,7 @@ def format_conclusion(ccl):
             art = None
             if ' and ' in l:
                 l = l.replace(' and ', '+')
+            # TODO: Remove this ugly code...
             if 'violations of p1-1' in l or 'violation of p1-1' in l:
                 final_ccl[i]['article'] = 'p1'
             elif 'violations of p1-3' in l or 'violation of p1-2' in l:
