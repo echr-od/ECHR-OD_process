@@ -15,71 +15,19 @@ from collections import Counter
 
 TMP = './tmp_doc'
 
-def updateZip(zipname):
-
-    try:
-        shutil.rmtree(TMP)
-    except:
-        pass
-
-    try:
-        #os.rm('.test.zip')
-        os.rm('./_proxy.docx')
-    except:
-        pass
-
-    zip_ref = zipfile.ZipFile(zipname, 'r')
-    zip_ref.extractall(TMP)
-    zip_ref.close()
-
-    #'''
-    with open(os.path.join(TMP, 'word/document.xml'), 'r') as file:
-        content = file.read()
-        lines = content.split('>')
-        remove_open = True
-        for i, l in enumerate(lines):
-            #print(l)
-            if '<w:smartTag ' in l and remove_open:
-                #print('DELETE', l)
-                del lines[i]# = ''# '<w:r'
-                remove_open = False
-            if '</w:smartTag'==l and not remove_open:
-                #print('DELETE', l)
-                del lines[i] #lines[i] = ''#'</w:r>'
-                remove_open = True
-        file.close()
-    content = '>'.join(lines)
-    with open(os.path.join(TMP, 'word/document.xml'), 'w') as file:
-        file.write(content)
-    #'''
-    shutil.make_archive('./test', 'zip', TMP)
-
-    output_file = './_proxy.docx'
-    os.rename('./test.zip', output_file)
-    return output_file
-
-
-
-#   'Ju_Case':13174,
-#   'Ju_H_1.':10740,
-
-#'Ju_Signed':5436,
-   
-
-# 'Ju_List_i':4119,
-#'ECHR_Heading_3':3520,
-
-
-
+# Possible tags for each type of section
 tags = {
     "SECTION_TITLE_STYLE": ['ECHR_Title_1', 'Ju_H_Head'],
     "HEADING_1_STYLE": ['ECHR_Heading_1', 'Ju_H_I_Roman'],
     "HEADING_2_STYLE" :['ECHR_Heading_2', 'Ju_H_A', 'Ju_H_a'],
     "HEADING_3_STYLE" :['ECHR_Heading_3', 'Ju_H_1.', 'Ju_H_1'],
-    "HEADING_PARA": ['ECHR_Para', 'ECHR_Para_Quote', 'Ju_List', 'Ju_List_a', 'Ju_Para', 'Normal', 'Ju_Quot', 'Ju_H_Article', 'Ju_Para Char Char', 'Ju_Para Char', 'Ju_Para_Last', 'Opi_Para'],
+    "HEADING_PARA": ['ECHR_Para', 'ECHR_Para_Quote', 'Ju_List',\
+        'Ju_List_a', 'Ju_Para', 'Normal', 'Ju_Quot', 'Ju_H_Article',\
+        'Ju_Para Char Char', 'Ju_Para Char', 'Ju_Para_Last', 'Opi_Para'],
     "DECISION_BODY": ['ECHR_Decision_Body', 'Ju_Judges']
 }
 
+# Different level of document to parse
 levels = {
     "DECISION_BODY": -1,
     "SECTION_TITLE_STYLE": 1,
@@ -104,13 +52,30 @@ internal_section_reference = {
 }
 
 def tag_elements(parsed):
+    """Tag the elements in the parsed document.
+
+        Tag the elements in the parsed documents
+        according to some predifined sections.
+
+        :param parsed: parsed document
+        :type parsed: dict
+        :return: parsed document with internal section references
+        :rtype: dict
+    """
     for i, section in parsed['elements']:
-        pass
+        pass # TODO: Tag the element in the parsed document
     parsed['elements'][-1]['section_name'] = 'conclusion'
     return parsed
 
 
 def format_title(line):
+    """Format title
+
+        :param line: line to format as title
+        :type line: str
+        :return: formatted title
+        :rtype: str
+    """
     m = re.match(r'(\w+)\.(.+)', line)
     if m:
         return m.group(2).strip()
@@ -118,13 +83,19 @@ def format_title(line):
         return line
 
 def parse_body(body):
-    #print(body)
+    """Extract body members
+
+        :param body: line to extract the body members from
+        :type body: str
+        :return: list of members with their role
+        :rtype: [dict]
+    """
     members = []
     body = body.replace('\nand ', '\n')
     body = body.replace('\t', '')
     body = body.split('\n')
     body = [b for b in body if len(b)]
-    #print(body)
+
     roles = []
     k = 0
     for i, t in enumerate(body):
@@ -142,6 +113,9 @@ def parse_body(body):
 
 
 class Node:
+    """Represent a rooted tree
+    """
+
     def __init__(self, parent=None, level=0, content=None):
         self.parent = parent
         self.level = level
@@ -149,8 +123,14 @@ class Node:
         self.elements = []
 
 
-
 def parse_document(doc):
+    """Parse a document object to a tree
+
+        :param doc: document object
+        :type doc: Document
+        :return: tree
+        :rtype: Node
+    """
     parsed = {}
     result = []
     section = {}
@@ -191,6 +171,11 @@ def parse_document(doc):
         root = root.parent
 
     def print_tree(root):
+        """Utilitary function to print tree
+
+            :param root: root of the tree
+            :type root: Node
+        """
         print("LEVEL {} {} {}".format(root.level, ' ' * root.level * 2, root.content.encode('utf-8') if root.content else 'ROOT'))
         if len(root.elements) == 0:
             return
@@ -199,6 +184,15 @@ def parse_document(doc):
                 print_tree(e)
 
     def tree_to_json(root, res):
+        """Recursively convert a tree into json
+
+            :param root: root of the tree
+            :type root: Node
+            :param res: where to store result
+            :type: res: dict
+            :return: remaining tree
+            :rtype: Node
+        """
         node = {
             'content': root.content,
             'elements': []
@@ -214,8 +208,8 @@ def parse_document(doc):
     #    print(e.content)
     #print_tree(root)
     parsed['decision_body'] = parse_body(decision_body) if decision_body else []
-
     parsed = tag_elements(parsed)
+
     return parsed
 
 PARSER = {
@@ -223,14 +217,20 @@ PARSER = {
     'new': 'NEW'
 }
 
-def format_paragraph(p): #|\(\d+\)
+def format_paragraph(p):
+    """Format paragraph
+
+        :param line: line to format as title
+        :type line: str
+        :return: formatted title
+        :rtype: str
+    """
     match = re.search(r'^(?:\w+\.)(.+)', p)
     if match is not None:
         return match.group(1).strip()
     else:
         return p
     
-
 def json_to_text_(doc, text_only=True, except_section=[]):
     res = []
     if not len(doc['elements']):
@@ -242,9 +242,27 @@ def json_to_text_(doc, text_only=True, except_section=[]):
     return res
 
 def json_to_text(doc, text_only=True, except_section=[]):
+    """Format json to text 
+
+        :param doc: parsed document
+        :type doc: dict
+        :param text_only: return only text
+        :type text_only: bool
+        :param except_section: list of section to discard
+        :type: except_section: list
+        :return: textual representation of the document
+        :rtype: str
+    """
     return '\n'.join(json_to_text_(doc, text_only, except_section))
 
 def select_parser(doc):
+    """Select the parser to be used for a given document
+
+        :param doc: document
+        :type doc: Document
+        :return: parser name
+        :rtype: str
+    """
     if all([True if p.style.name in OLD_PARSER_TAGS else False for p in doc.paragraphs]):
         return PARSER['old']
     else:
@@ -268,21 +286,24 @@ def main(args):
         }
     }
 
-    with open('./cases_info/raw_cases_info.json', 'r') as f:
+    with open(args.raw_case_info, 'r') as f:
         content = f.read()
         cases = json.loads(content)
         cases_index = {c['itemid']:i for i,c in enumerate(cases)}
         f.close()
 
     update = args.u
+    correctly_parsed = 0
+    failed = []
     files = [os.path.join(args.input_folder, f) for f in listdir(args.input_folder) if isfile(join(args.input_folder, f)) if '.docx' in f]
+    print('# Process documents')
     for i, p in enumerate(files):
         id_doc = p.split('/')[-1].split('.')[0]
-        print('Process document {} {}/{}'.format(id_doc, i, len(files)))
+        print(' - Process document {} {}/{}'.format(id_doc, i, len(files)))
         filename_parsed = os.path.join(args.output_folder, '{}_parsed.json'.format(id_doc))
         if not update or not os.path.isfile(filename_parsed):
             try:
-                p_ = updateZip(p)
+                p_ = update_docx(p)
                 doc = Document(p_)
                 parser = select_parser(doc)
                 stats['parser_type'][parser] += 1
@@ -298,12 +319,15 @@ def main(args):
                     del parsed['elements']
                     with open(filename_parsed, 'w') as outfile:
                         json.dump(parsed, outfile, indent=4, sort_keys=True)
+                    correctly_parsed += 1
                 else:
                     raise Exception("OLD parser is not available yet.")
             except Exception as e:
-                print("{} {}".format(p, e))
+                failed.append((id_doc,e))    
+                print("\t->{} {}".format(p, e))
         else:
-            print('Skip document because it is already processed')
+            print('\t-> Skip document because it is already processed')
+            correctly_parsed += 1
     #'''
     '''
     p = './raw_documents/001-72878.docx'
@@ -334,6 +358,66 @@ def main(args):
         print(Counter(s))
     #'''
 
+    print('# Correctly parsed: {}/{} ({}%)'.format(correctly_parsed, len(files), (100. * correctly_parsed) / len(files)))
+    print('# List of failed documents:')
+    for e in failed:
+        print('\t- {}: {}'.format(e[0], e[1]))
+
+
+def update_docx(docname):
+    """Update a docx such that it can be read by docx library.
+
+        MSWord documents are a zip folder containing several XML files.
+        As docx library cannot read 'smartTag', it is required to remove them.
+        To do so, we open the zip, access the main XML file and manually sanitize it.
+
+        :param docname: path to the document
+        :type docname: str
+        :return: path to the new document
+        :rtype: str
+    """
+
+    # Remove temporary folder and files
+    try:
+        shutil.rmtree(TMP)
+    except:
+        pass
+
+    try:
+        os.rm('./_proxy.docx')
+    except:
+        pass
+
+    # Extract the document
+    zip_ref = zipfile.ZipFile(docname, 'r')
+    zip_ref.extractall(TMP)
+    zip_ref.close()
+
+    # Sanitize
+    with open(os.path.join(TMP, 'word/document.xml'), 'r') as file:
+        content = file.read()
+        lines = content.split('>')
+        remove_open = True
+        for i, l in enumerate(lines):
+            if '<w:smartTag ' in l and remove_open:
+                del lines[i]
+                remove_open = False
+            if '</w:smartTag'==l and not remove_open:
+                del lines[i]
+                remove_open = True
+        file.close()
+    content = '>'.join(lines)
+
+    # Recompress the archive
+    with open(os.path.join(TMP, 'word/document.xml'), 'w') as file:
+        file.write(content)
+    shutil.make_archive('./proxy', 'zip', TMP)
+
+    output_file = './_proxy.docx'
+    os.rename('./proxy.zip', output_file)
+    return output_file
+
+
 def parse_args(parser):
     args = parser.parse_args()
 
@@ -342,8 +426,9 @@ def parse_args(parser):
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description='Filter and format ECHR cases information')
-    parser.add_argument('--input_folder', type=str, default="./raw_documents")
-    parser.add_argument('--output_folder', type=str, default="./preprocessed_documents")
+    parser.add_argument('--raw_case_info', type=str, default="./build/echr_database/cases_info/raw_cases_info.json")
+    parser.add_argument('--input_folder', type=str, default="./build/echr_database/raw_documents")
+    parser.add_argument('--output_folder', type=str, default="./build/echr_database/preprocessed_documents")
     parser.add_argument('-f', action='store_true')
     parser.add_argument('-u', action='store_true')
     args = parse_args(parser)
