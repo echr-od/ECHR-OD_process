@@ -286,7 +286,7 @@ def main(args):
         }
     }
 
-    with open(args.raw_case_info, 'r') as f:
+    with open(args.case_info, 'r') as f:
         content = f.read()
         cases = json.loads(content)
         cases_index = {c['itemid']:i for i,c in enumerate(cases)}
@@ -328,35 +328,6 @@ def main(args):
         else:
             print('\t-> Skip document because it is already processed')
             correctly_parsed += 1
-    #'''
-    '''
-    p = './raw_documents/001-72878.docx'
-    #p = '/home/aquemy/test.docx'
-    p_ = updateZip(p)
-    doc = Document(p_)
-    parser = select_parser(doc)
-    parsed = parse_document(doc)
-    print(json.dumps(parsed, indent=4, sort_keys=False))
-    print(parser)
-    print(json_to_text(parsed, True, ['conclusion']))
-    #'''
-
-
-    '''
-    # STATISTICS
-    files = [os.path.join(args.input_folder, f) for f in listdir(args.input_folder) if isfile(join(args.input_folder, f)) if '.docx' in f]
-    s = []
-    for i,p in enumerate(files):
-        print("{}/{}".format(i, len(files)))
-        try:
-            
-            doc = Document(p)
-            for p in doc.paragraphs:
-                s.append(p.style.name)
-        except Exception as e:
-            print(p, e)
-        print(Counter(s))
-    #'''
 
     print('# Correctly parsed: {}/{} ({}%)'.format(correctly_parsed, len(files), (100. * correctly_parsed) / len(files)))
     print('# List of failed documents:')
@@ -426,7 +397,7 @@ def parse_args(parser):
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description='Filter and format ECHR cases information')
-    parser.add_argument('--raw_case_info', type=str, default="./build/echr_database/cases_info/raw_cases_info.json")
+    parser.add_argument('--case_info', type=str, default="./build/echr_database/cases_info/raw_cases_info.json")
     parser.add_argument('--input_folder', type=str, default="./build/echr_database/raw_documents")
     parser.add_argument('--output_folder', type=str, default="./build/echr_database/preprocessed_documents")
     parser.add_argument('-f', action='store_true')
