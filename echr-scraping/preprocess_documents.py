@@ -1,8 +1,6 @@
 import argparse
-import requests
 import json
 import os
-from time import sleep
 from os import listdir
 from os.path import isfile, join
 import re
@@ -11,7 +9,6 @@ from docx import Document
 from docx.shared import Inches
 from docx.text.run import Run
 import zipfile
-from collections import Counter
 
 TMP = './tmp_doc'
 

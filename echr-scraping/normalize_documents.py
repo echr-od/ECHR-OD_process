@@ -1,27 +1,19 @@
 import argparse
-import requests
-import json
 import copy
-import os
+import json
 import logging
-from time import sleep
+import os
 from os import listdir
 from os.path import isfile, join
-import re
 import shutil
-from docx import Document
-from docx.shared import Inches
-from docx.text.run import Run
-import zipfile
+import sys
 from collections import Counter
 
 from gensim import corpora, models, similarities
 
-from nlp.NLP.data import load_text_file, load_CSV, data_transformations, match_city, department_name, max_n_gram, filter_per_inhabitants
-from nlp.NLP.preprocessing import rectify_missing_space, prepareText, frequencies, generateNGrams
-
+from nlp.data import load_text_file
+from nlp.preprocessing import prepareText, frequencies
 from nltk.tokenize import word_tokenize
-from nltk.util import ngrams
 
 logging.basicConfig(format='%(asctime)s : %(levelname)s : %(message)s', level=logging.INFO)
 
@@ -103,9 +95,10 @@ def main(args):
     files = sorted([os.path.join(args.input_folder, f) for f in listdir(args.input_folder) if isfile(join(args.input_folder, f)) if '_text_without_conclusion.txt' in f])
     raw_corpus = []
     corpus_id = []
+    print('# Load documents')
     for i, p in enumerate(files):
         try:
-            print('Load document {}/{}'.format(i, len(files)))
+            sys.stdout.write('\r - Load document {}/{}'.format(i, len(files)))
             doc_id = p.split('/')[-1].split('_text_without_conclusion.txt')[0]
             raw_corpus.append(load_text_file(p))
             corpus_id.append(doc_id)
@@ -113,27 +106,28 @@ def main(args):
             print(p, e)
 
     normalized_tokens = []
+    print('\n# Compute tokens')
     try:
         for i, doc in enumerate(raw_corpus):
             filename = os.path.join(args.output_folder, '{}_normalized.txt'.format(corpus_id[i]))
-            print('Normalize document {}/{}'.format(i, len(raw_corpus)))
+            sys.stdout.write('\r - Normalize document {}/{}'.format(i, len(raw_corpus)))
             if update and not os.path.isfile(filename):
                 normalized_tokens.append(normalized_step(doc, force=args.f, lemmatization=True))
             else:
-                print('Load normalized document as it already exists.')
                 with open(filename, 'r') as f:
                     normalized_tokens.extend(f.read().split())
                     f.close()
     except Exception as e:
-        print('Could not normalized the tokens. Details: {}'.format(e))
+        print('\t -> Could not normalized the tokens. Details: {}'.format(e))
         exit(40)
 
+    print('\n# Generate ngrams from tokens')
     all_grams = []
     doc_grammed = []
     try:
         for i, doc in enumerate(normalized_tokens):
             filename = os.path.join(args.output_folder, '{}_normalized.txt'.format(corpus_id[i]))
-            print('Calculate ngrams for document {}/{}'.format(i, len(raw_corpus)))
+            print(' - Calculate ngrams for document {}/{}'.format(i, len(raw_corpus)))
             if update and not os.path.isfile(filename):
                 grams = ngram_step(doc, config['ngrams'], force=args.f)
                 merged = []
@@ -142,7 +136,7 @@ def main(args):
                 doc_grammed.append(merged)
                 all_grams.extend(merged)
             else:
-                print('Load document as already normalized.')
+                print('\t -> Load document as already normalized.')
                 with open(filename, 'r') as f:
                     all_grams.extend(f.read().split())
                     doc_grammed.append(None)
@@ -150,15 +144,15 @@ def main(args):
     except Exception as e:
         print(e)
 
-
     f = Counter(all_grams)
-    print('Save the full dictionary')
+    print('# Save the full dictionary')
     with open('./full_dictionary.txt', 'w') as outfile:
         json.dump(f, outfile, indent=4, sort_keys=True)
 
+    print('# Save normalized documents')
     for i, doc in enumerate(doc_grammed):
         if doc is not None:
-            print('Save document {} {}/{}'.format(corpus_id[i], i, len(doc_grammed)))
+            sys.stdout.write('\r - Save document {}/{}: {}'.format(i, len(doc_grammed), corpus_id[i]))
             with open(os.path.join(args.output_folder, '{}_normalized.txt'.format(corpus_id[i])), 'a') as file:
                 file.write(' '.join(doc))
 
@@ -170,9 +164,9 @@ def parse_args(parser):
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description='Turn a collection of documents into a BoW and TF-IDF representation.')
-    parser.add_argument('--output_folder', type=str, default="./raw_normalized_documents")
-    parser.add_argument('--input_folder', type=str, default="./preprocessed_documents")
-    parser.add_argument('--case_info', type=str, default="./cases_info/raw_cases_info.json")
+    parser.add_argument('--output_folder', type=str, default="./build/echr_database/raw_normalized_documents")
+    parser.add_argument('--input_folder', type=str, default="./build/echr_database/preprocessed_documents")
+    parser.add_argument('--case_info', type=str, default="./build/echr_database/cases_info/raw_cases_info.json")
     parser.add_argument('-f', action='store_true')
     parser.add_argument('-u', action='store_true')
     args = parse_args(parser)
