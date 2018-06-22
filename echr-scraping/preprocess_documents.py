@@ -10,7 +10,7 @@ from docx.shared import Inches
 from docx.text.run import Run
 import zipfile
 
-TMP = './tmp_doc'
+TMP = '/tmp/echr_tmp_doc'
 
 # Possible tags for each type of section
 tags = {
@@ -266,12 +266,14 @@ def select_parser(doc):
         return PARSER['new']
 
 def main(args):
-    
+    input_file = os.path.join(args.build, 'cases_info/raw_cases_info.json')
+    input_folder = os.path.join(args.build, 'raw_documents')
+    output_folder = os.path.join(args.build, 'preprocessed_documents')
     if not args.u:
         try:
             if args.f:
-                shutil.rmtree(args.output_folder)
-            os.mkdir(args.output_folder)
+                shutil.rmtree(output_folder)
+            os.mkdir(output_folder)
         except Exception as e:
             print(e)
             exit(1)
@@ -283,7 +285,7 @@ def main(args):
         }
     }
 
-    with open(args.case_info, 'r') as f:
+    with open(input_file, 'r') as f:
         content = f.read()
         cases = json.loads(content)
         cases_index = {c['itemid']:i for i,c in enumerate(cases)}
@@ -292,12 +294,12 @@ def main(args):
     update = args.u
     correctly_parsed = 0
     failed = []
-    files = [os.path.join(args.input_folder, f) for f in listdir(args.input_folder) if isfile(join(args.input_folder, f)) if '.docx' in f]
+    files = [os.path.join(input_folder, f) for f in listdir(input_folder) if isfile(join(input_folder, f)) if '.docx' in f]
     print('# Process documents')
     for i, p in enumerate(files):
         id_doc = p.split('/')[-1].split('.')[0]
         print(' - Process document {} {}/{}'.format(id_doc, i, len(files)))
-        filename_parsed = os.path.join(args.output_folder, '{}_parsed.json'.format(id_doc))
+        filename_parsed = os.path.join(output_folder, '{}_parsed.json'.format(id_doc))
         if not update or not os.path.isfile(filename_parsed):
             try:
                 p_ = update_docx(p)
@@ -307,7 +309,7 @@ def main(args):
                 if parser == 'NEW':
                     parsed = parse_document(doc)
                     parsed.update(cases[cases_index[id_doc]])
-                    with open(os.path.join(args.output_folder, '{}_text_without_conclusion.txt'.format(id_doc)), 'w') as toutfile:
+                    with open(os.path.join(output_folder, '{}_text_without_conclusion.txt'.format(id_doc)), 'w') as toutfile:
                         toutfile.write(json_to_text(parsed, True, ['conclusion']).encode('utf-8'))
                     parsed['documents'] = ['{}.docx'.format(id_doc)]
                     parsed['content'] = {
@@ -344,7 +346,6 @@ def update_docx(docname):
         :return: path to the new document
         :rtype: str
     """
-
     # Remove temporary folder and files
     try:
         shutil.rmtree(TMP)
@@ -383,6 +384,12 @@ def update_docx(docname):
 
     output_file = './_proxy.docx'
     os.rename('./proxy.zip', output_file)
+
+    try:
+        os.rm('./_proxy.docx')
+    except:
+        pass
+    
     return output_file
 
 
@@ -394,9 +401,7 @@ def parse_args(parser):
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description='Filter and format ECHR cases information')
-    parser.add_argument('--case_info', type=str, default="./build/echr_database/cases_info/raw_cases_info.json")
-    parser.add_argument('--input_folder', type=str, default="./build/echr_database/raw_documents")
-    parser.add_argument('--output_folder', type=str, default="./build/echr_database/preprocessed_documents")
+    parser.add_argument('--build', type=str, default="./build/echr_database/")
     parser.add_argument('-f', action='store_true')
     parser.add_argument('-u', action='store_true')
     args = parse_args(parser)

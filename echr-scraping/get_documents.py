@@ -38,9 +38,11 @@ def get_documents(id_list, folder, update):
             print("\tSkip as document exists already")
 
 def main(args):
+    input_file = os.path.join(args.build, 'cases_info/raw_cases_info.json')
+    output_folder = os.path.join(args.build, 'raw_documents')
     id_list = []
     try:
-        with open(args.input_file, 'r') as f:
+        with open(input_file, 'r') as f:
             content = f.read()
             cases = json.loads(content)
             id_list = [i['itemid'] for i in cases]
@@ -51,14 +53,14 @@ def main(args):
     if not args.u:
         try:
             if args.f:
-                shutil.rmtree(args.output_folder)
-            os.mkdir(args.output_folder)
+                shutil.rmtree(output_folder)
+            os.mkdir(output_folder)
         except Exception as e:
             print(e)
             exit(1)
 
     print("# Get documents from HUDOC")
-    get_documents(id_list, args.output_folder, args.u)
+    get_documents(id_list, output_folder, args.u)
 
 def parse_args(parser):
     args = parser.parse_args()
@@ -68,8 +70,7 @@ def parse_args(parser):
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description='Filter and format ECHR cases information')
-    parser.add_argument('--input_file', type=str, default="./build/echr_database/cases_info/raw_cases_info.json")
-    parser.add_argument('--output_folder', type=str, default="./build/echr_database/raw_documents")
+    parser.add_argument('--build', type=str, default="./build/echr_database/")
     parser.add_argument('-f', action='store_true')
     parser.add_argument('-u', action='store_true')
     args = parse_args(parser)

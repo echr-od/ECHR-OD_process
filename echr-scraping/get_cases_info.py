@@ -68,16 +68,17 @@ def get_case_info(base_url, max_documents, path):
                 f.write(block)
 
 def main(args):
+    raw_case_folder = os.path.join(args.build, 'raw_cases_info')
     try:
         if args.f:
-            shutil.rmtree(args.folder)
-        os.mkdir(args.folder)
+            shutil.rmtree(raw_case_folder)
+        os.mkdir(raw_case_folder)
     except Exception as e:
         print(e)
         exit(1)
     
     print('# Get case information from HUDOC')
-    get_case_info(BASE_URL, args.max_documents, args.folder)
+    get_case_info(BASE_URL, args.max_documents, raw_case_folder)
 
 def parse_args(parser):
     args = parser.parse_args()
@@ -88,7 +89,7 @@ def parse_args(parser):
 if __name__ == "__main__":
     
     parser = argparse.ArgumentParser(description='Retrieve ECHR cases information')
-    parser.add_argument('--folder', type=str, default="./build/echr_database/raw_cases_info")
+    parser.add_argument('--build', type=str, default="./build/echr_database/")
     parser.add_argument('--max_documents', type=int, default=144579)
     parser.add_argument('-f', action='store_true')
     args = parse_args(parser)

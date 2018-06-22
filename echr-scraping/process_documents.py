@@ -25,59 +25,16 @@ from nltk.util import ngrams
 
 logging.basicConfig(format='%(asctime)s : %(levelname)s : %(message)s', level=logging.INFO)
 
-
-def normalized_step(tokens, path='./', force=False, lemmatization=True):
-    """
-        Normalize the tokens
-
-        :param tokens: list of strings
-        :type tokens: [str]
-        :param path: path to write the output in
-        :type path: str
-
-        :return: normalized tokens
-        :rtype: [str]
-    """
-    normalized_tokens = prepareText(tokens, lemmatization)
-    normalized_tokens = [t[0] for t in normalized_tokens]
-    #print('normalized_tokens', normalized_tokens)
-    return normalized_tokens
-
-def ngram_step(original_tokens, freq=None, path='./', force=False):
-    """
-        Calculate the ngrams
-
-        :param original_tokens: list of tokens
-        :type original_tokens: [[str]]
-        :param freq: rules to extract and filter ngrams
-        :type freq: dict
-        :param path: path to write the output in
-        :type path: str
-
-        :return: dictionary of ngrams indexed by n
-        :rtype: dict
-    """
-    if freq is None:
-        log.info('No configuration specified, uses the default one')
-    freq = {1: 1, 2: 1, 3: 1, 4: 1}
-
-    for k in freq:
-        output_file = 'tokens_{}grams.txt'.format(k)
-        p = os.path.join(path, output_file)
-        if not force:
-            if os.path.isfile(p):
-                raise Exception("The file {} already exists!".format(p))
-
-    allgrams = frequencies(original_tokens, n=len(freq), minlimits=freq)
-    
-    return allgrams
-
+CONFIG_FILE = './config/config.json'
 
 def main(args):
-
+    input_file = os.path.join(args.build, 'cases_info/raw_cases_info.json')
+    input_folder = os.path.join(args.build, 'raw_normalized_documents')
+    output_folder = os.path.join(args.build, 'processed_documents/all')
+    print('# Read configuration')
     config = None
     try:
-        with open('config/config.json') as data:
+        with open(CONFIG_FILE) as data:
             config = json.load(data)
             # Basic config validation
             if 'ngrams' not in config:
@@ -91,7 +48,7 @@ def main(args):
         exit(5)
 
     cases_index = {}
-    with open(args.cases_info, 'r') as f:
+    with open(input_file, 'r') as f:
         content = f.read()
         cases = json.loads(content)
         cases_index = {c['itemid']:i for i,c in enumerate(cases)}
@@ -101,22 +58,23 @@ def main(args):
     if not args.u:
         try:
             if args.f:
-                shutil.rmtree(args.output_folder)
+                shutil.rmtree(output_folder)
         except Exception as e:
             print(e)
 
         try:
-            os.mkdir(args.output_folder)
+            os.mkdir(output_folder)
         except Exception as e:
             print(e)
             exit(1)
 
     update = args.u
-    files = [os.path.join(args.input_folder, f) for f in listdir(args.input_folder) \
-        if isfile(join(args.input_folder, f)) if '_normalized.txt' in f \
+    files = [os.path.join(input_folder, f) for f in listdir(input_folder) \
+        if isfile(join(input_folder, f)) if '_normalized.txt' in f \
         and f.split('/')[-1].split('_normalized.txt')[0] in cases_index.keys()]
     raw_corpus = []
     corpus_id = []
+    print('# Load documents')
     for i, p in enumerate(files):
         try:
             print('Load document {}/{}'.format(i, len(files)))
@@ -137,14 +95,16 @@ def main(args):
     #print(len(all_grams), len(f))
 
     #dictionary = corpora.Dictionary([all_grams])
+    print('# Create dictionary')
     dictionary = corpora.Dictionary([words])
-    dictionary.save(os.path.join(args.output_folder,'dictionary.dict'))
-    with open(os.path.join(args.output_folder, './feature_to_id.dict'), 'w') as outfile:
+    dictionary.save(os.path.join(output_folder, 'dictionary.dict'))
+    with open(os.path.join(output_folder, './feature_to_id.dict'), 'w') as outfile:
         json.dump(dictionary.token2id, outfile, indent=4, sort_keys=True)
     #print(dictionary.token2id)
     corpus = [dictionary.doc2bow(text) for text in raw_corpus]
+    print('# Create Bag of Words')
     for i, doc in enumerate(corpus):
-        filename = os.path.join(args.output_folder, '{}_bow.txt'.format(corpus_id[i]))
+        filename = os.path.join(output_folder, '{}_bow.txt'.format(corpus_id[i]))
         #if update and not os.path.isfile(filename):
         with open(filename, 'w') as file:
             for f, v in doc:
@@ -153,9 +113,9 @@ def main(args):
 
     tfidf = models.TfidfModel(corpus)
     corpus_tfidf = tfidf[corpus]
-
+    print('# Create TFIDF')
     for i, doc in enumerate(corpus_tfidf):
-        with open(os.path.join(args.output_folder, '{}_tfidf.txt'.format(corpus_id[i])), 'w') as file:
+        with open(os.path.join(output_folder, '{}_tfidf.txt'.format(corpus_id[i])), 'w') as file:
             for f, v in doc:
                 file.write('{}:{} '.format(f, v))
 
@@ -167,9 +127,7 @@ def parse_args(parser):
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description='Turn a collection of documents into a BoW and TF-IDF representation.')
-    parser.add_argument('--input_folder', type=str, default="./raw_normalized_documents")
-    parser.add_argument('--output_folder', type=str, default="./processed_documents/all")
-    parser.add_argument('--cases_info', type=str, default="./cases_info/raw_cases_info.json")
+    parser.add_argument('--build', type=str, default="./build/echr_database/")
     parser.add_argument('--limit_tokens', type=int, default="100000")
     parser.add_argument('-f', action='store_true')
     parser.add_argument('-u', action='store_true')

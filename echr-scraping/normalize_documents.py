@@ -66,7 +66,8 @@ def ngram_step(original_tokens, freq=None, path='./', force=False):
 
 
 def main(args):
-
+    input_folder = os.path.join(args.build, 'preprocessed_documents')
+    output_folder = os.path.join(args.build, 'raw_normalized_documents')
     config = None
     try:
         with open('config/config.json') as data:
@@ -85,14 +86,14 @@ def main(args):
     if not args.u:
         try:
             if args.f:
-                shutil.rmtree(args.output_folder)
-            os.mkdir(args.output_folder)
+                shutil.rmtree(output_folder)
+            os.mkdir(output_folder)
         except Exception as e:
             print(e)
             exit(1)
 
     update = args.u
-    files = sorted([os.path.join(args.input_folder, f) for f in listdir(args.input_folder) if isfile(join(args.input_folder, f)) if '_text_without_conclusion.txt' in f])
+    files = sorted([os.path.join(input_folder, f) for f in listdir(input_folder) if isfile(join(input_folder, f)) if '_text_without_conclusion.txt' in f])
     raw_corpus = []
     corpus_id = []
     print('# Load documents')
@@ -109,7 +110,7 @@ def main(args):
     print('\n# Compute tokens')
     try:
         for i, doc in enumerate(raw_corpus):
-            filename = os.path.join(args.output_folder, '{}_normalized.txt'.format(corpus_id[i]))
+            filename = os.path.join(output_folder, '{}_normalized.txt'.format(corpus_id[i]))
             sys.stdout.write('\r - Normalize document {}/{}'.format(i, len(raw_corpus)))
             if update and not os.path.isfile(filename):
                 normalized_tokens.append(normalized_step(doc, force=args.f, lemmatization=True))
@@ -126,7 +127,7 @@ def main(args):
     doc_grammed = []
     try:
         for i, doc in enumerate(normalized_tokens):
-            filename = os.path.join(args.output_folder, '{}_normalized.txt'.format(corpus_id[i]))
+            filename = os.path.join(output_folder, '{}_normalized.txt'.format(corpus_id[i]))
             print(' - Calculate ngrams for document {}/{}'.format(i, len(raw_corpus)))
             if update and not os.path.isfile(filename):
                 grams = ngram_step(doc, config['ngrams'], force=args.f)
@@ -146,14 +147,14 @@ def main(args):
 
     f = Counter(all_grams)
     print('# Save the full dictionary')
-    with open('./full_dictionary.txt', 'w') as outfile:
+    with open(os.path.join(output_folder, 'full_dictionary.txt'), 'w') as outfile:
         json.dump(f, outfile, indent=4, sort_keys=True)
 
     print('# Save normalized documents')
     for i, doc in enumerate(doc_grammed):
         if doc is not None:
             sys.stdout.write('\r - Save document {}/{}: {}'.format(i, len(doc_grammed), corpus_id[i]))
-            with open(os.path.join(args.output_folder, '{}_normalized.txt'.format(corpus_id[i])), 'a') as file:
+            with open(os.path.join(output_folder, '{}_normalized.txt'.format(corpus_id[i])), 'a') as file:
                 file.write(' '.join(doc))
 
 def parse_args(parser):
@@ -164,9 +165,7 @@ def parse_args(parser):
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description='Turn a collection of documents into a BoW and TF-IDF representation.')
-    parser.add_argument('--output_folder', type=str, default="./build/echr_database/raw_normalized_documents")
-    parser.add_argument('--input_folder', type=str, default="./build/echr_database/preprocessed_documents")
-    parser.add_argument('--case_info', type=str, default="./build/echr_database/cases_info/raw_cases_info.json")
+    parser.add_argument('--build', type=str, default="./build/echr_database/")
     parser.add_argument('-f', action='store_true')
     parser.add_argument('-u', action='store_true')
     args = parse_args(parser)

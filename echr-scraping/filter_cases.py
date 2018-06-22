@@ -279,17 +279,18 @@ def generate_statistics(cases):
 
 
 def main(args):
-
+    input_folder = os.path.join(args.build, 'raw_cases_info')
+    output_folder = os.path.join(args.build, 'cases_info')
     try:
         if args.f:
-            shutil.rmtree(args.output_folder)
-        mkdir(args.output_folder)
+            shutil.rmtree(output_folder)
+        mkdir(output_folder)
     except Exception as e:
         print(e)
         exit(1)
 
     cases = []
-    files = [path.join(args.input_folder, f) for f in listdir(args.input_folder) if path.isfile(path.join(args.input_folder, f)) if '.json' in f]
+    files = [path.join(input_folder, f) for f in listdir(input_folder) if path.isfile(path.join(input_folder, f)) if '.json' in f]
     for p in files:
         try:
             with open(p, 'r') as f:
@@ -308,10 +309,10 @@ def main(args):
     print('# Generate statistics')
     stats = generate_statistics(cases)
 
-    with open(path.join(args.output_folder, 'filter.statistics.json'), 'w') as outfile:
+    with open(path.join(output_folder, 'filter.statistics.json'), 'w') as outfile:
         json.dump(stats, outfile, indent=4, sort_keys=True)
 
-    with open(path.join(args.output_folder, 'raw_cases_info.json'), 'w') as outfile:
+    with open(path.join(output_folder, 'raw_cases_info.json'), 'w') as outfile:
         json.dump(cases, outfile, indent=4, sort_keys=True)
 
 
@@ -358,7 +359,7 @@ def main(args):
     multilabel_index = set()
     for k in outcomes.keys():
         print(' - Generate case info for article {}'.format(k))
-        with open(path.join(args.output_folder, 'raw_cases_info_article_{}.json'.format(k)), 'w') as outfile:
+        with open(path.join(output_folder, 'raw_cases_info_article_{}.json'.format(k)), 'w') as outfile:
             json.dump(cases_per_articles[k], outfile, indent=4, sort_keys=True)
         multilabel_cases.extend(cases_per_articles[k])
         for c in cases_per_articles[k]:
@@ -370,7 +371,7 @@ def main(args):
             multilabel_cases_unique.append(c)
             multilabel_index.discard(c['itemid'])
 
-    with open(path.join(args.output_folder, 'raw_cases_info_multilabel.json'.format(k)), 'w') as outfile:
+    with open(path.join(output_folder, 'raw_cases_info_multilabel.json'.format(k)), 'w') as outfile:
         json.dump(multilabel_cases_unique, outfile, indent=4, sort_keys=True)
 
 
@@ -382,8 +383,7 @@ def parse_args(parser):
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description='Filter and format ECHR cases information')
-    parser.add_argument('--input_folder', type=str, default="./build/echr_database/raw_cases_info")
-    parser.add_argument('--output_folder', type=str, default="./build/echr_database/cases_info")
+    parser.add_argument('--build', type=str, default="./build/echr_database/")
     parser.add_argument('-f', action='store_true')
     args = parse_args(parser)
 

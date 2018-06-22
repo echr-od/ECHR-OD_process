@@ -7,19 +7,16 @@ from os import listdir
 from os.path import isfile, join
 import re
 import shutil
-from docx import Document
-from docx.shared import Inches
-from docx.text.run import Run
-import zipfile
-from collections import Counter
 
-def generate_dataset(cases, keys, keys_list, encoded_outcomes, feature_index, feature_to_encoded, path, name, offset, processed_folder, filter_classes=None, force=False):
-    output_path = os.path.join(path, name)
+MIN_CASES_PER_ARTICLE = 100
+
+def generate_dataset(cases, keys, keys_list, encoded_outcomes, feature_index, feature_to_encoded, output_path, offset, processed_folder, filter_classes=None, force=False):
+    output_path = output_path
     try:
         if args.f:
             shutil.rmtree(output_path)
     except Exception as e:
-        pass #print(e)
+        pass
         #exit(1)
 
     try:
@@ -123,20 +120,25 @@ def generate_dataset(cases, keys, keys_list, encoded_outcomes, feature_index, fe
 
 
 def main(args):
+
+    input_file = os.path.join(args.build, 'cases_info/raw_cases_info.json')
+    input_folder = os.path.join(args.build, 'raw_documents', args.processed_folder)
+    output_folder = os.path.join(args.build, 'datasets_documents')
+
     try:
-        os.mkdir(args.output_folder)
+        os.mkdir(output_folder)
     except Exception as e:
         print(e)
         #exit(1)
 
     # Get the list of cases s.t. we have a BoW and TF-IDF representation
-    files = [os.path.join(args.processed_folder, f) for f in listdir(args.processed_folder) if isfile(join(args.processed_folder, f)) if '_bow.txt' in f]
+    files = [os.path.join(input_folder, f) for f in listdir(input_folder) if isfile(join(input_folder, f)) if '_bow.txt' in f]
     id_list = [f.split('/')[-1].split('_')[0] for f in files]
 
     # Read the case info
     cases = []
     try:
-        with open(args.cases_info, 'r') as f:
+        with open(input_file, 'r') as f:
             content = f.read()
             cases = json.loads(content)
     except Exception as e:
@@ -212,7 +214,7 @@ def main(args):
         # Determine output
 
     # TODO: Put in arguments
-    outcomes = {k:v for k,v in outcomes.iteritems() if v['total'] > 100}
+    outcomes = {k:v for k,v in outcomes.iteritems() if v['total'] > MIN_CASES_PER_ARTICLE}
 
     encoded_outcomes = {}
     count = 1
@@ -223,6 +225,7 @@ def main(args):
     offset = len(feature_to_encoded)
     #print('OFFSET: {}'.format(offset))
 
+    print('# Generate dataset')
     generate_dataset(
         cases=cases,
         keys=keys,
@@ -230,13 +233,12 @@ def main(args):
         encoded_outcomes=encoded_outcomes,
         feature_index=feature_index,
         feature_to_encoded=feature_to_encoded,
-        path=args.output_folder, 
-        name=args.name, 
+        path=args.output_folder,
         offset=offset,
-        processed_folder=args.processed_folder,
+        processed_folder=input_folder,
         filter_classes=None if args.articles == [] else args.articles,
         force=args.f)
-        #'''
+
 def parse_args(parser):
     args = parser.parse_args()
 
@@ -245,9 +247,8 @@ def parse_args(parser):
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description='Filter and format ECHR cases information')
-    parser.add_argument('--processed_folder', type=str, default="./processed_documents/all")
-    parser.add_argument('--cases_info', type=str, default="./cases_info/raw_cases_info.json")
-    parser.add_argument('--output_folder', type=str, default="./datasets_documents")
+    parser.add_argument('--build', type=str, default="./build/echr_database/")
+    parser.add_argument('--processed_folder', type=str, default="all")
     parser.add_argument('--name', type=str, default='multilabel')
     parser.add_argument('--articles', type=list, default=[])
     parser.add_argument('-f', action='store_true')
