@@ -10,20 +10,8 @@ import shutil
 
 MIN_CASES_PER_ARTICLE = 100
 
-def generate_dataset(cases, keys, keys_list, encoded_outcomes, feature_index, feature_to_encoded, output_path, offset, processed_folder, filter_classes=None, force=False):
+def generate_dataset(cases, keys, keys_list, encoded_outcomes, feature_index, feature_to_encoded, output_path, name, offset, processed_folder, filter_classes=None, force=False):
     output_path = output_path
-    try:
-        if args.f:
-            shutil.rmtree(output_path)
-    except Exception as e:
-        pass
-        #exit(1)
-
-    try:
-        os.mkdir(output_path)
-    except Exception as e:
-        print(e)
-        exit(1)
 
     dataset_size = 0
     dataset_full_doc_id = []
@@ -122,11 +110,11 @@ def generate_dataset(cases, keys, keys_list, encoded_outcomes, feature_index, fe
 def main(args):
 
     input_file = os.path.join(args.build, 'cases_info/raw_cases_info.json')
-    input_folder = os.path.join(args.build, 'raw_documents', args.processed_folder)
-    output_folder = os.path.join(args.build, 'datasets_documents')
+    input_folder = os.path.join(args.build, 'processed_documents', args.processed_folder)
+    output_folder = os.path.join(args.build, 'datasets_documents', args.processed_folder)
 
     try:
-        os.mkdir(output_folder)
+        os.makedirs(output_folder)
     except Exception as e:
         print(e)
         #exit(1)
@@ -233,11 +221,16 @@ def main(args):
         encoded_outcomes=encoded_outcomes,
         feature_index=feature_index,
         feature_to_encoded=feature_to_encoded,
-        path=args.output_folder,
+        output_path=output_folder,
+        name=args.processed_folder,
         offset=offset,
         processed_folder=input_folder,
         filter_classes=None if args.articles == [] else args.articles,
         force=args.f)
+
+    os.path.join(args.build, 'dataset_documents', args.processed_folder)
+    shutil.make_archive(output_folder, 'zip', os.path.join(args.build, 'datasets_documents'))
+
 
 def parse_args(parser):
     args = parser.parse_args()

@@ -1,3 +1,4 @@
+#!/usr/bin/python
 import argparse
 from collections import Counter
 import json
@@ -279,8 +280,8 @@ def generate_statistics(cases):
 
 
 def main(args):
-    input_folder = os.path.join(args.build, 'raw_cases_info')
-    output_folder = os.path.join(args.build, 'cases_info')
+    input_folder = path.join(args.build, 'raw_cases_info')
+    output_folder = path.join(args.build, 'cases_info')
     try:
         if args.f:
             shutil.rmtree(output_folder)

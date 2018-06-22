@@ -1,4 +1,4 @@
-#!/bin/python3
+#!/usr/bin/python
 import argparse
 import requests
 import json

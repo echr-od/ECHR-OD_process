@@ -9,16 +9,13 @@ from os import listdir
 from os.path import isfile, join
 import re
 import shutil
-from docx import Document
-from docx.shared import Inches
-from docx.text.run import Run
-import zipfile
+import sys
 from collections import Counter
 
 from gensim import corpora, models, similarities
 
-from nlp.NLP.data import load_text_file, load_CSV, data_transformations, match_city, department_name, max_n_gram, filter_per_inhabitants
-from nlp.NLP.preprocessing import rectify_missing_space, prepareText, frequencies, generateNGrams
+from nlp.data import load_text_file, load_CSV, data_transformations, match_city, department_name, max_n_gram, filter_per_inhabitants
+from nlp.preprocessing import rectify_missing_space, prepareText, frequencies, generateNGrams
 
 from nltk.tokenize import word_tokenize
 from nltk.util import ngrams
@@ -30,7 +27,7 @@ CONFIG_FILE = './config/config.json'
 def main(args):
     input_file = os.path.join(args.build, 'cases_info/raw_cases_info.json')
     input_folder = os.path.join(args.build, 'raw_normalized_documents')
-    output_folder = os.path.join(args.build, 'processed_documents/all')
+    output_folder = os.path.join(args.build, 'processed_documents', args.processed_folder)
     print('# Read configuration')
     config = None
     try:
@@ -63,10 +60,9 @@ def main(args):
             print(e)
 
         try:
-            os.mkdir(output_folder)
+            os.makedirs(output_folder)
         except Exception as e:
             print(e)
-            exit(1)
 
     update = args.u
     files = [os.path.join(input_folder, f) for f in listdir(input_folder) \
@@ -77,13 +73,13 @@ def main(args):
     print('# Load documents')
     for i, p in enumerate(files):
         try:
-            print('Load document {}/{}'.format(i, len(files)))
+            sys.stdout.write('\r - Load document {}/{}'.format(i+1, len(files)))
             doc_id = p.split('/')[-1].split('_normalized.txt')[0]
             raw_corpus.append(load_text_file(p).split())
             corpus_id.append(doc_id)
         except Exception as e:
             print(p, e)
-
+    print('')
     #data = json.load(open('./full_dictionary.txt'))
     f = [t for doc in raw_corpus for t in doc]
     f = Counter(f)
@@ -98,7 +94,7 @@ def main(args):
     print('# Create dictionary')
     dictionary = corpora.Dictionary([words])
     dictionary.save(os.path.join(output_folder, 'dictionary.dict'))
-    with open(os.path.join(output_folder, './feature_to_id.dict'), 'w') as outfile:
+    with open(os.path.join(output_folder, 'feature_to_id.dict'), 'w') as outfile:
         json.dump(dictionary.token2id, outfile, indent=4, sort_keys=True)
     #print(dictionary.token2id)
     corpus = [dictionary.doc2bow(text) for text in raw_corpus]
@@ -128,6 +124,7 @@ def parse_args(parser):
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description='Turn a collection of documents into a BoW and TF-IDF representation.')
     parser.add_argument('--build', type=str, default="./build/echr_database/")
+    parser.add_argument('--processed_folder', type=str, default="all")
     parser.add_argument('--limit_tokens', type=int, default="100000")
     parser.add_argument('-f', action='store_true')
     parser.add_argument('-u', action='store_true')

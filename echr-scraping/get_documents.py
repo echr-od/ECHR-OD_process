@@ -22,7 +22,7 @@ def get_documents(id_list, folder, update):
         print(" - Document {}/{}: {}".format(i, len(id_list), doc_id))
         filename = "%s.docx"%(doc_id.strip())
         filename = os.path.join(folder, filename)
-        if update and not os.path.isfile(filename):
+        if update or not os.path.isfile(filename):
             url = BASE_URL + doc_id.strip()
             r = requests.get(url, stream=True)
             if not r.ok:

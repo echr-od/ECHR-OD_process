@@ -90,7 +90,7 @@ def main(args):
             os.mkdir(output_folder)
         except Exception as e:
             print(e)
-            exit(1)
+
 
     update = args.u
     files = sorted([os.path.join(input_folder, f) for f in listdir(input_folder) if isfile(join(input_folder, f)) if '_text_without_conclusion.txt' in f])
@@ -99,7 +99,7 @@ def main(args):
     print('# Load documents')
     for i, p in enumerate(files):
         try:
-            sys.stdout.write('\r - Load document {}/{}'.format(i, len(files)))
+            sys.stdout.write('\r - Load document {}/{}'.format(i+1, len(files)))
             doc_id = p.split('/')[-1].split('_text_without_conclusion.txt')[0]
             raw_corpus.append(load_text_file(p))
             corpus_id.append(doc_id)
@@ -112,7 +112,7 @@ def main(args):
         for i, doc in enumerate(raw_corpus):
             filename = os.path.join(output_folder, '{}_normalized.txt'.format(corpus_id[i]))
             sys.stdout.write('\r - Normalize document {}/{}'.format(i, len(raw_corpus)))
-            if update and not os.path.isfile(filename):
+            if not update or not os.path.isfile(filename):
                 normalized_tokens.append(normalized_step(doc, force=args.f, lemmatization=True))
             else:
                 with open(filename, 'r') as f:
@@ -128,8 +128,8 @@ def main(args):
     try:
         for i, doc in enumerate(normalized_tokens):
             filename = os.path.join(output_folder, '{}_normalized.txt'.format(corpus_id[i]))
-            print(' - Calculate ngrams for document {}/{}'.format(i, len(raw_corpus)))
-            if update and not os.path.isfile(filename):
+            sys.stdout.write('\r - Calculate ngrams for document {}/{}'.format(i, len(raw_corpus)))
+            if not update or not os.path.isfile(filename):
                 grams = ngram_step(doc, config['ngrams'], force=args.f)
                 merged = []
                 for g in grams.values():
@@ -144,6 +144,7 @@ def main(args):
                     f.close()
     except Exception as e:
         print(e)
+    print('')
 
     f = Counter(all_grams)
     print('# Save the full dictionary')
@@ -153,9 +154,10 @@ def main(args):
     print('# Save normalized documents')
     for i, doc in enumerate(doc_grammed):
         if doc is not None:
-            sys.stdout.write('\r - Save document {}/{}: {}'.format(i, len(doc_grammed), corpus_id[i]))
+            sys.stdout.write('\r - Save document {}/{}: {}'.format(i+1, len(doc_grammed), corpus_id[i]))
             with open(os.path.join(output_folder, '{}_normalized.txt'.format(corpus_id[i])), 'a') as file:
                 file.write(' '.join(doc))
+    print('')
 
 def parse_args(parser):
     args = parser.parse_args()
