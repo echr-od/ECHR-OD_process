@@ -20,6 +20,8 @@ def generate_dataset(cases, keys, keys_list, encoded_outcomes, feature_index, fe
     avg_feature = 0
     prevalence = {}
     with open(os.path.join(output_path, 'descriptive.txt'), 'w') as f_d, \
+        open(os.path.join(output_path, 'BoW.txt'), 'w') as f_b, \
+        open(os.path.join(output_path, 'TF_IDF.txt'), 'w') as f_t, \
         open(os.path.join(output_path, 'descriptive+BoW.txt'), 'w') as f_db, \
         open(os.path.join(output_path, 'descriptive+TF_IDF.txt'), 'w') as f_dt, \
         open(os.path.join(output_path, 'outcomes.txt'), 'w') as f:
@@ -57,11 +59,13 @@ def generate_dataset(cases, keys, keys_list, encoded_outcomes, feature_index, fe
                     bow = bow.split()
                     bow = ['{}:{}'.format(offset + int(b.split(':')[0]), b.split(':')[1]) for b in bow]
                     f_db.write(' '.join(map(str, bow)) + ' \n')
+                    f_b.write(' '.join(map(str, bow)) + ' \n')
                     nb_features += len(bow)
                 with open(os.path.join(processed_folder, '{}_tfidf.txt'.format(c['itemid'])), 'r') as tfidf_doc:
                     tfidf = tfidf_doc.read()
                     tfidf = tfidf.split()
                     tfidf = ['{}:{}'.format(offset + int(b.split(':')[0]), b.split(':')[1]) for b in tfidf]
+                    f_t.write(' '.join(map(str, tfidf)) + ' \n')
                     f_dt.write(' '.join(map(str, tfidf)) + ' \n')
 
                 max_feature = nb_features if nb_features > max_feature else max_feature
@@ -228,8 +232,8 @@ def main(args):
         filter_classes=None if args.articles == [] else args.articles,
         force=args.f)
 
-    os.path.join(args.build, 'dataset_documents', args.processed_folder)
-    shutil.make_archive(output_folder, 'zip', os.path.join(args.build, 'datasets_documents'))
+    root_dir = os.path.join(args.build, 'dataset_documents', args.processed_folder)
+    shutil.make_archive(output_folder, 'zip', output_folder)
 
 
 def parse_args(parser):
@@ -243,7 +247,7 @@ if __name__ == "__main__":
     parser.add_argument('--build', type=str, default="./build/echr_database/")
     parser.add_argument('--processed_folder', type=str, default="all")
     parser.add_argument('--name', type=str, default='multilabel')
-    parser.add_argument('--articles', type=list, default=[])
+    parser.add_argument('--articles', action='append', default=[])
     parser.add_argument('-f', action='store_true')
     args = parse_args(parser)
 
