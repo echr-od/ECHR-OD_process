@@ -6,7 +6,8 @@ from os import listdir
 from os.path import isfile, join
 import shutil
 import sys
-from time import sleep
+import time
+
 
 STEPS = [
     #['get_cases_info.py'],
@@ -15,6 +16,9 @@ STEPS = [
     #['preprocess_documents.py'],
     #['normalize_documents.py'],
 ]
+PROCESSING_STEP = False
+DATASET_GEN_STEP = True
+LIMIT_TOKENS = 5000
 
 CASE_INFO_FOLDER = 'cases_info'
 
@@ -29,6 +33,7 @@ def call_and_print(cmd):
             sys.stdout.flush()
 
 def main(args):
+    start_time = time.time()
     try:
         if args.f:
             shutil.rmtree(args.build)
@@ -52,17 +57,28 @@ def main(args):
     datasets = [f.split('.')[0][len('raw_cases_info_'):] for f in files]
     datasets = [f for f in datasets if f]
     
-    for d in datasets:
-        print('# Processing documents for dataset {}'.format(d))
-        cmd = ['python', 'process_documents.py', '--processed_folder', d] + flags
-        cmd = ' '.join(cmd)
-        call_and_print(cmd)
+    if PROCESSING_STEP:
+        for d in datasets:
+            print('# Processing documents for dataset {}'.format(d))
+            flags_process = flags + ['--limit_tokens', LIMIT_TOKENS]
+            cmd = ['python', 'process_documents.py', '--processed_folder', d] + flags
+            cmd = ' '.join(cmd)
+            call_and_print(cmd)
 
-    for d in datasets:
-        print('# Generate dataset {}'.format(d))
-        cmd = ['python', 'generate_datasets.py', '--processed_folder', d] + flags
-        cmd = ' '.join(cmd)
-        call_and_print(cmd)
+    if DATASET_GEN_STEP:
+        for d in datasets:
+            print('# Generate dataset {}'.format(d))
+            nart = None
+            flags_gen = flags
+            if '_' in d:
+                nart = d.split('_')[-1]
+            if nart:
+                flags_gen.extend(['--articles', nart])
+            cmd = ['python', 'generate_datasets.py', '--processed_folder', d] + flags_gen
+            cmd = ' '.join(cmd)
+            call_and_print(cmd)
+
+    print("# Database and datasets generated in {}s".format(time.time() - start_time))
 
 def parse_args(parser):
     args = parser.parse_args()
