@@ -25,7 +25,7 @@ logging.basicConfig(format='%(asctime)s : %(levelname)s : %(message)s', level=lo
 CONFIG_FILE = './config/config.json'
 
 def main(args):
-    input_file = os.path.join(args.build, 'cases_info/raw_cases_info.json')
+    input_file = os.path.join(args.build, 'cases_info/raw_cases_info.json' if args.processed_folder =='all' else 'cases_info/raw_cases_info_{}.json'.format(args.processed_folder))
     input_folder = os.path.join(args.build, 'raw_normalized_documents')
     output_folder = os.path.join(args.build, 'processed_documents', args.processed_folder)
     print('# Read configuration')
@@ -125,7 +125,7 @@ if __name__ == "__main__":
     parser = argparse.ArgumentParser(description='Turn a collection of documents into a BoW and TF-IDF representation.')
     parser.add_argument('--build', type=str, default="./build/echr_database/")
     parser.add_argument('--processed_folder', type=str, default="all")
-    parser.add_argument('--limit_tokens', type=int, default="100000")
+    parser.add_argument('--limit_tokens', type=int, default="5000")
     parser.add_argument('-f', action='store_true')
     parser.add_argument('-u', action='store_true')
     args = parse_args(parser)
