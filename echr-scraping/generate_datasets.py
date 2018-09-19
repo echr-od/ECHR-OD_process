@@ -15,10 +15,11 @@ def generate_dataset(cases, keys, keys_list, encoded_outcomes, feature_index, fe
 
     dataset_size = 0
     dataset_full_doc_id = []
-    min_feature = len(cases[0])
-    max_feature = len(cases[0])
+    min_feature = 1000000
+    max_feature = 0
     avg_feature = 0
     prevalence = {}
+    outcome_distribution = {}
     with open(os.path.join(output_path, 'descriptive.txt'), 'w') as f_d, \
         open(os.path.join(output_path, 'BoW.txt'), 'w') as f_b, \
         open(os.path.join(output_path, 'TF_IDF.txt'), 'w') as f_t, \
@@ -41,6 +42,15 @@ def generate_dataset(cases, keys, keys_list, encoded_outcomes, feature_index, fe
             if len(classes) > 0 and not opposed_classes:
                 f.write('0:{} '.format(feature_to_encoded[u'{}={}'.format('itemid', c['itemid'])]))
                 f.write(' '.join(classes) + '\n')
+                for e in c['conclusion']:
+                    if e['type'] in ['violation', 'no-violation']:
+                        if 'article' in e and e['article'] in encoded_outcomes:
+                            if filter_classes is None or e['article'] in filter_classes:
+                                if e['article'] not in outcome_distribution:
+                                    outcome_distribution[e['article']] = {'violation': 0, 'no-violation':0}
+                                outcome_distribution[e['article']][e['type']] += 1
+                                if name != 'multilabel':
+                                    break
                 for k, v in c.iteritems():
                     if k in keys: 
                         encoded_case.append('{}:{}'.format(feature_index[k], feature_to_encoded[u'{}={}'.format(k, v)]))
@@ -91,9 +101,15 @@ def generate_dataset(cases, keys, keys_list, encoded_outcomes, feature_index, fe
             'min_feature': min_feature,
             'max_feature': max_feature,
             'avg_feature': float(avg_feature) / dataset_size if dataset_size > 0 else 0,
-            'prevalence': prevalence
+            'prevalence': outcome_distribution
         }
     }
+
+    for cl, el in statistics[name]['prevalence'].iteritems():
+        statistics[name]['prevalence'][cl]['class_normalized'] = 1. * statistics[name]['prevalence'][cl]['violation'] / (statistics[name]['prevalence'][cl]['violation'] + statistics[name]['prevalence'][cl]['no-violation'])
+        statistics[name]['prevalence'][cl]['no-violation_normalized'] = 1. * statistics[name]['prevalence'][cl]['no-violation'] / dataset_size
+        statistics[name]['prevalence'][cl]['violation_normalized'] = 1. * statistics[name]['prevalence'][cl]['violation'] / dataset_size
+
     with open(os.path.join(output_path, 'statistics_datasets.json'), 'w') as f:
         json.dump(statistics, f, indent=4)
         f.close()
@@ -207,7 +223,6 @@ def main(args):
 
     # TODO: Put in arguments
     outcomes = {k:v for k,v in outcomes.iteritems() if v['total'] > MIN_CASES_PER_ARTICLE}
-
     encoded_outcomes = {}
     count = 1
     for i, o in outcomes.iteritems():
@@ -243,7 +258,7 @@ def parse_args(parser):
     return args
 
 if __name__ == "__main__":
-    parser = argparse.ArgumentParser(description='Filter and format ECHR cases information')
+    parser = argparse.ArgumentParser(description='Generate final dataset files')
     parser.add_argument('--build', type=str, default="./build/echr_database/")
     parser.add_argument('--processed_folder', type=str, default="all")
     parser.add_argument('--name', type=str, default='multilabel')
