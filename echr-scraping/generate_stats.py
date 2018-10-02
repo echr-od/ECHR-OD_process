@@ -12,7 +12,7 @@ import shutil
 import matplotlib.pyplot as plt
 from matplotlib import rcParams
 rcParams.update({'figure.autolayout': True})
-
+rcParams['figure.figsize'] = 8, 6
 
 
 
@@ -102,7 +102,7 @@ def plot_multilabel_label_count(data, path):
     #plt.xticks(rotation=45)
     #plt.yticks(np.arange(0, 81, 10))
    # plt.legend((p1[0], p2[0]), ('Violation', 'No Violation'), loc='lower right')
-    plt.savefig(join(path, 'multilabel_count_labels.png'))
+    plt.savefig(join(path, 'multilabel_count_labels.png'), dpi=300)
     plt.clf()
 
 
@@ -129,7 +129,7 @@ def plot_multilabel_label_distribution(data, path):
     plt.xticks(rotation=45)
     #plt.yticks(np.arange(0, 81, 10))
     plt.legend((p1[0], p2[0]), ('Violation', 'No Violation'), loc='lower right')
-    plt.savefig(join(path, 'multiclass_distribution.png'))
+    plt.savefig(join(path, 'multiclass_distribution.png'), dpi=300)
     plt.clf()
 
 
@@ -156,7 +156,7 @@ def plot_multiclass_label_distribution(data, path):
     plt.xticks(rotation=45)
     #plt.yticks(np.arange(0, 81, 10))
     plt.legend((p1[0], p2[0]), ('Violation', 'No Violation'), loc='lower right')
-    plt.savefig(join(path, 'multilabel_distribution.png'))
+    plt.savefig(join(path, 'multilabel_distribution.png'), dpi=300)
     plt.clf()
 
 
@@ -183,7 +183,7 @@ def plot_multiclass_count_distribution(data, path):
     plt.xticks(rotation=45)
     #plt.yticks(np.arange(0, 81, 10))
     plt.legend((p1[0], p2[0]), ('Violation', 'No Violation'), loc='upper left')
-    plt.savefig(join(path, 'multiclass_count.png'))
+    plt.savefig(join(path, 'multiclass_count.png'), dpi=300)
     plt.clf()
 
 
@@ -210,7 +210,7 @@ def plot_multilabel_count_distribution(data, path):
     plt.xticks(rotation=45)
     #plt.yticks(np.arange(0, 81, 10))
     plt.legend((p1[0], p2[0]), ('Violation', 'No Violation'), loc='upper left')
-    plt.savefig(join(path, 'multilabel_count.png'))
+    plt.savefig(join(path, 'multilabel_count.png'), dpi=300)
     plt.clf()
 
 
