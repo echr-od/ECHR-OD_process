@@ -378,16 +378,15 @@ def main(args):
 
     multiclass_index = {} # Key: case ID / Value = number of different dataset it appears in
     multiclass_cases = []
-    for k in outcomes.keys():
+    sorted_outcomes = dict(sorted(outcomes.iteritems(), key=lambda x: x[1]['total'])).keys()
+    for k in sorted_outcomes:
         for c in cases_per_articles[k]:
             if c['itemid'] not in multiclass_index:
-                multiclass_index[c['itemid']] = 1
+                multiclass_index[c['itemid']] = k
                 multiclass_cases.append(c)
-            else:
-                multiclass_index[c['itemid']] += 1
-    multiclass_cases_unique = [c for c in multiclass_cases if multiclass_index[c['itemid']] == 1]
+
     with open(path.join(output_folder, 'raw_cases_info_multiclass.json'.format(k)), 'w') as outfile:
-        json.dump(multiclass_cases_unique, outfile, indent=4, sort_keys=True)
+        json.dump(multiclass_cases, outfile, indent=4, sort_keys=True)
 
  
 def parse_args(parser):
