@@ -24,4 +24,4 @@ The building chain starts from scratch and consists in the following steps:
 
 # Contributors
 
-- Alexandre Quemy <aquemy@pl.ibm.com>
+- Alexandre Quemy <alexandre.quemy@gmail.com>
