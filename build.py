@@ -35,8 +35,8 @@ def call_and_print(cmd):
 def main(args):
     start_time = time.time()
     try:
-        if args.f:
-            shutil.rmtree(args.build)
+        #if args.f:
+        #    shutil.rmtree(args.build)
         os.mkdir(args.build)
     except Exception as e:
         print(e)
