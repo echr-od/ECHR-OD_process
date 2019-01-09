@@ -20,6 +20,7 @@ def generate_dataset(cases, keys, keys_list, encoded_outcomes, feature_index, fe
     avg_feature = 0
     prevalence = {}
     outcome_distribution = {}
+    conclusion_key = 'conclusion' if name != 'multiclass' else 'mc_conclusion'
     with open(os.path.join(output_path, 'descriptive.txt'), 'w') as f_d, \
         open(os.path.join(output_path, 'BoW.txt'), 'w') as f_b, \
         open(os.path.join(output_path, 'TF_IDF.txt'), 'w') as f_t, \
@@ -30,7 +31,7 @@ def generate_dataset(cases, keys, keys_list, encoded_outcomes, feature_index, fe
             nb_features = 0
             encoded_case = []
             classes = []
-            for e in c['conclusion']:
+            for e in c[conclusion_key]:
                 if e['type'] in ['violation', 'no-violation']:
                     if 'article' in e and e['article'] in encoded_outcomes:
                         g = encoded_outcomes[e['article']]
@@ -42,7 +43,7 @@ def generate_dataset(cases, keys, keys_list, encoded_outcomes, feature_index, fe
             if len(classes) > 0 and not opposed_classes:
                 f.write('0:{} '.format(feature_to_encoded[u'{}={}'.format('itemid', c['itemid'])]))
                 f.write(' '.join(classes) + '\n')
-                for e in c['conclusion']:
+                for e in c[conclusion_key]:
                     if e['type'] in ['violation', 'no-violation']:
                         if 'article' in e and e['article'] in encoded_outcomes:
                             if filter_classes is None or e['article'] in filter_classes:
@@ -128,8 +129,8 @@ def generate_dataset(cases, keys, keys_list, encoded_outcomes, feature_index, fe
 
 
 def main(args):
-
-    input_file = os.path.join(args.build, 'cases_info/raw_cases_info.json')
+    suffix = '_{}'.format(args.processed_folder) if args.processed_folder is not None else ''
+    input_file = os.path.join(args.build, 'cases_info/raw_cases_info{}.json'.format(suffix))
     input_folder = os.path.join(args.build, 'processed_documents', args.processed_folder)
     output_folder = os.path.join(args.build, 'datasets_documents', args.processed_folder)
 
@@ -155,7 +156,8 @@ def main(args):
 
     # Filter the cases info to keep only the items in id_list
     cases = [c for c in cases if c['itemid'] in id_list]
-    #print(cases)
+    conclusion_key = 'conclusion' if args.processed_folder != 'multiclass' else 'mc_conclusion'
+    cases = [c for c in cases if conclusion_key in c]
 
     keys = [
         "itemid",
@@ -205,7 +207,7 @@ def main(args):
     # Encode conclusions
     outcomes = {}
     for i, c in enumerate(cases):
-        ccl = c['conclusion']
+        ccl = c[conclusion_key]
         for e in ccl:
             if e['type'] in ['violation', 'no-violation']:
                 #print(c['itemid'], e)
