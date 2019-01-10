@@ -58,23 +58,27 @@ def main(args):
     datasets = [f for f in datasets if f]
     
     if PROCESSING_STEP:
+        base_cmd = ['python', 'process_documents.py', '--processed_folder']
         for d in datasets:
             print('# Processing documents for dataset {}'.format(d))
             flags_process = flags + ['--limit_tokens', LIMIT_TOKENS]
-            cmd = ['python', 'process_documents.py', '--processed_folder', d] + flags
+            cmd = base_cmd + [d] + flags
             cmd = ' '.join(cmd)
             call_and_print(cmd)
 
     if DATASET_GEN_STEP:
+        base_cmd = ['python', 'generate_datasets.py', '--processed_folder']
         for d in datasets:
             print('# Generate dataset {}'.format(d))
+            flags_gen = []
             nart = None
-            flags_gen = flags
-            if '_' in d:
-                nart = d.split('_')[-1]
-            if nart:
-                flags_gen.extend(['--articles', nart])
-            cmd = ['python', 'generate_datasets.py', '--processed_folder', d] + flags_gen
+            if d not in ['multiclass', 'multilabel']:
+                if '_' in d:
+                    nart = d.split('_')[-1]
+                if nart:
+                    flags_gen.extend(['--articles', nart])
+            cmd = []
+            cmd.extend(base_cmd + [d] + flags + flags_gen)
             cmd = ' '.join(cmd)
             call_and_print(cmd)
 
