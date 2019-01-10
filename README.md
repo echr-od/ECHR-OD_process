@@ -17,6 +17,11 @@ The building chain starts from scratch and consists in the following steps:
 
 # Installation & Usage
 
+## Webdrivers
+
+In order to automatically retrieve the number of documents available on HUDOC, Selenium is installed as a dependency. For Selenium to work, a webdriver is mandatory and must be manually installed. See [Selenium documentation](https://selenium-python.readthedocs.io/installation.html#drivers) for help.
+
+
 # Contributing
 
 # Versions
