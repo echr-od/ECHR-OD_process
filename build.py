@@ -9,8 +9,12 @@ import sys
 import time
 
 
+MAX_DOCUMENTS = {
+    '1.0.0': 144579
+}
+
 STEPS = [
-    #['get_cases_info.py'],
+    ['get_cases_info.py', '--max_documents', MAX_DOCUMENTS['1.0.0']],
     #['filter_cases.py'],
     #['get_documents.py'],
     #['preprocess_documents.py'],
@@ -95,6 +99,7 @@ if __name__ == "__main__":
     parser = argparse.ArgumentParser(description='Generate the whole database')
     parser.add_argument('--build', type=str, default="./build/echr_database/")
     parser.add_argument('-f', action='store_true')
+    parser.add_argument('--version', action='store_true')
     args = parse_args(parser)
 
     main(args)
