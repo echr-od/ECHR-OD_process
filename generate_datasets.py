@@ -37,7 +37,6 @@ def generate_dataset(cases, keys, keys_list, encoded_outcomes, feature_index, fe
                         g = encoded_outcomes[e['article']]
                         if filter_classes is None or e['article'] in filter_classes:
                             classes.append('{}:{}'.format(g, 1 if e['type'] == 'violation' else 0))
-
             classes = list(set(classes))
             opposed_classes = any([e for e in classes if e.split(':')[0]+':'+ str(abs(1 - int(e.split(':')[-1]))) in classes])
             if len(classes) > 0 and not opposed_classes:
@@ -182,7 +181,6 @@ def main(args):
     feature_index = {k:i for i,k in enumerate(keys + keys_list)}
     feature_to_value = dict(zip(keys + keys_list, [None] * (len(keys) + len(keys_list))))
     for c in cases:
-        #print(c)
         for k, v in c.iteritems():
             if k in keys:
                 if feature_to_value[k] is None:
@@ -196,7 +194,6 @@ def main(args):
     feature_to_encoded = {}
     count = 0
     for k, s in feature_to_value.iteritems():
-    #    print(k, s, type(s))
         for v in s:
             if k in keys: 
                 feature_to_encoded[u'{}={}'.format(k, v)] = count
@@ -222,7 +219,6 @@ def main(args):
                 outcomes[e['article']][e['type']] += 1
                 outcomes[e['article']]['total'] += 1
         # Determine output
-
     # TODO: Put in arguments
     outcomes = {k:v for k,v in outcomes.iteritems() if v['total'] > MIN_CASES_PER_ARTICLE}
     encoded_outcomes = {}
