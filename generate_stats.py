@@ -9,12 +9,21 @@ from os.path import isfile, isdir, join
 from collections import Counter
 import re
 import shutil
+import sys
 import matplotlib.pyplot as plt
 from matplotlib import rcParams
 rcParams.update({'figure.autolayout': True})
 rcParams['figure.figsize'] = 8, 6
 
-
+def sort_article(a):
+    i = a.split('_')[-1]
+    if i == 'p1':
+        return sys.maxint - 3
+    if i == 'multiclass':
+        return sys.maxint - 2
+    if i == 'multilabel':
+        return sys.maxint - 1
+    return int(i)
 
 def generate_latex_table_binary(data):
    
@@ -24,7 +33,7 @@ def generate_latex_table_binary(data):
     latex_output += "\\toprule\n"
     latex_output += " & \# cases & min \#features & max \#features & avg \#features & prevalence \\\\ \midrule" + "\n"
     average = 0.
-    for i, key in enumerate(sorted(data.keys())):
+    for i, key in enumerate(sorted(data.keys(), key=sort_article)):
         if key not in ['multiclass', 'multilabel']:
             latex_output += 'Article {} & {} & {} & {} & {:.2f} & {:.2f}\\\\\n'.format(key.split('_')[-1],
                     data[key]['dataset_size'], 
@@ -46,15 +55,17 @@ def generate_latex_table_multiclass(data):
     column_placement = '@{} l' + 'r' * (nb_columns - 1) + '@{}'
     latex_output  = "\\begin{tabular}{" + column_placement + " }\n"
     latex_output += "\\toprule\n"
-    latex_output += " & \# cases & violation & no-violation \\\\ \midrule" + "\n"
+    latex_output += " & \# cases & violation & no-violation & prevalence\\\\ \midrule" + "\n"
     average = 0.
-    for key, d in sorted(data['prevalence'].iteritems()):
-        latex_output += 'Article {} & {} & {} ({:.3f}) & {} ({:.3f}) \\\\\n'.format(key.split('_')[-1],
+    for key in sorted(data['prevalence'].keys(), key=sort_article):
+        d = data['prevalence'][key]
+        latex_output += 'Article {} & {} & {} ({:.3f}) & {} ({:.3f}) & {:.2f} \\\\\n'.format(key.split('_')[-1],
                     d['violation'] + d['no-violation'], 
                     d['violation'],
                     np.round_(d['violation_normalized'], 3),
                     d['no-violation'],
-                    np.round_(d['no-violation_normalized'], 3)
+                    np.round_(d['no-violation_normalized'], 3),
+                    np.round_((1.* d['violation']) / (d['violation'] + d['no-violation']), 2)
                 )
 
     latex_output += "\\bottomrule\n"
@@ -71,7 +82,8 @@ def generate_latex_table_multilabel(data):
     latex_output += "\\toprule\n"
     latex_output += " & \# cases & violation & no-violation \\\\ \midrule" + "\n"
     average = 0.
-    for key, d in sorted(data['prevalence'].iteritems()):
+    for key in sorted(data['prevalence'].keys(), key=sort_article):
+        d = data['prevalence'][key]
         latex_output += 'Article {} & {} & {} ({:.3f}) & {} ({:.3f}) \\\\\n'.format(key.split('_')[-1],
                     d['violation'] + d['no-violation'], 
                     d['violation'],
@@ -90,7 +102,7 @@ def plot_multilabel_label_count(data, path):
     count = map(len, data)
     counter = Counter(count)
     N = len(counter)
-    ind = np.arange(N)
+    ind = np.arange(N) + 1
     width = 0.80
     fig, ax = plt.subplots()    
     p1 = ax.bar(ind, counter.values(), width)
@@ -98,7 +110,7 @@ def plot_multilabel_label_count(data, path):
     #plt.title('Distribution of prevalence per article')
     ax.set_xticks(ind, range(1,len(counter)+1))
     for i, v in enumerate(counter.values()):
-        ax.text(i - 0.15, v + 50, str(v))
+        ax.text(i + 1 - 0.15, v + 50, str(v))
     #plt.xticks(rotation=45)
     #plt.yticks(np.arange(0, 81, 10))
    # plt.legend((p1[0], p2[0]), ('Violation', 'No Violation'), loc='lower right')
@@ -111,7 +123,8 @@ def plot_multilabel_label_distribution(data, path):
     article_names = []
     violation_prop = []
     no_violation_prop = []
-    for k,v in data_stat['prevalence'].iteritems():
+    for k in sorted(data_stat['prevalence'].keys(), key=sort_article):
+        v = data_stat['prevalence'][k]
         article_names.append('Article {}'.format(k))
         violation_prop.append(v['class_normalized'])
         no_violation_prop.append(1. - violation_prop[-1])
@@ -138,7 +151,8 @@ def plot_multiclass_label_distribution(data, path):
     article_names = []
     violation_prop = []
     no_violation_prop = []
-    for k,v in data_stat['prevalence'].iteritems():
+    for k in sorted(data_stat['prevalence'].keys(), key=sort_article):
+        v = data_stat['prevalence'][k]
         article_names.append('Article {}'.format(k))
         violation_prop.append(v['class_normalized'])
         no_violation_prop.append(1. - violation_prop[-1])
@@ -165,7 +179,8 @@ def plot_multiclass_count_distribution(data, path):
     article_names = []
     violation_prop = []
     no_violation_prop = []
-    for k,v in data_stat['prevalence'].iteritems():
+    for k in sorted(data_stat['prevalence'].keys(), key=sort_article):
+        v = data_stat['prevalence'][k]
         article_names.append('Article {}'.format(k))
         violation_prop.append(v['violation'])
         no_violation_prop.append(v['no-violation'])
@@ -192,7 +207,8 @@ def plot_multilabel_count_distribution(data, path):
     article_names = []
     violation_prop = []
     no_violation_prop = []
-    for k,v in data_stat['prevalence'].iteritems():
+    for k in sorted(data_stat['prevalence'].keys(), key=sort_article):
+        v = data_stat['prevalence'][k]
         article_names.append('Article {}'.format(k))
         violation_prop.append(v['violation'])
         no_violation_prop.append(v['no-violation'])
