@@ -382,15 +382,22 @@ def main(args):
     for k in sorted_outcomes:
         for c in cases_per_articles[k]:
             if c['itemid'] not in multiclass_index:
-                for cc in c['conclusion']:
-                    if 'article' in cc and cc['article'] == k:
-                        c['mc_conclusion'] = [cc]
-                        break
-                if 'mc_conclusion' in c:
-                    multiclass_index[c['itemid']] = k
-                    multiclass_cases.append(c)
+                nb_datasets = [e['article'] for e in c['conclusion'] if 'article' in e]
+                if  len(list(set(nb_datasets))) == 1:
+                    for cc in c['conclusion']:
+                        if 'article' in cc and cc['article'] == k:
+                            c['mc_conclusion'] = [cc]
+                            break
+                    if 'mc_conclusion' in c:
+                        multiclass_index[c['itemid']] = k
+                        multiclass_cases.append(c)
+                    else:
+                        print('No article found for {}'.format(c['itemid']))
                 else:
-                    print('No article found for {}'.format(c['itemid']))
+                    print('Article {} in {} datasets: {}. Skip for multiclass.'.format(c['itemid'],
+                        len(set(nb_datasets)),
+                        ','.join(list(set(nb_datasets))))
+                    )
 
     with open(path.join(output_folder, 'raw_cases_info_multiclass.json'.format(k)), 'w') as outfile:
         json.dump(multiclass_cases, outfile, indent=4, sort_keys=True)
