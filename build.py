@@ -15,10 +15,10 @@ MAX_DOCUMENTS = {
 
 STEPS = [
     ['get_cases_info.py', '--max_documents', MAX_DOCUMENTS['1.0.0']],
-    #['filter_cases.py'],
-    #['get_documents.py'],
-    #['preprocess_documents.py'],
-    #['normalize_documents.py'],
+    ['filter_cases.py'],
+    ['get_documents.py'],
+    ['preprocess_documents.py'],
+    ['normalize_documents.py'],
 ]
 PROCESSING_STEP = False
 DATASET_GEN_STEP = True
