@@ -7,6 +7,28 @@ The purposes of such repository are many:
 2. **Extensibility:** any new version of the database **must** be created from a updated version of those scripts.
 3. **Revision:** all cases are automatically processed. There are many corner cases and such repository allow anyone to check the intermediate files to understand if the results are correct or not and locate the root cause of parsing errors.
 
+
+## General information
+
+- Official website: [ECHR-OD project](https://echr-od.eu)
+- Original paper: [paper](https://arxiv.org/abs/1810.03115), [code](https://github.com/aquemy/ECHR-OD_predictions), [supplementary material](https://github.com/aquemy/ECHR-OD_project_supplementary_material)
+- Creation process: https://github.com/aquemy/ECHR-OD_process
+- Python dataset loader: https://github.com/aquemy/ECHR-OD_loader
+- Website sources: https://github.com/aquemy/ECHR-OD_website
+
+If you are using the project, please consider citing:
+```
+@article{Quemy2019_ECHROD,
+  title={European Court of Human Right Open Data project},
+  author={Alexandre Quemy},
+  journal={CoRR},
+  year={2019},
+  volume={abs/1810.03115}
+}
+```
+
+## Building process
+
 The building chain starts from scratch and consists in the following steps:
 
 1. ```get_cases_info.py```: Retrieve the list and basic information about cases from HUDOC
@@ -26,6 +48,7 @@ In order to automatically retrieve the number of documents available on HUDOC, S
 
 # Versions
 
+- version 1.0.1: [Changelogs](https://github.com/aquemy/ECHR-OD_process/blob/master/changelog/1.0.1.md)
 
 # Contributors
 
