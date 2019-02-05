@@ -1,0 +1,8 @@
+requests
+gensim
+python-docx
+unidecode
+nltk
+numpy
+matplotlib
+selenium
