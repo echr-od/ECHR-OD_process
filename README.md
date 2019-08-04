@@ -57,6 +57,7 @@ In order to automatically retrieve the number of documents available on HUDOC, S
 
 # Versions
 
+- version 1.0.2: [Changelogs](https://github.com/aquemy/ECHR-OD_process/blob/master/changelog/1.0.2.md)
 - version 1.0.1: [Changelogs](https://github.com/aquemy/ECHR-OD_process/blob/master/changelog/1.0.1.md)
 
 # Contributors
