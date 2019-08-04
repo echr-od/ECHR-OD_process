@@ -66,7 +66,7 @@ def main(args):
         for d in datasets:
             print('# Processing documents for dataset {}'.format(d))
             flags_process = flags + ['--limit_tokens', LIMIT_TOKENS]
-            cmd = base_cmd + [d] + flags
+            cmd = base_cmd + [d] + flags_process
             cmd = ' '.join(cmd)
             call_and_print(cmd)
 
