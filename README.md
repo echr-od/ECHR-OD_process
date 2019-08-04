@@ -12,9 +12,9 @@ The purposes of such repository are many:
 
 - Official website: [ECHR-OD project](https://echr-od.eu)
 - Original paper: [paper](https://arxiv.org/abs/1810.03115), [code](https://github.com/aquemy/ECHR-OD_predictions), [supplementary material](https://github.com/aquemy/ECHR-OD_project_supplementary_material)
-- Creation process: https://github.com/aquemy/ECHR-OD_process
-- Python dataset loader: https://github.com/aquemy/ECHR-OD_loader
-- Website sources: https://github.com/aquemy/ECHR-OD_website
+- Creation process: https://github.com/echr-od/ECHR-OD_process
+- Python dataset loader: https://github.com/echr-od/ECHR-OD_loader
+- Website sources: https://github.com/echr-od/ECHR-OD_website
 
 If you are using the project, please consider citing:
 ```
@@ -57,8 +57,8 @@ In order to automatically retrieve the number of documents available on HUDOC, S
 
 # Versions
 
-- version 1.0.2: [Changelogs](https://github.com/aquemy/ECHR-OD_process/blob/master/changelog/1.0.2.md)
-- version 1.0.1: [Changelogs](https://github.com/aquemy/ECHR-OD_process/blob/master/changelog/1.0.1.md)
+- version 1.0.2: [Changelogs](https://github.com/echr-od/ECHR-OD_process/blob/master/changelog/1.0.2.md)
+- version 1.0.1: [Changelogs](https://github.com/echr-od/ECHR-OD_process/blob/master/changelog/1.0.1.md)
 
 # Contributors
 
