@@ -50,8 +50,8 @@ def ngram_step(original_tokens, freq=None, path='./', force=False):
         :rtype: dict
     """
     if freq is None:
-        log.info('No configuration specified, uses the default one')
-    freq = {1: 1, 2: 1, 3: 1, 4: 1}
+        logging.info('No configuration specified, uses the default one')
+        freq = {1: 1, 2: 1, 3: 1, 4: 1}
 
     for k in freq:
         output_file = 'tokens_{}grams.txt'.format(k)
