@@ -8,8 +8,6 @@ from os.path import isfile, join
 import re
 import shutil
 
-MIN_CASES_PER_ARTICLE = 100
-
 def generate_dataset(cases, keys, keys_list, encoded_outcomes, feature_index, feature_to_encoded, output_path, name, offset, processed_folder, filter_classes=None, force=False):
     output_path = output_path
 
@@ -219,8 +217,6 @@ def main(args):
                 outcomes[e['article']][e['type']] += 1
                 outcomes[e['article']]['total'] += 1
         # Determine output
-    # TODO: Put in arguments
-    outcomes = {k:v for k,v in outcomes.iteritems() if v['total'] > MIN_CASES_PER_ARTICLE}
     encoded_outcomes = {}
     count = 1
     for i, o in outcomes.iteritems():
