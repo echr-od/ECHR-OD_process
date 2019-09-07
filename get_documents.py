@@ -7,6 +7,7 @@ import shutil
 
 BASE_URL = "http://hudoc.echr.coe.int/app/conversion/docx/?library=ECHR&filename=please_give_me_the_document.docx&id="
 PERMA_URL = "http://hudoc.echr.coe.int/eng?i="
+MAX_RETRY = 5
 
 def get_documents(id_list, folder, update):
     """Get documents according to the specified list
@@ -24,16 +25,22 @@ def get_documents(id_list, folder, update):
         filename = os.path.join(folder, filename)
         if update or not os.path.isfile(filename):
             url = BASE_URL + doc_id.strip()
-            r = requests.get(url, stream=True)
-            if not r.ok:
-                print("\tFailed to fetch document %s"%(doc_id))
-                print("\tURL: %s"%(url))
-                print("\tPermalink: %s"%(PERMA_URL + doc_id.strip()))
-                continue
-            with open(filename, 'wb') as f:
-                for block in r.iter_content(1024):
-                    f.write(block)
-            print("\tRequest complete, see %s"%(filename))
+            for j in range(MAX_RETRY):
+                try:
+                    r = requests.get(url, stream=True)
+                    if not r.ok:
+                        print("\tFailed to fetch document %s"%(doc_id))
+                        print("\tURL: %s"%(url))
+                        print("\tPermalink: %s"%(PERMA_URL + doc_id.strip()))
+                        continue
+                    with open(filename, 'wb') as f:
+                        for block in r.iter_content(1024):
+                            f.write(block)
+                    print("\tRequest complete, see %s"%(filename))
+                    break
+                except Exception as e:
+                    print('\t({}/{}) Failed to get document {}'.format(
+                        j + 1, MAX_RETRY, doc_id))
         else:
             print("\tSkip as document exists already")
 
