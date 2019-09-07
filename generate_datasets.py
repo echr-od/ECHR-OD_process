@@ -49,7 +49,7 @@ def generate_dataset(cases, keys, keys_list, encoded_outcomes, feature_index, fe
                                 outcome_distribution[e['article']][e['type']] += 1
                                 if name != 'multilabel':
                                     break
-                for k, v in c.iteritems():
+                for k, v in c.items():
                     if k in keys: 
                         encoded_case.append('{}:{}'.format(feature_index[k], feature_to_encoded[u'{}={}'.format(k, v)]))
                     elif k in keys_list:
@@ -103,7 +103,7 @@ def generate_dataset(cases, keys, keys_list, encoded_outcomes, feature_index, fe
         }
     }
 
-    for cl, el in statistics[name]['prevalence'].iteritems():
+    for cl, el in statistics[name]['prevalence'].items():
         statistics[name]['prevalence'][cl]['class_normalized'] = 1. * statistics[name]['prevalence'][cl]['violation'] / (statistics[name]['prevalence'][cl]['violation'] + statistics[name]['prevalence'][cl]['no-violation'])
         statistics[name]['prevalence'][cl]['no-violation_normalized'] = 1. * statistics[name]['prevalence'][cl]['no-violation'] / dataset_size
         statistics[name]['prevalence'][cl]['violation_normalized'] = 1. * statistics[name]['prevalence'][cl]['violation'] / dataset_size
@@ -179,7 +179,7 @@ def main(args):
     feature_index = {k:i for i,k in enumerate(keys + keys_list)}
     feature_to_value = dict(zip(keys + keys_list, [None] * (len(keys) + len(keys_list))))
     for c in cases:
-        for k, v in c.iteritems():
+        for k, v in c.items():
             if k in keys:
                 if feature_to_value[k] is None:
                     feature_to_value[k] = set()
@@ -191,7 +191,7 @@ def main(args):
 
     feature_to_encoded = {}
     count = 0
-    for k, s in feature_to_value.iteritems():
+    for k, s in feature_to_value.items():
         for v in s:
             if k in keys: 
                 feature_to_encoded[u'{}={}'.format(k, v)] = count
@@ -219,7 +219,7 @@ def main(args):
         # Determine output
     encoded_outcomes = {}
     count = 1
-    for i, o in outcomes.iteritems():
+    for i, o in outcomes.items():
         encoded_outcomes[i] = count
         count +=1
 

@@ -78,7 +78,7 @@ def main(args):
     datasets = [f for f in datasets if f]
     
     if PROCESSING_STEP:
-        base_cmd = ['python', 'process_documents.py', '--processed_folder']
+        base_cmd = ['python3', 'process_documents.py', '--processed_folder']
         for d in datasets:
             print('# Processing documents for dataset {}'.format(d))
             flags_process = flags + ['--limit_tokens', LIMIT_TOKENS]
@@ -87,7 +87,7 @@ def main(args):
             call_and_print(cmd)
 
     if DATASET_GEN_STEP:
-        base_cmd = ['python', 'generate_datasets.py', '--processed_folder']
+        base_cmd = ['python3', 'generate_datasets.py', '--processed_folder']
         for d in datasets:
             print('# Generate dataset {}'.format(d))
             flags_gen = []
