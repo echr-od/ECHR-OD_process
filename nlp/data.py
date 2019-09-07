@@ -4,7 +4,7 @@ import io
 
 def load_text_file(path, limit=None):
     with io.open(path, 'r', encoding="utf-8") as f:
-        content = unicode(f.read())
+        content = f.read()
     return content
 
 def load_CSV(path, columns=None):
