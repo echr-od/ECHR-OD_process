@@ -7,6 +7,8 @@ import shutil
 from selenium import webdriver
 from time import sleep
 
+MAX_RETRY = 5
+
 # Fields to retrieve
 fields = [
     "sharepointid", 
@@ -95,12 +97,19 @@ def get_case_info(base_url, max_documents, path):
         print(" - Fetching information from cases {} to {}.".format(start, start+length))
         with open(os.path.join(path, "%d.json"%(start)), 'wb') as f:
             url = base_url + "&start=%d&length=%d"%(start, length)
-            r = requests.get(url, stream=True)
-            if not r.ok:
-                print("Failed to fetch information {} to {}".format(start, start+length))
-                continue
-            for block in r.iter_content(1024):
-                f.write(block)
+            for i in range(MAX_RETRY):
+                try:
+                    r = requests.get(url, stream=True)
+                    if not r.ok:
+                        print('\t({}/{}) Failed to fetch information {} to {}'.format(
+                            i + 1, MAX_RETRY, start, start + length))
+                        continue
+                    for block in r.iter_content(1024):
+                        f.write(block)
+                    break
+                except Exception as e:
+                    print('\t({}/{}) Failed to fetch information {} to {}'.format(
+                        i + 1, MAX_RETRY, start, start + length))
 
 def main(args):
     raw_case_folder = os.path.join(args.build, 'raw_cases_info')
@@ -114,6 +123,7 @@ def main(args):
 
     max_documents = args.max_documents
     if max_documents == -1:
+        print('Determining the number of documents to retrieve...')
         max_documents = determine_max_documents(144579)  # v1.0.0 value
     
     print('# Get case information from HUDOC')
