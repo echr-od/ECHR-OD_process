@@ -7,8 +7,6 @@ import re
 import shutil
 import sys
 
-MIN_CASES_PER_ARTICLE = 100
-
 def format_parties(parties):
     """Return the list of parties from the case title.
 
@@ -349,11 +347,6 @@ def main(args):
                 if e['article'] not in cases_per_articles:
                     cases_per_articles[e['article']] = []
                 cases_per_articles[e['article']].append(c)
-    
-    print('# Filter articles with less than {}'.format(MIN_CASES_PER_ARTICLE))
-    for k,v in outcomes.iteritems():
-        print(' - Article {}: {} {}'.format(k, v['total'], '(removed)' if v['total'] < MIN_CASES_PER_ARTICLE else ''))
-    outcomes = {k:v for k,v in outcomes.iteritems() if v['total'] > MIN_CASES_PER_ARTICLE}
 
     print('# Generate case info for specific articles:')
     multilabel_cases = []
