@@ -35,7 +35,7 @@ levels = {
 }
 
 tag_to_level = {}
-for k, v in tags.iteritems():
+for k, v in tags.items():
     for t in v:
         tag_to_level[t] = levels[k]
 
@@ -310,7 +310,7 @@ def main(args):
                     parsed = parse_document(doc)
                     parsed.update(cases[cases_index[id_doc]])
                     with open(os.path.join(output_folder, '{}_text_without_conclusion.txt'.format(id_doc)), 'w') as toutfile:
-                        toutfile.write(json_to_text(parsed, True, ['conclusion']).encode('utf-8'))
+                        toutfile.write(json_to_text(parsed, True, ['conclusion']))
                     parsed['documents'] = ['{}.docx'.format(id_doc)]
                     parsed['content'] = {
                         '{}.docx'.format(id_doc): parsed['elements']
