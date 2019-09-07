@@ -162,7 +162,7 @@ def format_article(article):
     res = []
     for a in article.split(';'):
         res.extend(a.split('+'))
-    res = list(set(map(unicode.strip, res)))
+    res = list(set(map(str.strip, res)))
     return res
 
 def format_cases(cases):
@@ -311,7 +311,7 @@ def main(args):
     with open(path.join(output_folder, 'filter.statistics.json'), 'w') as outfile:
         json.dump(stats, outfile, indent=4, sort_keys=True)
 
-    with open(path.join(output_folder, 'raw_cases_info.json'), 'w') as outfile:
+    with open(path.join(output_folder, 'raw_cases_info_all.json'), 'w') as outfile:
         json.dump(cases, outfile, indent=4, sort_keys=True)
 
 
@@ -371,7 +371,7 @@ def main(args):
 
     multiclass_index = {} # Key: case ID / Value = number of different dataset it appears in
     multiclass_cases = []
-    sorted_outcomes = dict(sorted(outcomes.iteritems(), key=lambda x: x[1]['total'])).keys()
+    sorted_outcomes = dict(sorted(outcomes.items(), key=lambda x: x[1]['total'])).keys()
     for k in sorted_outcomes:
         for c in cases_per_articles[k]:
             if c['itemid'] not in multiclass_index:
