@@ -177,9 +177,9 @@ def format_cases(cases):
     for i, c in enumerate(cases):
         sys.stdout.write('\r - Format case {}/{}'.format(i+1, len(cases)))
         cases[i]['parties'] = format_parties(cases[i]['docname'])
-        cases[i]['conclusion_'] = cases[i]['conclusion']
+        cases[i]['__conclusion'] = cases[i]['conclusion']
         cases[i]['conclusion'] = format_conclusion(c['conclusion_'])
-        cases[i]['articles_'] = cases[i]['article']
+        cases[i]['__articles'] = cases[i]['article']
         cases[i]['article'] = format_article(c['article'])
         
         cases[i]['externalsources'] = cases[i]["externalsources"].split(';') if len(cases[i]['externalsources']) > 0 else []
