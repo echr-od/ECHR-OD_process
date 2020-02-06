@@ -1,0 +1,79 @@
+{
+    
+    "1": {
+        "type": "Commission",
+        "name": "First Chamber"
+    },
+    "2": {
+        "type": "Commission",
+         "name": "Second Chamber"
+    },
+    "3": {
+        "type": "Commission",
+        "name": "Plenary"
+    },
+    "4": {
+        "type": "Court",
+        "name": "First Section"
+    },
+    "5": {
+        "type": "Court",
+        "name": "Second Section"
+    },
+    "6": {
+        "type": "Court",
+        "name": "Third Section"
+    },
+    "7": {
+        "type": "Court",
+        "name": "Fourth Section"
+    },
+    "8": {
+        "type": "Court",
+        "name": "Grand Chamber"
+    },
+    "9": {
+        "type": "Court",
+        "name": "Chamber"
+    },
+    "15": {
+        "type": "Court",
+        "name": "Plenary"
+    },
+    "16": {
+        "type": "Court",
+        "name": "Screening Panel"
+    },
+    "17": {
+        "type": "Committee of Ministers",
+        "name": ""
+    },
+    "21": {
+        "type": "Commission",
+        "name": ""
+    },
+    "23": {
+        "type": "Court",
+        "name": "Fith Section"
+    },
+    "25": {
+        "type": "Court",
+        "name": "First Section Committee"
+    },
+    "26": {
+        "type": "Court",
+        "name": "Second Section Committee"
+    },
+    "27": {
+        "type": "Court",
+        "name": "Third Section Committee"
+    },
+    "28": {
+        "type": "Court",
+        "name": "Fourth Section Committee"
+    },
+    "29": {
+        "type": "Court",
+        "name": "Fith Section Committee"
+    }
+}
