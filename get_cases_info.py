@@ -63,7 +63,7 @@ def determine_max_documents(default_value):
             browser = get_driver()
             break
         except Exception as e:
-            print('Could not find Chrome webdriver. See doc#webdrivers')
+            print('Could not find {} webdriver. See doc#webdrivers'.format(driver))
     max_documents = None
     if browser is not None:
         url = "https://hudoc.echr.coe.int/eng#%20"
