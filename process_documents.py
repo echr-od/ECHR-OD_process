@@ -25,7 +25,7 @@ logging.basicConfig(format='%(asctime)s : %(levelname)s : %(message)s', level=lo
 CONFIG_FILE = './config/config.json'
 
 def main(args):
-    input_file = os.path.join(args.build, 'cases_info/raw_cases_info.json' if args.processed_folder =='all' else 'cases_info/raw_cases_info_{}.json'.format(args.processed_folder))
+    input_file = os.path.join(args.build, 'cases_info/raw_cases_info_{}.json'.format(args.processed_folder))
     input_folder = os.path.join(args.build, 'raw_normalized_documents')
     output_folder = os.path.join(args.build, 'processed_documents', args.processed_folder)
     print('# Read configuration')
