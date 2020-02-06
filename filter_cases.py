@@ -159,10 +159,22 @@ def format_article(article):
         :return: list of articles
         :rtype: [str]
     """
-    res = []
-    for a in article.split(';'):
-        res.extend(a.split('+'))
-    res = list(set(map(str.strip, res)))
+    articles = article.split(';')
+    articles = [a for sublist in articles for a in sublist.split('+')]
+    articles = [a.split('-')[0].strip() for a in articles]
+    return list(set(articles))
+
+def format_subarticle(article):
+    """Format the list of subarticles.
+
+        :param article: string containing the list of articles
+        :type article: str
+        :return: list of subarticles
+        :rtype: [str]
+    """
+    articles = article.split(';')
+    articles = [a for sublist in articles for a in sublist.split('+')]
+    res = list(set(articles))
     return res
 
 def format_cases(cases):
@@ -174,14 +186,26 @@ def format_cases(cases):
         :return: list of formatted cases
         :rtype: [dict]
     """
+    COUNTRIES = {}
+    with open('countries.json') as f:
+        data = json.load(f)
+        for c in data:
+            COUNTRIES[c['alpha-3']] = {
+                'alpha2': c['alpha-2'].lower(),
+                'name': c['name']
+            }
+
+    ORIGINATING_BODY = {}
+    with open('originatingbody.json') as f:
+        ORIGINATING_BODY = json.load(f)
     for i, c in enumerate(cases):
         sys.stdout.write('\r - Format case {}/{}'.format(i+1, len(cases)))
         cases[i]['parties'] = format_parties(cases[i]['docname'])
         cases[i]['__conclusion'] = cases[i]['conclusion']
-        cases[i]['conclusion'] = format_conclusion(c['conclusion_'])
+        cases[i]['conclusion'] = format_conclusion(c['__conclusion'])
         cases[i]['__articles'] = cases[i]['article']
-        cases[i]['article'] = format_article(c['article'])
-        
+        cases[i]['article'] = format_article(cases[i]['__articles'])
+        cases[i]['paragraphs'] = format_subarticle(cases[i]['__articles'])
         cases[i]['externalsources'] = cases[i]["externalsources"].split(';') if len(cases[i]['externalsources']) > 0 else []
         cases[i]["documentcollectionid"] = cases[i]["documentcollectionid"].split(';') if len(cases[i]['documentcollectionid']) > 0 else []
         cases[i]["issue"] = cases[i]["issue"].split(';') if len(cases[i]['issue']) > 0 else []
@@ -193,6 +217,9 @@ def format_cases(cases):
         cases[i]['issue'] = [e.strip() for e in cases[i]['issue']]
         cases[i]['representedby'] = [e.strip() for e in cases[i]['representedby']]
         cases[i]['extractedappno'] = [e.strip() for e in cases[i]['extractedappno']]
+
+        cases[i]['country'] = COUNTRIES[cases[i]['respondent'].split(';')[0]]
+        cases[i]['originatingbody'] = ORIGINATING_BODY[cases[i]['originatingbody']]
 
         cases[i]["rank"] = cases[i]['Rank']
         del cases[i]["Rank"]
@@ -256,7 +283,7 @@ def generate_statistics(cases):
                 if type(c[k]) == list:
                     if len(c[k]):
                         s.extend(c[k])
-                else: #string
+                elif type(c[k]) == str: #string
                     if len(c[k].strip()):
                         s.append(c[k])
         return s
