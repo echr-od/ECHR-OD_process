@@ -266,7 +266,7 @@ def select_parser(doc):
         return PARSER['new']
 
 def main(args):
-    input_file = os.path.join(args.build, 'cases_info/raw_cases_info.json')
+    input_file = os.path.join(args.build, 'cases_info/raw_cases_info_all.json')
     input_folder = os.path.join(args.build, 'raw_documents')
     output_folder = os.path.join(args.build, 'preprocessed_documents')
     if not args.u:

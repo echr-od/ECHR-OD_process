@@ -23,7 +23,7 @@ def get_documents(id_list, folder, update):
         print(" - Document {}/{}: {}".format(i, len(id_list), doc_id))
         filename = "%s.docx"%(doc_id.strip())
         filename = os.path.join(folder, filename)
-        if update or not os.path.isfile(filename):
+        if not update or not os.path.isfile(filename):
             url = BASE_URL + doc_id.strip()
             for j in range(MAX_RETRY):
                 try:
@@ -45,7 +45,7 @@ def get_documents(id_list, folder, update):
             print("\tSkip as document exists already")
 
 def main(args):
-    input_file = os.path.join(args.build, 'cases_info/raw_cases_info.json')
+    input_file = os.path.join(args.build, 'cases_info/raw_cases_info_all.json')
     output_folder = os.path.join(args.build, 'raw_documents')
     id_list = []
     try:
@@ -64,7 +64,8 @@ def main(args):
             os.mkdir(output_folder)
         except Exception as e:
             print(e)
-            exit(1)
+            if not args.u:
+                exit(1)
 
     print("# Get documents from HUDOC")
     get_documents(id_list, output_folder, args.u)

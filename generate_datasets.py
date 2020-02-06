@@ -126,7 +126,7 @@ def generate_dataset(cases, keys, keys_list, encoded_outcomes, feature_index, fe
 
 
 def main(args):
-    suffix = '_{}'.format(args.processed_folder) if args.processed_folder is not None else ''
+    suffix = '_{}'.format(args.processed_folder) if args.processed_folder is not None else '_all'
     input_file = os.path.join(args.build, 'cases_info/raw_cases_info{}.json'.format(suffix))
     input_folder = os.path.join(args.build, 'processed_documents', args.processed_folder)
     output_folder = os.path.join(args.build, 'datasets_documents', args.processed_folder)
