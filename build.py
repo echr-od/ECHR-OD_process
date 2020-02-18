@@ -24,7 +24,7 @@ STEPS = [
     ['preprocess_documents.py'],
     ['normalize_documents.py'],
 ]
-PROCESSING_STEP = False
+PROCESSING_STEP = True
 DATASET_GEN_STEP = True
 LIMIT_TOKENS = 10000
 
@@ -119,7 +119,7 @@ def main(args):
 
     # Structured
     from normalize_database import format_structured_json, COL_HINT
-    flat_cases , representents, extractedapp, scl, decision_body = format_structured_json(cases)
+    flat_cases , representatives, extractedapp, scl, decision_body = format_structured_json(cases)
     schema_hints = {
         'article': {
             'col_type': COL_HINT.HOT_ONE
@@ -154,6 +154,11 @@ def main(args):
     ]
     cmd = ' '.join(map(str, cmd))
     call_and_print(cmd)
+    os.remove(os.path.join(output_path, 'flat_cases.json'))
+    os.remove(os.path.join(output_path, 'cases_flat_schema.json'))
+    os.remove(os.path.join(output_path, 'cases_flat_type_mapping.json'))
+    shutil.copy(os.path.join(args.build, 'datasets_documents', 'all', 'features_text.json'), os.path.join(output_path))
+    shutil.copy(os.path.join(args.build, 'datasets_documents', 'all', 'statistics_datasets.json'), os.path.join(output_path))
 
     print('Generate appnos matrice')
     matrice_appnos = {}
@@ -169,11 +174,11 @@ def main(args):
     with open(os.path.join(output_path, 'matrice_scl.json'), 'w') as outfile:
         json.dump(matrice_scl, outfile, indent=4)
 
-    print('Generate representents matrice')
+    print('Generate representatives matrice')
     matrice_representedby = {}
-    for k, v in representents.items():
+    for k, v in representatives.items():
         matrice_representedby[k] = {e: 1 for e in v['representedby']}
-    with open(os.path.join(output_path, 'matrice_representents.json'), 'w') as outfile:
+    with open(os.path.join(output_path, 'matrice_representatives.json'), 'w') as outfile:
         json.dump(matrice_representedby, outfile, indent=4)
 
     print('Generate decision body matrice')
