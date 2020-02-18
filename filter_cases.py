@@ -101,6 +101,10 @@ def format_conclusion(ccl):
         final_ccl[i]['type'] = t
         if t != 'other':
             art = None
+            if ' and art. ' in l:
+                l = l.replace(' and art. ', '')
+            if ' and of ' in l:
+                l = l.replace(' and of ', '+')
             if ' and ' in l:
                 l = l.replace(' and ', '+')
             # TODO: Remove this ugly code...
@@ -140,8 +144,7 @@ def format_conclusion(ccl):
                         break
                 if art is not None:
                     art = art.split('+')
-                    final_ccl[i]['article'] = art[0].split('-')[0]
-                    #'''
+                    final_ccl[i]['article'] = art[0].split('-')[0].replace('.', '')
                     if len(art) > 1:
                         for m in art[1:]:
                             item = final_ccl[i]
@@ -219,7 +222,8 @@ def format_cases(cases):
         cases[i]['extractedappno'] = [e.strip() for e in cases[i]['extractedappno']]
 
         cases[i]['country'] = COUNTRIES[cases[i]['respondent'].split(';')[0]]
-        cases[i]['originatingbody'] = ORIGINATING_BODY[cases[i]['originatingbody']]
+        cases[i]['originatingbody_type'] = ORIGINATING_BODY[cases[i]['originatingbody']]['type']
+        cases[i]['originatingbody_name'] = ORIGINATING_BODY[cases[i]['originatingbody']]['name']
 
         cases[i]["rank"] = cases[i]['Rank']
         del cases[i]["Rank"]
