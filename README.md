@@ -10,10 +10,9 @@ The purposes of such repository are many:
 
 ## General information
 
-- Official website: [ECHR-OD project](https://echr-od.eu)
+- Official website: [ECHR-OD project](https://echr-opendata.eu)
 - Original paper: [paper](https://arxiv.org/abs/1810.03115), [code](https://github.com/aquemy/ECHR-OD_predictions), [supplementary material](https://github.com/aquemy/ECHR-OD_project_supplementary_material)
 - Creation process: https://github.com/echr-od/ECHR-OD_process
-- Python dataset loader: https://github.com/echr-od/ECHR-OD_loader
 - Website sources: https://github.com/echr-od/ECHR-OD_website
 
 If you are using the project, please consider citing:
