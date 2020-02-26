@@ -7,6 +7,9 @@ The purposes of such repository are many:
 2. **Extensibility:** any new version of the database **must** be created from a updated version of those scripts.
 3. **Revision:** all cases are automatically processed. There are many corner cases and such repository allow anyone to check the intermediate files to understand if the results are correct or not and locate the root cause of parsing errors.
 
+<p align="center">
+<a href="https://echr-opendata.eu/download">DOWNLOAD DATA</a>
+</p>
 
 ## General information
 
@@ -56,6 +59,7 @@ In order to automatically retrieve the number of documents available on HUDOC, S
 
 # Versions
 
+- version 2.0.0: [Changelogs](https://github.com/echr-od/ECHR-OD_process/blob/master/changelog/2.0.0.md)
 - version 1.0.2: [Changelogs](https://github.com/echr-od/ECHR-OD_process/blob/master/changelog/1.0.2.md)
 - version 1.0.1: [Changelogs](https://github.com/echr-od/ECHR-OD_process/blob/master/changelog/1.0.1.md)
 
