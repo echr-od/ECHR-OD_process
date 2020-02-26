@@ -9,10 +9,11 @@ import shutil
 import sys
 import time
 
-LATEST_VERSION = '1.0.0'
+LATEST_VERSION = '2.0.0'
 
 MAX_DOCUMENTS = {
-    '1.0.0': 144579
+    '1.0.0': 144579,
+    '2.0.0': 164767
 }
 
 MAX_DOCUMENTS['latest'] = MAX_DOCUMENTS[LATEST_VERSION]
