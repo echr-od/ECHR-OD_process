@@ -17,7 +17,7 @@ git:
 
 env:
   global:
-    - RUN="docker run -ti --mount src=$(pwd),dst=/tmp/echr_process/,type=bind echr_build build "
+    - RUN="docker run -ti --mount src=$(pwd),dst=/tmp/echr_process/,type=bind echr_build build"
 
 cache:
   timeout: 604800 # 7 days - delete removed or staled branches cache
@@ -28,7 +28,7 @@ jobs:
   include:
     - stage: "Build images"
       name: "Prepare build image"
-      script: docker build -f Dockerfile -t echr_build:latest .
+      script: docker build -f Dockerfile -t echr_build .
     - stage: "Perform tests"
       name: "Build test version"
       script:
