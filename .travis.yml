@@ -28,7 +28,7 @@ jobs:
   include:
     - stage: "Build images"
       name: "Prepare build image"
-      script: docker build -f docker_env/Dockerfile -t echr_build:latest .
+      script: docker build -f Dockerfile -t echr_build:latest .
     - stage: "Perform tests"
       name: "Build test version"
       script:
