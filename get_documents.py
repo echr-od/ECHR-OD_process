@@ -5,6 +5,7 @@ import json
 import os
 import shutil
 
+requests.packages.urllib3.util.ssl_.DEFAULT_CIPHERS = 'ALL:@SECLEVEL=1'
 BASE_URL = "http://hudoc.echr.coe.int/app/conversion/docx/?library=ECHR&filename=please_give_me_the_document.docx&id="
 PERMA_URL = "http://hudoc.echr.coe.int/eng?i="
 MAX_RETRY = 5
