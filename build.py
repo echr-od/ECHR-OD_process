@@ -8,12 +8,14 @@ from os.path import isfile, join
 import shutil
 import sys
 import time
+from pathlib import Path
 
 LATEST_VERSION = '2.0.0'
 
 MAX_DOCUMENTS = {
     '1.0.0': 144579,
-    '2.0.0': 164767
+    '2.0.0': 164767,
+    'test': 100
 }
 
 MAX_DOCUMENTS['latest'] = MAX_DOCUMENTS[LATEST_VERSION]
@@ -56,6 +58,23 @@ def main(args):
                 args.version, ', '.join(MAX_DOCUMENTS.keys())))
 
     start_time = time.time()
+
+    build_path = args.build
+    if args.force:
+        try:
+            os.rmdir(build_path)
+        except OSError:
+            print("Deletion of the build directory {} failed".format(build_path))
+        else:
+            print("Successfully deleted the directory {}".format(build_path))
+    try:
+        Path(build_path).mkdir(parents=True, exist_ok=True)
+    except OSError as e:
+        print(e)
+        print("Creation of the build directory {} failed".format(build_path))
+
+    else:
+        print("Successfully created the directory {}".format(build_path))
 
     flags = ['-f'] if args.force else []
     flags.extend(['--build', args.build])
@@ -240,12 +259,10 @@ def parse_args(parser):
     return args
 
 if __name__ == "__main__":
-    
     parser = argparse.ArgumentParser(description='Generate the whole database')
     parser.add_argument('--build', type=str, default="./build/echr_database/")
     parser.add_argument('-f', '--force', action='store_true')
     parser.add_argument('--version', type=str, help='Version to build among: {}'.format(
         ', '.join(MAX_DOCUMENTS.keys())))
     args = parse_args(parser)
-
     main(args)
