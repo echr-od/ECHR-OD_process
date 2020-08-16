@@ -30,9 +30,9 @@ jobs:
       name: "Prepare build image"
       script:
         - echo "$DOCKER_PASSWORD" | docker login -u "$DOCKER_USERNAME" --password-stdin
-        - docker build -f Dockerfile -t echr_build .
+        - docker build -f Dockerfile -t echr_build:develop .
         - docker images
-        - docker tag echr_build $DOCKER_USERNAME/echr_build:develop
+        - docker tag echr_build:develop $DOCKER_USERNAME/echr_build:develop
         - docker push $DOCKER_USERNAME/echr_build:develop
     - stage: "Perform tests"
       name: "Build test version"
