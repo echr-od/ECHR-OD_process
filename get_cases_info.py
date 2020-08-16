@@ -7,6 +7,8 @@ import shutil
 from selenium import webdriver
 from time import sleep
 
+
+requests.packages.urllib3.util.ssl_.DEFAULT_CIPHERS = 'ALL:@SECLEVEL=1'
 MAX_RETRY = 5
 
 # Fields to retrieve
