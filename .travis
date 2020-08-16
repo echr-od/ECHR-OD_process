@@ -1,0 +1,37 @@
+dist: trusty
+
+language: generic
+
+services:
+  - docker
+
+notifications:
+  enail:
+    recipients:
+      - alexandre.quemy@gmail.com
+    on_failure: change
+    on_success: never
+
+git:
+  quiet: true
+
+env:
+  global:
+    - RUN="docker run -ti --mount src=$(pwd),dst=/tmp/echr_process/,type=bind echr_build build "
+
+cache:
+  timeout: 604800 # 7 days - delete removed or staled branches cache
+  directories:
+  - echr_process
+
+jobs:
+  include:
+    - stage: "Build images"
+      name: "Prepare build image"
+      script: docker build -f docker_env/Dockerfile -t echr_build:latest .
+    - stage: "Perform tests"
+      name: "Build test version"
+      script:
+        - |
+          $RUN --version test --build ./build/test --force
+          travis_terminate $?
