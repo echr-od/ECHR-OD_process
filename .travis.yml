@@ -31,7 +31,7 @@ jobs:
       script:
         - docker pull aquemy1/echr_build:develop
         - docker images
-        - $RUN --version test --build ./build/test --force
+        - $RUN --version test --build ./build/test
     - stage: "Perform tests"
       name: "Build test version"
       script:
