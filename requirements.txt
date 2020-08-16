@@ -6,3 +6,10 @@ nltk
 numpy
 matplotlib
 selenium
+genson
+flatdict
+pandas
+sh
+pytest
+pylint
+osfclient
