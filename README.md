@@ -31,7 +31,7 @@ If you are using the project, please consider citing:
 
 ## Building process
 
-The building chain starts from scratch and consists in the following steps:
+The build process consists in the following steps:
 
 1. ```get_cases_info.py```: Retrieve the list and basic information about cases from HUDOC
 2. ```filter_cases.py```: Remove inconsistant, ambiguous or difficult-to-process cases
@@ -39,8 +39,27 @@ The building chain starts from scratch and consists in the following steps:
 4. ```process_documents.py```: Normalize the documents and generate a Bag-of-Words and TFID representation
 5. ```generate_datasets.py```: Combine all the information to generate several datasets
 
-# Installation & Usage
+# Installation & Usage (with docker)
 
+To build the environment image:
+```
+docker build -f Dockerfile -t echr_build .
+```
+As long as dependencies are not changed, there is no need to rebuild the image.
+
+Once the image is built, the container help can be displayed with:
+```
+docker run -ti --mount src=$(pwd),dst=/tmp/echr_process/,type=bind echr_build -h
+```
+
+In particular, to build the database:
+```
+docker run -ti --mount src=$(pwd),dst=/tmp/echr_process/,type=bind echr_build build -h
+```
+
+# Manual installation (without docker)
+
+Using the container is recommended but it is possible to install manually the dependencies:
 
 ## NLTK packages
 
@@ -49,13 +68,14 @@ In order to parse and normalize the documents, the following packages from ```nl
 python bin/download-nltk
 
 ```
-
 ## Webdrivers
 
 In order to automatically retrieve the number of documents available on HUDOC, Selenium is installed as a dependency. For Selenium to work, a webdriver is mandatory and must be manually installed. See [Selenium documentation](https://selenium-python.readthedocs.io/installation.html#drivers) for help.
 
 
 # Contributing
+
+TDB
 
 # Versions
 
