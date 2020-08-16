@@ -37,4 +37,3 @@ jobs:
       name: "Build test version"
       script:
         - $RUN --version test --build ./build/test --force
-          travis_terminate $?
