@@ -10,7 +10,7 @@ inputs:
     required: false
 runs:
   using: 'docker'
-  image: 'echr_build:develop'
+  image: 'echr-od/echr-od_process:develop'
   args:
     - ${{ inputs.cont_action }}
     - ${{ inputs.action_params }}
