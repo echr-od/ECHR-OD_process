@@ -23,4 +23,4 @@ jobs:
         uses: ./.github/actions/build_test
         with:
           cont_action: 'build'
-          action_params: '--version test --build ./build/test --force'
+          action_params: '--version test --build ./build/test'
