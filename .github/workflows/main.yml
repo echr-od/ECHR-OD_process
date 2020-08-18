@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 # This is a basic workflow to help you get started with Actions
 
 name: CI
@@ -24,4 +25,14 @@ jobs:
           username: ${{ secrets.DOCKER_USERNAME }}
           password: ${{ secrets.DOCKER_PASSWORD }}
           repository: aquemy1/echr_build
-          tags: latest
+          tags: develop
+  build_database:
+    runs-on: ubuntu-latest
+    name: Build test database
+    steps:
+      - uses: addnab/docker-run-action@v1
+          with:
+            username: ${{ secrets.DOCKER_USERNAME }}
+            password: ${{ secrets.DOCKER_PASSWORD }}
+            image: aquemy1/echr_build:latest
+            run: build --version test --build ./build/test --force
