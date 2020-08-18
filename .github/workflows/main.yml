@@ -1,10 +1,6 @@
-<<<<<<< HEAD
-# This is a basic workflow to help you get started with Actions
 
 name: CI
 
-# Controls when the action will run. Triggers the workflow on push or pull request
-# events but only for the develop branch
 on:
   push:
     branches: [ develop ]
