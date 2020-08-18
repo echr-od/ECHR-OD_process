@@ -1,0 +1,26 @@
+
+name: CI
+
+on:
+  push:
+    branches: [ develop ]
+  pull_request:
+    branches: [ develop ]
+
+jobs:
+  build_image:
+    runs-on: ubuntu-latest
+    name: Building image
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v2
+      - name: Build Docker images
+        uses: docker/build-push-action@v1
+        with:
+          push: false
+          tags: develop
+      - name: Build test
+        uses: ./.github/actions/build_test
+        with:
+          cont_action: 'build'
+          action_params: '--version test --build ./build/test'
