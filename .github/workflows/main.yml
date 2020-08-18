@@ -28,6 +28,6 @@ jobs:
     steps:
       - name: Build
         uses: addnab/docker-run-action@v1
-          with:
-            image: aquemy1/echr_build:latest
-            run: build --version test --build ./build/test --force
+        with:
+          image: aquemy1/echr_build:latest
+          run: build --version test --build ./build/test --force
