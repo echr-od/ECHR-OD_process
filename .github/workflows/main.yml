@@ -14,20 +14,14 @@ jobs:
     steps:
       - name: Checkout code
         uses: actions/checkout@v2
-
-      - name: Build and push Docker images
+      - name: Build Docker images
         uses: docker/build-push-action@v1
         with:
-          username: ${{ secrets.DOCKER_USERNAME }}
-          password: ${{ secrets.DOCKER_PASSWORD }}
-          repository: aquemy1/echr_build
+          push: false
           tags: develop
-  build_database:
-    runs-on: ubuntu-latest
-    name: Building test database
-    steps:
-      - name: Build
-        uses: addnab/docker-run-action@v1
-        with:
-          image: aquemy1/echr_build:latest
-          run: build --version test --build ./build/test --force
+      - name: Build test
+          id: hello
+          uses: ./.github/actions/build_test
+          with:
+            cont_action: 'build'
+            action_params: '--version test --build ./build/test --force'
