@@ -23,5 +23,5 @@ jobs:
         with:
           username: ${{ secrets.DOCKER_USERNAME }}
           password: ${{ secrets.DOCKER_PASSWORD }}
-          repository: docker.io/aquemy1
+          repository: aquemy1/echr_build
           tags: latest
