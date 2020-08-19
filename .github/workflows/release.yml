@@ -2,7 +2,8 @@ name: Cyclic Release
 
 on:
   schedule:
-    - cron: '*/5 * * * *' # TEST every 15 minutes
+    - cron: '0 0 1 * *'  # Every month
+  workflow_dispatch:
 
 jobs:
   build_image:
