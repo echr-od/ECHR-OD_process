@@ -18,10 +18,10 @@ jobs:
           push: false
           tags: develop
       - name: Run unit tests
-          uses: ./.github/actions/container_run
-          with:
-            container: 'echr-od/echr-od_process:develop'
-            cont_action: 'test'
+        uses: ./.github/actions/container_run
+        with:
+          container: 'echr-od/echr-od_process:develop'
+          cont_action: 'test'
       - name: Build test dataset
         uses: ./.github/actions/container_run
         with:
