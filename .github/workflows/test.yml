@@ -1,11 +1,9 @@
-
-name: CI
+name: Test Workflow
 
 on:
-  push:
-    branches: [ develop ]
   pull_request:
-    branches: [ develop ]
+    branches-ignore:
+      - master
 
 jobs:
   build_image:
