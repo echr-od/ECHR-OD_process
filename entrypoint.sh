@@ -43,14 +43,14 @@ function handle_input {
             /bin/bash
         elif [[ "$1" = "build" ]] ; then
           build $@
-        elif [[ "$1" = "all" && $# -eq 1 ]] ; then
-            python -m pytest -v -c /tmp/echr_process/.pytest.ini --disable-warnings &&\
+        elif [[ "$1" = "all" ]] ; then
+            python -m pytest -v -c ./.pytest.ini --disable-warnings &&\
             lint_source_code
-        elif [[ "$1" = "test" && $# -eq 1 ]] ; then
-            python -m pytest -v -c /tmp/echr_process/.pytest.ini --disable-warnings
-        elif [[ "$1" = 'lint' && $# -eq 1 ]] ; then
+        elif [[ "$1" = "test" ]] ; then
+            python -m pytest -v -c ./.pytest.ini --disable-warnings
+        elif [[ "$1" = 'lint' ]] ; then
             lint_source_code
-        elsw
+        else
           display_help
         fi
     fi
