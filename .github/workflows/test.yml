@@ -20,16 +20,13 @@ jobs:
       - name: Run linter
         uses: ./.github/actions/container_run
         with:
-          container: 'echr-od/echr-od_process:develop'
           cont_action: 'lint'
       - name: Run unit tests
         uses: ./.github/actions/container_run
         with:
-          container: 'echr-od/echr-od_process:develop'
           cont_action: 'test'
       - name: Build test dataset
         uses: ./.github/actions/container_run
         with:
-          container: 'echr-od/echr-od_process:develop'
           cont_action: 'build'
           action_params: '--version test --build ./build/test'
