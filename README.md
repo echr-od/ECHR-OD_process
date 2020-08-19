@@ -68,10 +68,6 @@ In order to parse and normalize the documents, the following packages from ```nl
 python bin/download-nltk
 
 ```
-## Webdrivers
-
-In order to automatically retrieve the number of documents available on HUDOC, Selenium is installed as a dependency. For Selenium to work, a webdriver is mandatory and must be manually installed. See [Selenium documentation](https://selenium-python.readthedocs.io/installation.html#drivers) for help.
-
 
 # Contributing
 

@@ -4,8 +4,6 @@ import requests
 import json
 import os
 import shutil
-from selenium import webdriver
-from time import sleep
 import urllib3
 
 
@@ -52,37 +50,26 @@ fields = [
 BASE_URL = "http://hudoc.echr.coe.int/app/query/results?query=((((((((((((((((((((%20contentsitename%3AECHR%20AND%20(NOT%20(doctype%3DPR%20OR%20doctype%3DHFCOMOLD%20OR%20doctype%3DHECOMOLD)))%20XRANK(cb%3D14)%20doctypebranch%3AGRANDCHAMBER)%20XRANK(cb%3D13)%20doctypebranch%3ADECGRANDCHAMBER)%20XRANK(cb%3D12)%20doctypebranch%3ACHAMBER)%20XRANK(cb%3D11)%20doctypebranch%3AADMISSIBILITY)%20XRANK(cb%3D10)%20doctypebranch%3ACOMMITTEE)%20XRANK(cb%3D9)%20doctypebranch%3AADMISSIBILITYCOM)%20XRANK(cb%3D8)%20doctypebranch%3ADECCOMMISSION)%20XRANK(cb%3D7)%20doctypebranch%3ACOMMUNICATEDCASES)%20XRANK(cb%3D6)%20doctypebranch%3ACLIN)%20XRANK(cb%3D5)%20doctypebranch%3AADVISORYOPINIONS)%20XRANK(cb%3D4)%20doctypebranch%3AREPORTS)%20XRANK(cb%3D3)%20doctypebranch%3AEXECUTION)%20XRANK(cb%3D2)%20doctypebranch%3AMERITS)%20XRANK(cb%3D1)%20doctypebranch%3ASCREENINGPANEL)%20XRANK(cb%3D4)%20importance%3A1)%20XRANK(cb%3D3)%20importance%3A2)%20XRANK(cb%3D2)%20importance%3A3)%20XRANK(cb%3D1)%20importance%3A4)%20XRANK(cb%3D2)%20languageisocode%3AENG)%20XRANK(cb%3D1)%20languageisocode%3AFRE&select={}&sort=&rankingModelId=4180000c-8692-45ca-ad63-74bc4163871b".format(','.join(fields))
 length = 500 #maximum number of items per request
 
-def determine_max_documents(default_value):
+def determine_max_documents(base_url, default_value):
     """Automatically determine the number of available documents in HUDOC
 
         :param default_value: fallback value
         :type default_value: [int]
     """
-    drivers = ['PhantomJS', 'Chrome', 'Firefox']
-    browser = None
-    for driver in drivers:
+    url = base_url + "&start=%d&length=%d" % (0, 1)
+    for i in range(MAX_RETRY):
         try:
-            get_driver = getattr(webdriver, driver)
-            browser = get_driver()
-            break
-        except Exception as e:
-            print('Could not find {} webdriver. See doc#webdrivers'.format(driver))
-    max_documents = None
-    if browser is not None:
-        url = "https://hudoc.echr.coe.int/eng#%20"
-        browser.implicitly_wait(30)
-        browser.get(url)
-        for i in range(0,5):
-            result = browser.find_element_by_class_name('resultNumber')
-            if int(result.text) > 0:
-                max_documents = int(result.text)
-                break
+            print(url)
+            r = requests.get(url)
+            if not r.ok:
+                print('\t({}/{}) Failed to fetch max document numbers'.format(i + 1, MAX_RETRY))
+                continue
             else:
-                sleep(1)
-    if max_documents is None:
-        if browser is None:
-            print('Could not find any webdriver - fallback using default value')
-        max_documents = default_value
+                output = json.loads(r.content)
+                return output['resultcount']
+        except Exception as e:
+            print('\t({}/{}) Failed to fetch max document numbers'.format(i + 1, MAX_RETRY))
+    max_documents = default_value
     return max_documents
 
 
@@ -127,7 +114,7 @@ def main(args):
     max_documents = args.max_documents
     if max_documents == -1:
         print('Determining the number of documents to retrieve...')
-        max_documents = determine_max_documents(144579)  # v1.0.0 value
+        max_documents = determine_max_documents(BASE_URL, 144579)  # v1.0.0 value
     
     print('# Get case information from HUDOC')
     print('- Max documents: {}'.format(max_documents))
