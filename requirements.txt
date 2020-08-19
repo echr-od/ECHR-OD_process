@@ -13,3 +13,4 @@ sh
 pytest
 pylint
 osfclient
+urllib3

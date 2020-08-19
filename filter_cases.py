@@ -396,11 +396,11 @@ def main(args):
             multilabel_cases_unique.append(c)
             multilabel_index.discard(c['itemid'])
 
-    with open(path.join(output_folder, 'raw_cases_info_multilabel.json'.format(k)), 'w') as outfile:
+    with open(path.join(output_folder, 'raw_cases_info_multilabel.json'), 'w') as outfile:
         json.dump(multilabel_cases_unique, outfile, indent=4, sort_keys=True)
 
 
-    multiclass_index = {} # Key: case ID / Value = number of different dataset it appears in
+    multiclass_index = {}  # Key: case ID / Value = number of different dataset it appears in
     multiclass_cases = []
     sorted_outcomes = dict(sorted(outcomes.items(), key=lambda x: x[1]['total'])).keys()
     for k in sorted_outcomes:
@@ -423,7 +423,7 @@ def main(args):
                         ','.join(list(set(nb_datasets))))
                     )
 
-    with open(path.join(output_folder, 'raw_cases_info_multiclass.json'.format(k)), 'w') as outfile:
+    with open(path.join(output_folder, 'raw_cases_info_multiclass.json'), 'w') as outfile:
         json.dump(multiclass_cases, outfile, indent=4, sort_keys=True)
 
  
