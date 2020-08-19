@@ -5,7 +5,6 @@ unidecode
 nltk
 numpy
 matplotlib
-selenium
 genson
 flatdict
 pandas
