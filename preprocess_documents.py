@@ -385,11 +385,6 @@ def update_docx(docname):
     output_file = './_proxy.docx'
     os.rename('./proxy.zip', output_file)
 
-    try:
-        os.remove('./_proxy.docx')
-    except:
-        pass
-    
     return output_file
 
 
