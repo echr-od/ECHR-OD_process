@@ -17,7 +17,7 @@ jobs:
       - uses: oprypin/find-latest-tag@v1
         with:
           repository: echr-od/ECHR-OD_process
-          prefix: 'v*'
+          prefix: 'v'
         id: version
       - name: Test with environment variables
         run: echo $TAG_NAME - $RELEASE_NAME
