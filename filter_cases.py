@@ -384,7 +384,7 @@ def main(args):
     multilabel_index = set()
     for k in outcomes.keys():
         print(' - Generate case info for article {}'.format(k))
-        with open(path.join(output_folder, 'raw_cases_info_article_{}.json'.format(k)), 'w') as outfile:
+        with open(path.join(output_folder, 'raw_cases_info_article_{}.json'), 'w') as outfile:
             json.dump(cases_per_articles[k], outfile, indent=4, sort_keys=True)
         multilabel_cases.extend(cases_per_articles[k])
         for c in cases_per_articles[k]:
@@ -396,7 +396,7 @@ def main(args):
             multilabel_cases_unique.append(c)
             multilabel_index.discard(c['itemid'])
 
-    with open(path.join(output_folder, 'raw_cases_info_multilabel.json'.format(k)), 'w') as outfile:
+    with open(path.join(output_folder, 'raw_cases_info_multilabel.json'), 'w') as outfile:
         json.dump(multilabel_cases_unique, outfile, indent=4, sort_keys=True)
 
 
@@ -423,7 +423,7 @@ def main(args):
                         ','.join(list(set(nb_datasets))))
                     )
 
-    with open(path.join(output_folder, 'raw_cases_info_multiclass.json'.format(k)), 'w') as outfile:
+    with open(path.join(output_folder, 'raw_cases_info_multiclass.json'), 'w') as outfile:
         json.dump(multiclass_cases, outfile, indent=4, sort_keys=True)
 
  
