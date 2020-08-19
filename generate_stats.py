@@ -18,11 +18,11 @@ rcParams['figure.figsize'] = 8, 6
 def sort_article(a):
     i = a.split('_')[-1]
     if i == 'p1':
-        return sys.maxint - 3
+        return sys.maxsize - 3
     if i == 'multiclass':
-        return sys.maxint - 2
+        return sys.maxsize - 2
     if i == 'multilabel':
-        return sys.maxint - 1
+        return sys.maxsize - 1
     return int(i)
 
 def generate_latex_table_binary(data):
