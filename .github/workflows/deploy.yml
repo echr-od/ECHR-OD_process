@@ -1,4 +1,4 @@
-name: Deployment Workflow
+name: Deployment
 
 on:
   push:
@@ -16,6 +16,16 @@ jobs:
       - name: Get branch name
         id: branch_name
         run: echo ::set-output name=branch::$(echo ${GITHUB_REF##*/})
+      - name: Run linter
+        uses: ./.github/actions/container_run
+        with:
+          container: 'echr-od/echr-od_process:develop'
+          cont_action: 'lint'
+      - name: Run unit tests
+        uses: ./.github/actions/container_run
+        with:
+          container: 'echr-od/echr-od_process:develop'
+          cont_action: 'test'
       - name: Build and push image
         uses: docker/build-push-action@v1
         with:

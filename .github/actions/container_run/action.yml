@@ -1,6 +1,10 @@
-name: 'Build test version'
-description: 'Building test version of ECHR database'
+name: 'Container run'
+description: 'Container action in the ECHR container'
 inputs:
+  container:
+    description: 'Container name'
+    required: true
+    default: 'echr-od/echr-od_process:develop'
   cont_action:
     description: 'Container action'
     required: true
@@ -10,7 +14,7 @@ inputs:
     required: false
 runs:
   using: 'docker'
-  image: 'echr-od/echr-od_process:develop'
+  image: ${{ inputs.container }}
   args:
     - ${{ inputs.cont_action }}
     - ${{ inputs.action_params }}
