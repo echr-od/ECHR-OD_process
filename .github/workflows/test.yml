@@ -18,10 +18,10 @@ jobs:
           push: false
           tags: develop
       - name: Run linter
-          uses: ./.github/actions/container_run
-          with:
-            container: 'echr-od/echr-od_process:develop'
-            cont_action: 'lint'
+        uses: ./.github/actions/container_run
+        with:
+          container: 'echr-od/echr-od_process:develop'
+          cont_action: 'lint'
       - name: Run unit tests
         uses: ./.github/actions/container_run
         with:
