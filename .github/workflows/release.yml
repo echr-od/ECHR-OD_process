@@ -1,4 +1,4 @@
-name: Cyclic Release Workflow
+name: Cyclic Release
 
 on:
   schedule:
@@ -14,13 +14,15 @@ jobs:
       - name: Get current date
         id: date
         run: echo "::set-output name=date::$(date +'%Y-%m-%d')"
-      - name: Get the version
+      - uses: oprypin/find-latest-tag@v1
+        with:
+          repository: echr-od/ECHR-OD_process
+          prefix: 'v'
         id: version
-        run: echo ::set-output name=version::$(echo $GITHUB_REF | cut -d / -f 3)
       - name: Test with environment variables
         run: echo $TAG_NAME - $RELEASE_NAME
         env:
-          TAG_NAME: tag-${{ steps.version.outputs.version }}
+          TAG_NAME: tag-${{ steps.version.outputs.tag }}
           RELEASE_NAME: monthly-release-${{ steps.date.outputs.date }}
       - name: Build and push image
         uses: docker/build-push-action@v1
@@ -28,4 +30,4 @@ jobs:
           username: ${{ secrets.DOCKER_USERNAME }}
           password: ${{ secrets.DOCKER_PASSWORD }}
           repository: aquemy1/echr_build
-          tags: v${{ steps.version.outputs.version }}-r${{ steps.date.outputs.date }}
+          tags: ${{ steps.version.outputs.tag }}_${{ steps.date.outputs.date }}
