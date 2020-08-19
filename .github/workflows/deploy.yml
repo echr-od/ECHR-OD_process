@@ -1,0 +1,25 @@
+
+name: Deployment Workflow
+
+on:
+  push:
+    branches:
+      - master
+      - develop
+
+jobs:
+  build_image:
+    runs-on: ubuntu-latest
+    name: Building image
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v2
+      - name: Get branch name
+        run: echo running on branch ${GITHUB_REF##*/}
+      - name: Build and push image
+        uses: docker/build-push-action@v1
+        with:
+          username: ${{ secrets.DOCKER_USERNAME }}
+          password: ${{ secrets.DOCKER_PASSWORD }}
+          repository: aquemy1/echr_build
+          tags: ${GITHUB_REF##*/}
