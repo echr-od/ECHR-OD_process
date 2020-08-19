@@ -31,8 +31,7 @@ function deploy {
 }
 
 function lint_source_code {
-    python -m pylint --rcfile=/tmp/echr_process/.pylintrc \
-                          /tmp/echr_process/*.py
+    python -m pylint --rcfile=.pylintrc ./*.py
 }
 
 function handle_input {
