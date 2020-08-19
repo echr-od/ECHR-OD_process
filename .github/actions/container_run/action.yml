@@ -1,0 +1,20 @@
+name: 'Container run'
+description: 'Container action in the ECHR container'
+inputs:
+  container:
+    description: 'Container name'
+    required: true
+    default: 'echr-od/echr-od_process:develop'
+  cont_action:
+    description: 'Container action'
+    required: true
+    default: 'help'
+  action_params:
+    description: 'Container action parameters'
+    required: false
+runs:
+  using: 'docker'
+  image: ${{ inputs.container }}
+  args:
+    - ${{ inputs.cont_action }}
+    - ${{ inputs.action_params }}
