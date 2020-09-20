@@ -1,14 +1,24 @@
 import argparse
-import requests
 import json
 import os
-from time import sleep
 from os import listdir
 from os.path import isfile, join
-import re
 import shutil
 
-def generate_dataset(cases, keys, keys_list, encoded_outcomes, feature_index, feature_to_encoded, output_path, name, offset, processed_folder, filter_classes=None, force=False):
+from echr.utils.folders import make_build_folder
+from echr.utils.cli import StatusColumn, TAB
+from rich.markdown import Markdown
+from rich.console import Console
+from rich.table import Table
+from rich.progress import (
+    Progress,
+    BarColumn,
+    TimeRemainingColumn,
+)
+
+
+def generate_dataset(cases, keys, keys_list, encoded_outcomes, feature_index, feature_to_encoded, output_path, name,
+                     offset, processed_folder, filter_classes=None, force=False):
     output_path = output_path
 
     dataset_size = 0
@@ -20,11 +30,11 @@ def generate_dataset(cases, keys, keys_list, encoded_outcomes, feature_index, fe
     outcome_distribution = {}
     conclusion_key = 'conclusion' if name != 'multiclass' else 'mc_conclusion'
     with open(os.path.join(output_path, 'descriptive.txt'), 'w') as f_d, \
-        open(os.path.join(output_path, 'BoW.txt'), 'w') as f_b, \
-        open(os.path.join(output_path, 'TF_IDF.txt'), 'w') as f_t, \
-        open(os.path.join(output_path, 'descriptive+BoW.txt'), 'w') as f_db, \
-        open(os.path.join(output_path, 'descriptive+TF_IDF.txt'), 'w') as f_dt, \
-        open(os.path.join(output_path, 'outcomes.txt'), 'w') as f:
+            open(os.path.join(output_path, 'BoW.txt'), 'w') as f_b, \
+            open(os.path.join(output_path, 'TF_IDF.txt'), 'w') as f_t, \
+            open(os.path.join(output_path, 'descriptive+BoW.txt'), 'w') as f_db, \
+            open(os.path.join(output_path, 'descriptive+TF_IDF.txt'), 'w') as f_dt, \
+            open(os.path.join(output_path, 'outcomes.txt'), 'w') as f:
         for c in cases:
             nb_features = 0
             encoded_case = []
@@ -36,7 +46,8 @@ def generate_dataset(cases, keys, keys_list, encoded_outcomes, feature_index, fe
                         if filter_classes is None or e['article'] in filter_classes:
                             classes.append('{}:{}'.format(g, 1 if e['type'] == 'violation' else 0))
             classes = list(set(classes))
-            opposed_classes = any([e for e in classes if e.split(':')[0]+':'+ str(abs(1 - int(e.split(':')[-1]))) in classes])
+            opposed_classes = any(
+                [e for e in classes if e.split(':')[0] + ':' + str(abs(1 - int(e.split(':')[-1]))) in classes])
             if len(classes) > 0 and not opposed_classes:
                 f.write('0:{} '.format(feature_to_encoded[u'{}={}'.format('itemid', c['itemid'])]))
                 f.write(' '.join(classes) + '\n')
@@ -45,16 +56,17 @@ def generate_dataset(cases, keys, keys_list, encoded_outcomes, feature_index, fe
                         if 'article' in e and e['article'] in encoded_outcomes:
                             if filter_classes is None or e['article'] in filter_classes:
                                 if e['article'] not in outcome_distribution:
-                                    outcome_distribution[e['article']] = {'violation': 0, 'no-violation':0}
+                                    outcome_distribution[e['article']] = {'violation': 0, 'no-violation': 0}
                                 outcome_distribution[e['article']][e['type']] += 1
                                 if name != 'multilabel':
                                     break
                 for k, v in c.items():
-                    if k in keys: 
+                    if k in keys:
                         encoded_case.append('{}:{}'.format(feature_index[k], feature_to_encoded[u'{}={}'.format(k, v)]))
                     elif k in keys_list:
                         for e in v:
-                            encoded_case.append('{}:{}'.format(feature_index[k], feature_to_encoded[u'{}_has_{}'.format(k, e)]))
+                            encoded_case.append(
+                                '{}:{}'.format(feature_index[k], feature_to_encoded[u'{}_has_{}'.format(k, e)]))
 
                 nb_features += len(encoded_case)
                 f_d.write(' '.join(map(str, encoded_case)) + '\n')
@@ -85,7 +97,8 @@ def generate_dataset(cases, keys, keys_list, encoded_outcomes, feature_index, fe
         f_dt.close()
         f_d.close()
 
-    with open(os.path.join(processed_folder, 'feature_to_id.dict'), 'r') as d, open(os.path.join(output_path, 'features_text.json'), 'w') as f:
+    with open(os.path.join(processed_folder, 'feature_to_id.dict'), 'r') as d, open(
+            os.path.join(output_path, 'features_text.json'), 'w') as f:
         features = json.loads(d.read())
         for k in features.keys():
             features[k] = int(features[k]) + offset
@@ -94,7 +107,7 @@ def generate_dataset(cases, keys, keys_list, encoded_outcomes, feature_index, fe
         f.close()
 
     statistics = {
-        name:{
+        name: {
             'dataset_size': dataset_size,
             'min_feature': min_feature,
             'max_feature': max_feature,
@@ -104,9 +117,13 @@ def generate_dataset(cases, keys, keys_list, encoded_outcomes, feature_index, fe
     }
 
     for cl, el in statistics[name]['prevalence'].items():
-        statistics[name]['prevalence'][cl]['class_normalized'] = 1. * statistics[name]['prevalence'][cl]['violation'] / (statistics[name]['prevalence'][cl]['violation'] + statistics[name]['prevalence'][cl]['no-violation'])
-        statistics[name]['prevalence'][cl]['no-violation_normalized'] = 1. * statistics[name]['prevalence'][cl]['no-violation'] / dataset_size
-        statistics[name]['prevalence'][cl]['violation_normalized'] = 1. * statistics[name]['prevalence'][cl]['violation'] / dataset_size
+        statistics[name]['prevalence'][cl]['class_normalized'] = 1. * statistics[name]['prevalence'][cl][
+            'violation'] / (statistics[name]['prevalence'][cl]['violation'] + statistics[name]['prevalence'][cl][
+            'no-violation'])
+        statistics[name]['prevalence'][cl]['no-violation_normalized'] = 1. * statistics[name]['prevalence'][cl][
+            'no-violation'] / dataset_size
+        statistics[name]['prevalence'][cl]['violation_normalized'] = 1. * statistics[name]['prevalence'][cl][
+            'violation'] / dataset_size
 
     with open(os.path.join(output_path, 'statistics_datasets.json'), 'w') as f:
         json.dump(statistics, f, indent=4)
@@ -125,20 +142,23 @@ def generate_dataset(cases, keys, keys_list, encoded_outcomes, feature_index, fe
         f.close()
 
 
-def main(args):
-    suffix = '_{}'.format(args.processed_folder) if args.processed_folder is not None else '_all'
-    input_file = os.path.join(args.build, 'cases_info/raw_cases_info{}.json'.format(suffix))
-    input_folder = os.path.join(args.build, 'processed_documents', args.processed_folder)
-    output_folder = os.path.join(args.build, 'datasets_documents', args.processed_folder)
+def run(console, build, articles=[], processed_folder='all', force=True):
+    __console = console
+    global print
+    print = __console.print
 
-    try:
-        os.makedirs(output_folder)
-    except Exception as e:
-        print(e)
-        #exit(1)
+    suffix = '_{}'.format(processed_folder)
+    input_file = os.path.join(build, 'cases_info/raw_cases_info{}.json'.format(suffix))
+    input_folder = os.path.join(build, 'processed_documents', processed_folder)
+    output_folder = os.path.join(build, 'datasets_documents', processed_folder)
+
+    print(Markdown("- **Step configuration**"))
+    print(TAB + '> Step folder: {}'.format(os.path.join(build, 'datasets_documents', processed_folder)))
+    make_build_folder(console, output_folder, force, strict=False)
 
     # Get the list of cases s.t. we have a BoW and TF-IDF representation
-    files = [os.path.join(input_folder, f) for f in listdir(input_folder) if isfile(join(input_folder, f)) if '_bow.txt' in f]
+    files = [os.path.join(input_folder, f) for f in listdir(input_folder) if isfile(join(input_folder, f)) if
+             '_bow.txt' in f]
     id_list = [f.split('/')[-1].split('_')[0] for f in files]
 
     # Read the case info
@@ -153,19 +173,19 @@ def main(args):
 
     # Filter the cases info to keep only the items in id_list
     cases = [c for c in cases if c['itemid'] in id_list]
-    conclusion_key = 'conclusion' if args.processed_folder != 'multiclass' else 'mc_conclusion'
+    conclusion_key = 'conclusion' if processed_folder != 'multiclass' else 'mc_conclusion'
     cases = [c for c in cases if conclusion_key in c]
 
     keys = [
         "itemid",
-        "respondent", 
-        "rank", 
-        "applicability", 
-        "decisiondate", 
-        "doctypebranch", 
-        "importance", 
-        "introductiondate", 
-        "judgementdate", 
+        "respondent",
+        "rank",
+        "applicability",
+        "decisiondate",
+        "doctypebranch",
+        "importance",
+        "introductiondate",
+        "judgementdate",
         "originatingbody_type",
         "originatingbody_name",
         "respondent",
@@ -175,9 +195,10 @@ def main(args):
 
     ]
 
-    keys_list = ["article", "documentcollectionid", "externalsources", "extractedappno", "kpthesaurus", "parties", "scl", "representedby"]
+    keys_list = ["article", "documentcollectionid", "externalsources", "extractedappno", "kpthesaurus", "parties",
+                 "scl", "representedby"]
 
-    feature_index = {k:i for i,k in enumerate(keys + keys_list)}
+    feature_index = {k: i for i, k in enumerate(keys + keys_list)}
     feature_to_value = dict(zip(keys + keys_list, [None] * (len(keys) + len(keys_list))))
     for c in cases:
         for k, v in c.items():
@@ -194,7 +215,7 @@ def main(args):
     count = 0
     for k, s in feature_to_value.items():
         for v in s:
-            if k in keys: 
+            if k in keys:
                 feature_to_encoded[u'{}={}'.format(k, v)] = count
             elif k in keys_list:
                 feature_to_encoded[u'{}_has_{}'.format(k, v)] = count
@@ -206,14 +227,14 @@ def main(args):
         ccl = c[conclusion_key]
         for e in ccl:
             if e['type'] in ['violation', 'no-violation']:
-                #print(c['itemid'], e)
+                # print(c['itemid'], e)
                 if e['article'] not in outcomes:
                     outcomes[e['article']] = {
                         'violation': 0,
                         'no-violation': 0,
                         'total': 0
                     }
-                #if e['article'] == '8' and e['type'] == 'no-violation':
+                # if e['article'] == '8' and e['type'] == 'no-violation':
                 #    print(c['docname'])
                 outcomes[e['article']][e['type']] += 1
                 outcomes[e['article']]['total'] += 1
@@ -222,12 +243,12 @@ def main(args):
     count = 1
     for i, o in outcomes.items():
         encoded_outcomes[i] = count
-        count +=1
+        count += 1
 
     offset = len(feature_to_encoded)
-    #print('OFFSET: {}'.format(offset))
+    # print('OFFSET: {}'.format(offset))
 
-    print('# Generate dataset')
+    print(Markdown('- **Generate dataset**'))
     generate_dataset(
         cases=cases,
         keys=keys,
@@ -236,21 +257,30 @@ def main(args):
         feature_index=feature_index,
         feature_to_encoded=feature_to_encoded,
         output_path=output_folder,
-        name=args.processed_folder,
+        name=processed_folder,
         offset=offset,
         processed_folder=input_folder,
-        filter_classes=None if args.articles == [] else args.articles,
-        force=args.f)
+        filter_classes=None if articles == [] else articles,
+        force=force)
 
-    root_dir = os.path.join(args.build, 'dataset_documents', args.processed_folder)
+    root_dir = os.path.join(build, 'dataset_documents', processed_folder)
     shutil.make_archive(output_folder, 'zip', output_folder)
 
+
+def main(args):
+    console = Console(record=True)
+    run(console,
+        build=args.build,
+        articles=args.articles,
+        processed_folder=args.processed_folder,
+        force=args.f)
 
 def parse_args(parser):
     args = parser.parse_args()
 
     # Check path
     return args
+
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description='Generate final dataset files')
@@ -262,4 +292,3 @@ if __name__ == "__main__":
     args = parse_args(parser)
 
     main(args)
- 

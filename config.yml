@@ -1,0 +1,16 @@
+logging:
+  log_folder: './logs'
+  build_log_file: 'build.log'
+
+steps:
+  normalize:
+    ngrams:
+      1: 5
+      2: 3
+      3: 2
+      4: 2
+
+build:
+  env:
+    LIMIT_TOKENS: 10000
+

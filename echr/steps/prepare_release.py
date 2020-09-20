@@ -1,16 +1,23 @@
+import argparse
+import json
+import os
+from os import listdir
+from os.path import isfile
+import shutil
 from genson import SchemaBuilder
-from enum import Enum, auto
+from enum import Enum
 import copy
 import flatdict
 import pandas as pd
 import numpy as np
 from collections import OrderedDict
-import logging
-import argparse
-import json
-import os
+from functools import reduce  # forward compatibility for Python 3
+import operator
 
-logging.basicConfig(format='%(asctime)s : %(levelname)s : %(message)s', level=logging.INFO)
+from echr.utils.folders import make_build_folder
+from echr.utils.cli import TAB
+from rich.markdown import Markdown
+from rich.console import Console
 
 DELIMITER = '.'
 
@@ -20,12 +27,10 @@ type_priority = OrderedDict([
     ('string', str)
 ])
 
+
 class COL_HINT(str, Enum):
     HOT_ONE = 'hot_one'
     POSITIONAL = 'positional'
-
-from functools import reduce # forward compatibility for Python 3
-import operator
 
 
 def format_structured_json(cases):
@@ -215,7 +220,7 @@ def normalize(X, schema_hints=None):
                 df2 = []
                 for x in X:
                     e = []
-                    xart = {v['article']:v['type'] for v in x['conclusion'] if 'article' in v}
+                    xart = {v['article']: v['type'] for v in x['conclusion'] if 'article' in v}
                     for a in articles:
                         v = 0
                         if a in xart:
@@ -237,13 +242,12 @@ def normalize(X, schema_hints=None):
             encoded.append(e)
     df = pd.concat([df] + encoded, axis=1)
     return df, schema, flat_schema, flat_type_mapping, flat_domain_mapping
-    
+
 
 def test():
-
     X = [
-        {'a': [2, 3, 5], 'b': {'field': 'value', 'nested_array': ['f', 'o', 'o']}, 'c': 1.02, 't': [1,2,3]},
-        {'a': [3, 2], 'b': {'field': 'value'}, 'c': 12, 't':[2,3,5]},
+        {'a': [2, 3, 5], 'b': {'field': 'value', 'nested_array': ['f', 'o', 'o']}, 'c': 1.02, 't': [1, 2, 3]},
+        {'a': [3, 2], 'b': {'field': 'value'}, 'c': 12, 't': [2, 3, 5]},
         {'a': ['mix', 'a', 3], 'b': {'field': 'another value'}, 'd': [{'b': 'bar'}]},
     ]
 
@@ -266,25 +270,72 @@ def test():
       2     3     5     value                  f                  0                  0   1.02
       6     7              
       7     5     
-    
+
     OPTIONAL OUTPUT: -> Array are treated as sets with hot-one-encoder
     a.2 | a.3 | a.5 | a.6 | a.7 | b.field | b.nested_array.0 | b.nested_array.1 | b.nested_array.2 | c | d.0.b | 
-    
+
     + panda describe on any level + basic stats (boundary, domain)
-    
+
     '''
 
-def main(args):
-    schema_hints = {}
-    X = []
-    with open(args.schema_hints) as f:
-        schema_hints = json.load(f)
-    with open(args.database_json) as f:
-        X = json.load(f)
+def run(console, build, output_prefix, force=False):
+    __console = console
+    global print
+    print = __console.print
+
+    print(Markdown("- **Step configuration**"))
+    print(TAB + "> Prepare release folder structure")
+    paths = ['unstructured', 'structured', 'raw']
+    for p in paths:
+        make_build_folder(console, os.path.join(build, p), force, strict=False)
+
+    print(Markdown("- **Normalize database**"))
+    cases_files = [f for f in listdir(os.path.join(build, 'preprocessed_documents'))
+                   if isfile(os.path.join(build, 'preprocessed_documents', f)) and '.json' in f]
+    print(TAB + "> Load cases in memory [green][DONE]")
+    cases = []
+    for f in cases_files:
+        with open(os.path.join(build, 'preprocessed_documents', f)) as json_file:
+            data = json.load(json_file)
+            cases.append(data)
+
+    # Unstructured
+    with open(os.path.join(build, 'unstructured', 'cases.json'), 'w') as outfile:
+        json.dump(cases, outfile, indent=4)
+
+    # Structured
+    flat_cases , representatives, extractedapp, scl, decision_body = format_structured_json(cases)
+    schema_hints = {
+        'article': {
+            'col_type': COL_HINT.HOT_ONE
+        },
+        'documentcollectionid': {
+            'col_type': COL_HINT.HOT_ONE
+        },
+        'applicability': {
+            'col_type': COL_HINT.HOT_ONE
+        },
+        'paragraphs': {
+            'col_type': COL_HINT.HOT_ONE
+        },
+        'conclusion': {
+            'col_type': COL_HINT.HOT_ONE,
+            'sub_element': 'flatten'
+        }
+    }
+
+    output_path = os.path.join(build, 'structured')
+    with open(os.path.join(output_path, 'flat_cases.json'), 'w') as outfile:
+        json.dump(flat_cases, outfile, indent=4)
+
+    with open(os.path.join(output_path, 'schema_hint.json'), 'w') as outfile:
+        json.dump(schema_hints, outfile, indent=4)
+
+    X = flat_cases
     df, schema, flat_schema, flat_type_mapping, flat_domain_mapping = normalize(X, schema_hints)
-    output_path = args.build
-    df.to_json(os.path.join(output_path, '{}.json'.format(args.output_prefix)), orient='records')
-    df.to_csv(os.path.join(output_path, '{}.csv'.format(args.output_prefix)))
+    output_prefix = 'cases'
+    df.to_json(os.path.join(output_path, '{}.json'.format(output_prefix)), orient='records')
+    df.to_csv(os.path.join(output_path, '{}.csv'.format(output_prefix)))
 
     json_files = [
         ('schema', schema.to_schema()),
@@ -293,12 +344,99 @@ def main(args):
         ('flat_domain_mapping', flat_domain_mapping)
     ]
     for f in json_files:
-        with open(os.path.join(output_path, '{}_{}.json'.format(args.output_prefix, f[0])), 'w') as outfile:
+        with open(os.path.join(output_path, '{}_{}.json'.format(output_prefix, f[0])), 'w') as outfile:
             json.dump(f[1], outfile, indent=4)
+
+    os.remove(os.path.join(output_path, 'flat_cases.json'))
+    os.remove(os.path.join(output_path, 'cases_flat_schema.json'))
+    os.remove(os.path.join(output_path, 'cases_flat_type_mapping.json'))
+    shutil.copy(os.path.join(build, 'datasets_documents', 'all', 'features_text.json'), os.path.join(output_path))
+    shutil.copy(os.path.join(build, 'datasets_documents', 'all', 'statistics_datasets.json'), os.path.join(output_path))
+
+    print(TAB + '> Generate appnos matrice [green][DONE]')
+    matrice_appnos = {}
+    for k, v in extractedapp.items():
+        matrice_appnos[k] = {e:1 for e in v['appnos']}
+    with open(os.path.join(output_path, 'matrice_appnos.json'), 'w') as outfile:
+        json.dump(matrice_appnos, outfile, indent=4)
+
+    print(TAB + '> Generate scl matrice [green][DONE]')
+    matrice_scl = {}
+    for k, v in scl.items():
+        matrice_scl[k] = {e: 1 for e in v['scl']}
+    with open(os.path.join(output_path, 'matrice_scl.json'), 'w') as outfile:
+        json.dump(matrice_scl, outfile, indent=4)
+
+    print(TAB + '> Generate representatives matrice [green][DONE]')
+    matrice_representedby = {}
+    for k, v in representatives.items():
+        matrice_representedby[k] = {e: 1 for e in v['representedby']}
+    with open(os.path.join(output_path, 'matrice_representatives.json'), 'w') as outfile:
+        json.dump(matrice_representedby, outfile, indent=4)
+
+    print(TAB + '> Generate decision body matrice [green][DONE]')
+    matrice_decision_body = {}
+    for k, v in decision_body.items():
+        matrice_decision_body[k] = {k:v for k,v in v['role'].items()}
+    with open(os.path.join(output_path, 'matrice_decision_body.json'), 'w') as outfile:
+        json.dump(matrice_decision_body, outfile, indent=4)
+
+    processed_folder = os.path.join(build, 'processed_documents', 'all')
+    try:
+        os.mkdir(os.path.join(build, 'structured', 'tfidf'))
+    except Exception:
+        pass
+    tfidf_files = [f for f in listdir(processed_folder)
+                   if isfile(os.path.join(processed_folder, f)) and 'tfidf.txt' in f]
+
+    for f in tfidf_files:
+        shutil.copy(os.path.join(processed_folder, f), os.path.join(build, 'structured', 'tfidf', f))
+
+    try:
+        os.mkdir(os.path.join(build, 'structured', 'bow'))
+    except Exception:
+        pass
+    bow_files = [f for f in listdir(processed_folder)
+                 if isfile(os.path.join(processed_folder, f)) and 'bow.txt' in f]
+
+    for f in bow_files:
+        shutil.copy(os.path.join(processed_folder, f), os.path.join(build, 'structured', 'bow', f))
+
+    print(TAB + '> Create archives [green][DONE]')
+    # Raw
+    shutil.make_archive(os.path.join(build, 'raw', 'judgments'), 'zip',
+                        os.path.join(build, 'raw_documents'))
+    shutil.make_archive(os.path.join(build, 'raw', 'normalized'), 'zip',
+                        os.path.join(build, 'raw_normalized_documents'))
+
+    # All
+    from zipfile import ZipFile
+    with ZipFile(os.path.join(build, 'all.zip'), 'w') as zipObj:
+        # Iterate over all the files in directory
+        folders = ['unstructured', 'raw', 'structured']
+        for f in folders:
+            for folderName, subfolders, filenames in os.walk(os.path.join(build, f)):
+                for filename in filenames:
+                    if not filename.endswith('.zip'):
+                        filePath = os.path.join(folderName, filename)
+                        zipObj.write(filePath)
+
+    shutil.make_archive(os.path.join(build, 'structured', 'tfidf'), 'zip',
+                        os.path.join(build, 'structured', 'tfidf'))
+    shutil.make_archive(os.path.join(build, 'structured', 'bow'), 'zip',
+                        os.path.join(build, 'structured', 'bow'))
+
+
+def main(args):
+    console = Console(record=True)
+    run(console,
+        build=args.build,
+        force=args.f)
 
 
 def parse_args(parser):
     args = parser.parse_args()
+
     # Check path
     return args
 
@@ -306,7 +444,6 @@ def parse_args(parser):
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description='Normalize any databse of arbitrarily nested documents.')
     parser.add_argument('--build', type=str, default="./build/echr_database/")
-    parser.add_argument('--database_json', type=str)
     parser.add_argument('--schema_hints', type=str)
     parser.add_argument('--output_prefix', type=str)
     parser.add_argument('-f', action='store_true')
@@ -314,3 +451,4 @@ if __name__ == "__main__":
     args = parse_args(parser)
 
     main(args)
+

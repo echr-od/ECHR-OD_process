@@ -2,10 +2,23 @@
 import argparse
 from collections import Counter
 import json
-from os import listdir, path, mkdir
+import os
+from os import listdir, path
 import re
-import shutil
-import sys
+
+
+from echr.utils.folders import make_build_folder
+from echr.utils.logger import getlogger
+from echr.utils.cli import TAB
+from rich.markdown import Markdown
+from rich.console import Console
+from rich.table import Table
+from rich.progress import (
+    Progress,
+    BarColumn,
+    TimeRemainingColumn,
+)
+log = getlogger()
 
 def format_parties(parties):
     """Return the list of parties from the case title.
@@ -23,6 +36,7 @@ def format_parties(parties):
     parties = [p.strip() for p in parties]
     return parties
 
+
 def format_conclusion(ccl):
     """Format a conclusion string into a list of elements:
 
@@ -30,23 +44,23 @@ def format_conclusion(ccl):
 
         ```json
             {
-                "article": "3", 
+                "article": "3",
                 "details": [
-                    "Article 3 - Degrading treatment", 
+                    "Article 3 - Degrading treatment",
                     "Inhuman treatment"
-                ], 
-                "element": "Violation of Article 3 - Prohibition of torture", 
+                ],
+                "element": "Violation of Article 3 - Prohibition of torture",
                 "mentions": [
                     "Substantive aspect"
-                ], 
+                ],
                 "type": "violation"
-            }, 
+            },
             {
-                "article": "13", 
+                "article": "13",
                 "details": [
                     "Article 13 - Effective remedy"
-                ], 
-                "element": "Violation of Article 13 - Right to an effective remedy", 
+                ],
+                "element": "Violation of Article 13 - Right to an effective remedy",
                 "type": "violation"
             }
         ```
@@ -77,7 +91,7 @@ def format_conclusion(ccl):
                     final_ccl[-1]['mentions'] = b
             continue
         article = articles[-1] if not articles[-1].startswith(';') else articles[-1][1:]
-        conclusion = {'element': article }
+        conclusion = {'element': article}
         if b:
             conclusion['details'] = b
         if len(article.strip()) == 0:
@@ -92,7 +106,7 @@ def format_conclusion(ccl):
 
     to_append = []
     for i, e in enumerate(final_ccl):
-        l =  re.sub(' +', ' ', e['element'].lower().strip())
+        l = re.sub(' +', ' ', e['element'].lower().strip())
         t = 'other'
         if l.startswith('violation'):
             t = 'violation'
@@ -140,7 +154,7 @@ def format_conclusion(ccl):
                         if a.lower().startswith('art.') and not a.lower().startswith('art. ') and len(a) > 4:
                             art = a.lower()[4:]
                         else:
-                            art = b[j+1]
+                            art = b[j + 1]
                         break
                 if art is not None:
                     art = art.split('+')
@@ -153,6 +167,7 @@ def format_conclusion(ccl):
 
     final_ccl.extend(to_append)
     return final_ccl
+
 
 def format_article(article):
     """Format the list of articles.
@@ -167,6 +182,7 @@ def format_article(article):
     articles = [a.split('-')[0].strip() for a in articles]
     return list(set(articles))
 
+
 def format_subarticle(article):
     """Format the list of subarticles.
 
@@ -180,6 +196,7 @@ def format_subarticle(article):
     res = list(set(articles))
     return res
 
+
 def format_cases(cases):
     """
         Format the cases from raw information
@@ -190,7 +207,7 @@ def format_cases(cases):
         :rtype: [dict]
     """
     COUNTRIES = {}
-    with open('countries.json') as f:
+    with open(os.path.join('data', 'countries.json')) as f:
         data = json.load(f)
         for c in data:
             COUNTRIES[c['alpha-3']] = {
@@ -199,45 +216,55 @@ def format_cases(cases):
             }
 
     ORIGINATING_BODY = {}
-    with open('originatingbody.json') as f:
+    with open(os.path.join('data', 'originatingbody.json')) as f:
         ORIGINATING_BODY = json.load(f)
-    for i, c in enumerate(cases):
-        sys.stdout.write('\r - Format case {}/{}'.format(i+1, len(cases)))
-        cases[i]['parties'] = format_parties(cases[i]['docname'])
-        cases[i]['__conclusion'] = cases[i]['conclusion']
-        cases[i]['conclusion'] = format_conclusion(c['__conclusion'])
-        cases[i]['__articles'] = cases[i]['article']
-        cases[i]['article'] = format_article(cases[i]['__articles'])
-        cases[i]['paragraphs'] = format_subarticle(cases[i]['__articles'])
-        cases[i]['externalsources'] = cases[i]["externalsources"].split(';') if len(cases[i]['externalsources']) > 0 else []
-        cases[i]["documentcollectionid"] = cases[i]["documentcollectionid"].split(';') if len(cases[i]['documentcollectionid']) > 0 else []
-        cases[i]["issue"] = cases[i]["issue"].split(';') if len(cases[i]['issue']) > 0 else []
-        cases[i]["representedby"] = cases[i]["representedby"].split(';') if len(cases[i]['representedby']) > 0 else []
-        cases[i]["extractedappno"] = cases[i]["extractedappno"].split(';')
 
-        cases[i]['externalsources'] = [e.strip() for e in cases[i]['externalsources']]
-        cases[i]['documentcollectionid'] = [e.strip() for e in cases[i]['documentcollectionid']]
-        cases[i]['issue'] = [e.strip() for e in cases[i]['issue']]
-        cases[i]['representedby'] = [e.strip() for e in cases[i]['representedby']]
-        cases[i]['extractedappno'] = [e.strip() for e in cases[i]['extractedappno']]
+    with Progress(
+            TAB + "> Format cases [IN PROGRESS]",
+            "| Cases ({task.completed} / {task.total})",
+            BarColumn(30),
+            TimeRemainingColumn(),
+            transient=True
+    ) as progress:
+        task = progress.add_task("Format", total=len(cases))
+        for i, c in enumerate(cases):
+            progress.update(task, advance=1)
+            cases[i]['parties'] = format_parties(cases[i]['docname'])
+            cases[i]['__conclusion'] = cases[i]['conclusion']
+            cases[i]['conclusion'] = format_conclusion(c['__conclusion'])
+            cases[i]['__articles'] = cases[i]['article']
+            cases[i]['article'] = format_article(cases[i]['__articles'])
+            cases[i]['paragraphs'] = format_subarticle(cases[i]['__articles'])
+            cases[i]['externalsources'] = cases[i]["externalsources"].split(';') if len(
+                cases[i]['externalsources']) > 0 else []
+            cases[i]["documentcollectionid"] = cases[i]["documentcollectionid"].split(';') if len(
+                cases[i]['documentcollectionid']) > 0 else []
+            cases[i]["issue"] = cases[i]["issue"].split(';') if len(cases[i]['issue']) > 0 else []
+            cases[i]["representedby"] = cases[i]["representedby"].split(';') if len(cases[i]['representedby']) > 0 else []
+            cases[i]["extractedappno"] = cases[i]["extractedappno"].split(';')
 
-        cases[i]['country'] = COUNTRIES[cases[i]['respondent'].split(';')[0]]
-        cases[i]['originatingbody_type'] = ORIGINATING_BODY[cases[i]['originatingbody']]['type']
-        cases[i]['originatingbody_name'] = ORIGINATING_BODY[cases[i]['originatingbody']]['name']
+            cases[i]['externalsources'] = [e.strip() for e in cases[i]['externalsources']]
+            cases[i]['documentcollectionid'] = [e.strip() for e in cases[i]['documentcollectionid']]
+            cases[i]['issue'] = [e.strip() for e in cases[i]['issue']]
+            cases[i]['representedby'] = [e.strip() for e in cases[i]['representedby']]
+            cases[i]['extractedappno'] = [e.strip() for e in cases[i]['extractedappno']]
 
-        cases[i]["rank"] = cases[i]['Rank']
-        del cases[i]["Rank"]
+            cases[i]['country'] = COUNTRIES[cases[i]['respondent'].split(';')[0]]
+            cases[i]['originatingbody_type'] = ORIGINATING_BODY[cases[i]['originatingbody']]['type']
+            cases[i]['originatingbody_name'] = ORIGINATING_BODY[cases[i]['originatingbody']]['name']
 
-        del cases[i]["isplaceholder"]
-        cases[i]["kpdate"] = cases[i]['kpdateAsText']
-        del cases[i]['kpdateAsText']
-        del cases[i]["documentcollectionid2"]
-        cases[i]["kpthesaurus"] = cases[i]["kpthesaurus"].split(';')
-        cases[i]["scl"] = cases[i]["scl"].split(';') if cases[i]["scl"].strip() else []
-        del cases[i]["application"]
-        del cases[i]["doctype"]
-        del cases[i]["meetingnumber"]
-    print('')
+            cases[i]["rank"] = cases[i]['Rank']
+            del cases[i]["Rank"]
+
+            del cases[i]["isplaceholder"]
+            cases[i]["kpdate"] = cases[i]['kpdateAsText']
+            del cases[i]['kpdateAsText']
+            del cases[i]["documentcollectionid2"]
+            cases[i]["kpthesaurus"] = cases[i]["kpthesaurus"].split(';')
+            cases[i]["scl"] = cases[i]["scl"].split(';') if cases[i]["scl"].strip() else []
+            del cases[i]["doctype"]
+            del cases[i]["meetingnumber"]
+    print(TAB + "> Format case [green][DONE]")
     return cases
 
 
@@ -250,24 +277,31 @@ def filter_cases(cases):
         :rtype: [dict]
     """
     total = len(cases)
-    print(' - Total number of cases before filtering: {}'.format(total))
-    print(' - Remove non-english cases')
+    print(TAB + '> Total number of cases before filtering: {}'.format(total))
+    if total == 0:
+        print(TAB + '[bold red]:double_exclamation_mark: There is no case to filter!')
+        exit(1)
+    print(TAB + '> Remove non-english cases')
     cases = [i for i in cases if i["languageisocode"] == "ENG"]
-    print('\tRemaining: {} ({}%)'.format(len(cases), 100 * float(len(cases)) / total ))
-    print(' - Keep only cases with a judgment document:')
+    print(TAB + '  ⮡ Remaining: {} ({:.4f}%)'.format(len(cases), 100 * float(len(cases)) / total))
+    print(TAB + '> Keep only cases with a judgment document:')
     cases = [i for i in cases if i["doctype"] == "HEJUD"]
-    print('\tRemaining: {} ({}%)'.format(len(cases), 100 * float(len(cases)) / total ))
-    print(' - Remove cases without an attached document:')
-    cases = [i for i in cases if i["application"].startswith("MS WORD")]
-    print('\tRemaining: {} ({}%)'.format(len(cases), 100 * float(len(cases)) / total ))
-    print(' - Keep cases with a clear conclusion:')
-    cases = [i for i in cases if "No-violation" in i["conclusion"] or "No violation" in i["conclusion"] or "Violation" in i["conclusion"] or "violation" in i["conclusion"]]
-    print('\tRemaining: {} ({}%)'.format(len(cases), 100 * float(len(cases)) / total ))
-    print(' - Remove a specific list of cases hard to process:')
+    print(TAB + '  ⮡ Remaining: {} ({:.4f}%)'.format(len(cases), 100 * float(len(cases)) / total))
+    # print(' - Remove cases without an attached document:')
+    # cases = [i for i in cases if i["application"].startswith("MS WORD")]
+    # print('\tRemaining: {} ({}%)'.format(len(cases), 100 * float(len(cases)) / total ))
+    print(TAB + '> Keep cases with a clear conclusion:')
+    cases = [i for i in cases if
+             "No-violation" in i["conclusion"] or "No violation" in i["conclusion"] or "Violation" in i[
+                 "conclusion"] or "violation" in i["conclusion"]]
+    print(TAB + '  ⮡ Remaining: {} ({:.4f}%)'.format(len(cases), 100 * float(len(cases)) / total))
+    print(TAB + '> Remove a specific list of cases hard to process:')
     cases = [i for i in cases if i['itemid'] not in ["001-154354", "001-108395", "001-79411"]]
-    print('\tRemaining: {} ({}%)'.format(len(cases), 100 * float(len(cases)) / total ))
-
+    print(TAB + '  ⮡ Remaining: {} ({:.4f}%)'.format(len(cases), 100 * float(len(cases)) / total))
+    print(TAB + '-' * 50)
+    print(TAB + '> Final number of cases: {}'.format(len(cases)))
     return cases
+
 
 def generate_statistics(cases):
     """Generate statistics about the cases
@@ -277,6 +311,7 @@ def generate_statistics(cases):
         :return: statistics about the cases
         :rtype: dict
     """
+
     def generate_count(k, cases):
         s = []
         for c in cases:
@@ -287,40 +322,45 @@ def generate_statistics(cases):
                 if type(c[k]) == list:
                     if len(c[k]):
                         s.extend(c[k])
-                elif type(c[k]) == str: #string
+                elif type(c[k]) == str:  # string
                     if len(c[k].strip()):
                         s.append(c[k])
         return s
 
+    table = Table()
+    table.add_column("Attribute", style="cyan", no_wrap=True)
+    table.add_column("Cardinal", justify="right", style="magenta")
+    table.add_column("Density",  justify="right", style="green")
+
     keys = cases[0].keys()
     except_k = []
-    stats = {'attributes':{}}
+    stats = {'attributes': {}}
     for k in [i for i in keys if i not in except_k]:
         s = generate_count(k, cases)
-        #print(s)
         s = Counter(s)
-        print(' - Attribute "{}": \n\t- Cardinal: {}\n\t- Density: {}'.format(k, len(s), float(len(s)) / len(cases)))
         stats['attributes'][k] = {
             'cardinal': len(s),
             'density': float(len(s)) / len(cases)
         }
-
+        table.add_row(k, str(len(s)), '{:.4f}'.format(float(len(s)) / len(cases)))
+    print(table)
     return stats
 
 
-def main(args):
-    input_folder = path.join(args.build, 'raw_cases_info')
-    output_folder = path.join(args.build, 'cases_info')
-    try:
-        if args.f:
-            shutil.rmtree(output_folder)
-        mkdir(output_folder)
-    except Exception as e:
-        print(e)
-        exit(1)
+def run(console, build, force=False):
+    __console = console
+    global print
+    print = __console.print
+
+    print(Markdown("- **Step configuration**"))
+    input_folder = path.join(build, 'raw_cases_info')
+    output_folder = path.join(build, 'cases_info')
+    print(TAB + '> Step folder: {}'.format(path.join(build, 'cases_info')))
+    make_build_folder(console, output_folder, force, strict=False)
 
     cases = []
-    files = [path.join(input_folder, f) for f in listdir(input_folder) if path.isfile(path.join(input_folder, f)) if '.json' in f]
+    files = [path.join(input_folder, f) for f in listdir(input_folder) if path.isfile(path.join(input_folder, f)) if
+             '.json' in f]
     for p in files:
         try:
             with open(p, 'r') as f:
@@ -328,15 +368,15 @@ def main(args):
                 index = json.loads(content)
                 cases.extend(index["results"])
         except Exception as e:
-            print(p, e)
+            log.info(p, e)
     cases = [c["columns"] for c in cases]
 
-    print('# Filter cases')
+    print(Markdown("- **Filter cases**"))
     cases = filter_cases(cases)
-    print('# Format cases')
+    print(Markdown("- **Format cases metadata**"))
     cases = format_cases(cases)
 
-    print('# Generate statistics')
+    print(Markdown("- **Generate statistics**"))
     stats = generate_statistics(cases)
 
     with open(path.join(output_folder, 'filter.statistics.json'), 'w') as outfile:
@@ -344,7 +384,6 @@ def main(args):
 
     with open(path.join(output_folder, 'raw_cases_info_all.json'), 'w') as outfile:
         json.dump(cases, outfile, indent=4, sort_keys=True)
-
 
     filtered_cases = []
     for c in cases:
@@ -356,7 +395,8 @@ def main(args):
                     classes.append('{}:{}'.format(g, 1 if e['type'] == 'violation' else 0))
 
         classes = list(set(classes))
-        opposed_classes = any([e for e in classes if e.split(':')[0]+':'+ str(abs(1 - int(e.split(':')[-1]))) in classes])
+        opposed_classes = any(
+            [e for e in classes if e.split(':')[0] + ':' + str(abs(1 - int(e.split(':')[-1]))) in classes])
         if len(classes) > 0 and not opposed_classes:
             filtered_cases.append(c)
 
@@ -366,7 +406,6 @@ def main(args):
         ccl = c['conclusion']
         for e in ccl:
             if e['type'] in ['violation', 'no-violation']:
-                #print(c['itemid'], e)
                 if e['article'] not in outcomes:
                     outcomes[e['article']] = {
                         'violation': 0,
@@ -379,17 +418,29 @@ def main(args):
                     cases_per_articles[e['article']] = []
                 cases_per_articles[e['article']].append(c)
 
-    print('# Generate case info for specific articles:')
+    print(Markdown("- **Generate case listing for datasets**"))
     multilabel_cases = []
     multilabel_index = set()
-    for k in outcomes.keys():
-        print(' - Generate case info for article {}'.format(k))
-        with open(path.join(output_folder, 'raw_cases_info_article_{}.json'), 'w') as outfile:
-            json.dump(cases_per_articles[k], outfile, indent=4, sort_keys=True)
-        multilabel_cases.extend(cases_per_articles[k])
-        for c in cases_per_articles[k]:
-            multilabel_index.add(c['itemid'])
-
+    with Progress(
+            TAB + "> Generate case info for specific article [IN PROGRESS]",
+            "| {task.fields[progress_array]}",
+            transient=True,
+    ) as progress:
+        progress_array = []
+        def to_str(a):
+            if len(a) == 1:
+                return '[[green]{}[white]]'.format(a[0])
+            return '[{}{}]'.format(''.join(['[green]{}[white], '.format(e) for e in a[:-1]]), a[-1])
+        task = progress.add_task("Generate datasets cases", total=len(outcomes), progress_array="[]")
+        for k in outcomes.keys():
+            progress_array.append(k)
+            with open(path.join(output_folder, 'raw_cases_info_article_{}.json'.format(k)), 'w') as outfile:
+                json.dump(cases_per_articles[k], outfile, indent=4, sort_keys=True)
+            multilabel_cases.extend(cases_per_articles[k])
+            for c in cases_per_articles[k]:
+                multilabel_index.add(c['itemid'])
+            progress.update(task, advance=1, progress_array=to_str(progress_array))
+    print(TAB + "> Generate case info for specific article [green][DONE]",)
     multilabel_cases_unique = []
     for c in multilabel_cases:
         if c['itemid'] in multilabel_index:
@@ -398,16 +449,15 @@ def main(args):
 
     with open(path.join(output_folder, 'raw_cases_info_multilabel.json'), 'w') as outfile:
         json.dump(multilabel_cases_unique, outfile, indent=4, sort_keys=True)
-
-
-    multiclass_index = {} # Key: case ID / Value = number of different dataset it appears in
+    print(TAB + "> Generate case info for multilabel dataset [green][DONE]", )
+    multiclass_index = {}  # Key: case ID / Value = number of different dataset it appears in
     multiclass_cases = []
     sorted_outcomes = dict(sorted(outcomes.items(), key=lambda x: x[1]['total'])).keys()
     for k in sorted_outcomes:
         for c in cases_per_articles[k]:
             if c['itemid'] not in multiclass_index:
                 nb_datasets = [e['article'] for e in c['conclusion'] if 'article' in e]
-                if  len(list(set(nb_datasets))) == 1:
+                if len(list(set(nb_datasets))) == 1:
                     for cc in c['conclusion']:
                         if 'article' in cc and cc['article'] == k:
                             c['mc_conclusion'] = [cc]
@@ -416,22 +466,30 @@ def main(args):
                         multiclass_index[c['itemid']] = k
                         multiclass_cases.append(c)
                     else:
-                        print('No article found for {}'.format(c['itemid']))
+                        log.info('No article found for {}'.format(c['itemid']))
                 else:
-                    print('Article {} in {} datasets: {}. Skip for multiclass.'.format(c['itemid'],
-                        len(set(nb_datasets)),
-                        ','.join(list(set(nb_datasets))))
-                    )
+
+                    log.info('Article {} in {} datasets: {}. Skip for multiclass.'.format(c['itemid'],
+                                                                                       len(set(nb_datasets)),
+                                                                                       ','.join(list(set(nb_datasets))))
+                          )
 
     with open(path.join(output_folder, 'raw_cases_info_multiclass.json'), 'w') as outfile:
         json.dump(multiclass_cases, outfile, indent=4, sort_keys=True)
+    print(TAB + "> Generate case info for multiclass [green][DONE]", )
 
- 
+    build_log_path = os.path.join(build, 'logs')
+
+
+def main(args):
+    console = Console(record=True)
+    run(console, args.build, args.force)
+
+
 def parse_args(parser):
     args = parser.parse_args()
-
-    # TODO: check args
     return args
+
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description='Filter and format ECHR cases information')
@@ -440,4 +498,4 @@ if __name__ == "__main__":
     args = parse_args(parser)
 
     main(args)
- 
+
