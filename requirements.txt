@@ -13,3 +13,6 @@ pytest
 pylint
 osfclient
 urllib3
+rich
+pyyaml
+mock

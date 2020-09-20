@@ -6,9 +6,23 @@ from os.path import isfile, join
 import re
 import shutil
 from docx import Document
-from docx.shared import Inches
-from docx.text.run import Run
 import zipfile
+
+from echr.utils.folders import make_build_folder
+from echr.utils.logger import getlogger
+from echr.utils.cli import TAB
+from rich.markdown import Markdown
+from rich.console import Console
+from rich.table import Table
+from rich.progress import (
+    Progress,
+    BarColumn,
+    TimeRemainingColumn,
+)
+
+log = getlogger()
+
+__console = Console(record=True)
 
 TMP = '/tmp/echr_tmp_doc'
 
@@ -16,11 +30,11 @@ TMP = '/tmp/echr_tmp_doc'
 tags = {
     "SECTION_TITLE_STYLE": ['ECHR_Title_1', 'Ju_H_Head'],
     "HEADING_1_STYLE": ['ECHR_Heading_1', 'Ju_H_I_Roman'],
-    "HEADING_2_STYLE" :['ECHR_Heading_2', 'Ju_H_A', 'Ju_H_a'],
-    "HEADING_3_STYLE" :['ECHR_Heading_3', 'Ju_H_1.', 'Ju_H_1'],
-    "HEADING_PARA": ['ECHR_Para', 'ECHR_Para_Quote', 'Ju_List',\
-        'Ju_List_a', 'Ju_Para', 'Normal', 'Ju_Quot', 'Ju_H_Article',\
-        'Ju_Para Char Char', 'Ju_Para Char', 'Ju_Para_Last', 'Opi_Para'],
+    "HEADING_2_STYLE": ['ECHR_Heading_2', 'Ju_H_A', 'Ju_H_a'],
+    "HEADING_3_STYLE": ['ECHR_Heading_3', 'Ju_H_1.', 'Ju_H_1'],
+    "HEADING_PARA": ['ECHR_Para', 'ECHR_Para_Quote', 'Ju_List',
+                     'Ju_List_a', 'Ju_Para', 'Normal', 'Ju_Quot', 'Ju_H_Article',
+                     'Ju_Para Char Char', 'Ju_Para Char', 'Ju_Para_Last', 'Opi_Para'],
     "DECISION_BODY": ['ECHR_Decision_Body', 'Ju_Judges']
 }
 
@@ -39,7 +53,8 @@ for k, v in tags.items():
     for t in v:
         tag_to_level[t] = levels[k]
 
-OLD_PARSER_TAGS = ['header', 'Normal', 'Body Text 2', 'Body Text Indent 3', 'OldCommission', 'Heading 6', 'Heading 5', 'Heading 4']
+OLD_PARSER_TAGS = ['header', 'Normal', 'Body Text 2', 'Body Text Indent 3', 'OldCommission', 'Heading 6', 'Heading 5',
+                   'Heading 4']
 
 internal_section_reference = {
     'procedure': "",
@@ -47,6 +62,7 @@ internal_section_reference = {
     'law': "",
     'conclusion': ""
 }
+
 
 def tag_elements(parsed):
     """Tag the elements in the parsed document.
@@ -60,7 +76,7 @@ def tag_elements(parsed):
         :rtype: dict
     """
     for i, section in parsed['elements']:
-        pass # TODO: Tag the element in the parsed document
+        pass  # TODO: Tag the element in the parsed document
     parsed['elements'][-1]['section_name'] = 'conclusion'
     return parsed
 
@@ -78,6 +94,7 @@ def format_title(line):
         return m.group(2).strip()
     else:
         return line
+
 
 def parse_body(body):
     """Extract body members
@@ -103,7 +120,7 @@ def parse_body(body):
             k = i + 1
 
     for r in roles:
-        for i, m in enumerate(members[r[0]:r[1]+1]):
+        for i, m in enumerate(members[r[0]:r[1] + 1]):
             members[r[0] + i]['role'] = r[2]
 
     return members
@@ -133,21 +150,21 @@ def parse_document(doc):
     section = {}
 
     decision_body = ""
-    appender = Node() # Top level node
+    appender = Node()  # Top level node
     for p in doc.paragraphs:
         line = p.text.strip()
         if not len(line):
             continue
-        #print(p.style.name, p.text)
+        # print(p.style.name, p.text)
         level = tag_to_level.get(p.style.name, 0)
         if level > 0:
             if appender.level == 0 and not len(appender.elements) and level > 1:
                 pass
-                #print('HEADER')
+                # print('HEADER')
             else:
-                #print('L {} | App level: {}'.format(level, appender.level))
+                # print('L {} | App level: {}'.format(level, appender.level))
                 if level < appender.level:
-                    while(appender.level > level - 1):
+                    while (appender.level > level - 1):
                         appender = appender.parent
                 elif level == appender.level:
                     appender = appender.parent
@@ -157,14 +174,10 @@ def parse_document(doc):
 
         if level < 0:
             if level == -1:
-                #print(p.text)
                 decision_body += p.text
-        #else:
-        #    print(p.style.name, p.text)
-    
 
     root = appender
-    while(root.level != 0):
+    while (root.level != 0):
         root = root.parent
 
     def print_tree(root):
@@ -173,7 +186,8 @@ def parse_document(doc):
             :param root: root of the tree
             :type root: Node
         """
-        print("LEVEL {} {} {}".format(root.level, ' ' * root.level * 2, root.content.encode('utf-8') if root.content else 'ROOT'))
+        print("LEVEL {} {} {}".format(root.level, ' ' * root.level * 2,
+                                      root.content.encode('utf-8') if root.content else 'ROOT'))
         if len(root.elements) == 0:
             return
         else:
@@ -200,19 +214,17 @@ def parse_document(doc):
 
     parsed = {'elements': []}
     parsed['elements'] = tree_to_json(root, parsed)['elements']
-    #del parsed['elements']
-    #for e in appender.elements:
-    #    print(e.content)
-    #print_tree(root)
     parsed['decision_body'] = parse_body(decision_body) if decision_body else []
     parsed = tag_elements(parsed)
 
     return parsed
 
+
 PARSER = {
     'old': 'OLD',
     'new': 'NEW'
 }
+
 
 def format_paragraph(p):
     """Format paragraph
@@ -227,7 +239,8 @@ def format_paragraph(p):
         return match.group(1).strip()
     else:
         return p
-    
+
+
 def json_to_text_(doc, text_only=True, except_section=[]):
     res = []
     if not len(doc['elements']):
@@ -238,8 +251,9 @@ def json_to_text_(doc, text_only=True, except_section=[]):
             res.extend(json_to_text_(e, text_only=True, except_section=except_section))
     return res
 
+
 def json_to_text(doc, text_only=True, except_section=[]):
-    """Format json to text 
+    """Format json to text
 
         :param doc: parsed document
         :type doc: dict
@@ -251,6 +265,7 @@ def json_to_text(doc, text_only=True, except_section=[]):
         :rtype: str
     """
     return '\n'.join(json_to_text_(doc, text_only, except_section))
+
 
 def select_parser(doc):
     """Select the parser to be used for a given document
@@ -265,21 +280,20 @@ def select_parser(doc):
     else:
         return PARSER['new']
 
-def main(args):
-    input_file = os.path.join(args.build, 'cases_info/raw_cases_info_all.json')
-    input_folder = os.path.join(args.build, 'raw_documents')
-    output_folder = os.path.join(args.build, 'preprocessed_documents')
-    if not args.u:
-        try:
-            if args.f:
-                shutil.rmtree(output_folder)
-            os.mkdir(output_folder)
-        except Exception as e:
-            print(e)
-            exit(1)
-            
+def run(console, build, force=False, update=False):
+    __console = console
+    global print
+    print = __console.print
+
+    print(Markdown("- **Step configuration**"))
+    input_file = os.path.join(build, 'cases_info/raw_cases_info_all.json')
+    input_folder = os.path.join(build, 'raw_documents')
+    output_folder = os.path.join(build, 'preprocessed_documents')
+    print(TAB + '> Step folder: {}'.format(output_folder))
+    make_build_folder(console, output_folder, force, strict=False)
+
     stats = {
-        'parser_type':{
+        'parser_type': {
             'OLD': 0,
             'NEW': 0
         }
@@ -288,50 +302,83 @@ def main(args):
     with open(input_file, 'r') as f:
         content = f.read()
         cases = json.loads(content)
-        cases_index = {c['itemid']:i for i,c in enumerate(cases)}
+        cases_index = {c['itemid']: i for i, c in enumerate(cases)}
         f.close()
 
-    update = args.u
     correctly_parsed = 0
     failed = []
-    files = [os.path.join(input_folder, f) for f in listdir(input_folder) if isfile(join(input_folder, f)) if '.docx' in f]
-    print('# Process documents')
-    for i, p in enumerate(files):
-        id_doc = p.split('/')[-1].split('.')[0]
-        print(' - Process document {} {}/{}'.format(id_doc, i, len(files)))
-        filename_parsed = os.path.join(output_folder, '{}_parsed.json'.format(id_doc))
-        if not update or not os.path.isfile(filename_parsed):
-            try:
-                p_ = update_docx(p)
-                doc = Document(p_)
-                parser = select_parser(doc)
-                stats['parser_type'][parser] += 1
-                if parser == 'NEW':
-                    parsed = parse_document(doc)
-                    parsed.update(cases[cases_index[id_doc]])
-                    with open(os.path.join(output_folder, '{}_text_without_conclusion.txt'.format(id_doc)), 'w') as toutfile:
-                        toutfile.write(json_to_text(parsed, True, ['conclusion']))
-                    parsed['documents'] = ['{}.docx'.format(id_doc)]
-                    parsed['content'] = {
-                        '{}.docx'.format(id_doc): parsed['elements']
-                    }
-                    del parsed['elements']
-                    with open(filename_parsed, 'w') as outfile:
-                        json.dump(parsed, outfile, indent=4, sort_keys=True)
-                    correctly_parsed += 1
-                else:
-                    raise Exception("OLD parser is not available yet.")
-            except Exception as e:
-                failed.append((id_doc,e))    
-                print("\t->{} {}".format(p, e))
-        else:
-            print('\t-> Skip document because it is already processed')
-            correctly_parsed += 1
+    files = [os.path.join(input_folder, f) for f in listdir(input_folder) if isfile(join(input_folder, f)) if
+             '.docx' in f]
+    print(Markdown('- **Preprocess documents**'))
 
-    print('# Correctly parsed: {}/{} ({}%)'.format(correctly_parsed, len(files), (100. * correctly_parsed) / len(files)))
-    print('# List of failed documents:')
-    for e in failed:
-        print('\t- {}: {}'.format(e[0], e[1]))
+    with Progress(
+            TAB + "> Preprocess documents... [IN PROGRESS]\n",
+            BarColumn(30),
+            TimeRemainingColumn(),
+            "| Document [blue]{task.fields[doc]} [white]({task.completed}/{task.total})"
+            "{task.fields[error]}",
+            transient=True,
+    ) as progress:
+        task = progress.add_task("Preprocessing...", total=len(files), error="",
+                                 doc=files[0].split('/')[-1].split('.')[0])
+        for i, p in enumerate(files):
+            error = ""
+            id_doc = p.split('/')[-1].split('.')[0]
+            filename_parsed = os.path.join(output_folder, '{}_parsed.json'.format(id_doc))
+            if not update or not os.path.isfile(filename_parsed):
+                try:
+                    p_ = update_docx(p)
+                    doc = Document(p_)
+                    parser = select_parser(doc)
+                    stats['parser_type'][parser] += 1
+                    if parser == 'NEW':
+                        parsed = parse_document(doc)
+                        parsed.update(cases[cases_index[id_doc]])
+                        with open(os.path.join(output_folder, '{}_text_without_conclusion.txt'.format(id_doc)),
+                                  'w') as toutfile:
+                            toutfile.write(json_to_text(parsed, True, ['conclusion']))
+                        parsed['documents'] = ['{}.docx'.format(id_doc)]
+                        parsed['content'] = {
+                            '{}.docx'.format(id_doc): parsed['elements']
+                        }
+                        del parsed['elements']
+                        with open(filename_parsed, 'w') as outfile:
+                            json.dump(parsed, outfile, indent=4, sort_keys=True)
+                        correctly_parsed += 1
+                    else:
+                        raise Exception("OLD parser is not available yet.")
+                except Exception as e:
+                    failed.append((id_doc, e))
+                    error = "\n| Could not preprocess {}".format(id_doc)
+                    error += "\n| {}".format(e)
+                    log.debug("{} {}".format(p, e))
+            else:
+                error = '\n| Skip document because it is already processed'
+                correctly_parsed += 1
+            progress.update(task, advance=1, error=error, doc=id_doc)
+    if (correctly_parsed == len(files)):
+        print(TAB + "> Preprocess documents... [green][DONE]")
+    else:
+        print(TAB + "> Preprocess documents... [yellow][WARNING]")
+        print(TAB + "[bold yellow]:warning: Some documents could not be preprocessed")
+        print(TAB + "  [bold yellow]THE FINAL DATABASE WILL BE INCOMPLETE!")
+    print(
+        TAB + '> Correctly parsed: {}/{} ({:.4f}%)'.format(correctly_parsed, len(files), (100. * correctly_parsed) / len(files)))
+
+    if (correctly_parsed != len(files)):
+        print(TAB + '> List of failed documents:')
+        table = Table()
+        table.add_column("Case ID", style="cyan", no_wrap=True)
+        table.add_column("Error", justify="left", style="magenta")
+        for e in failed:
+            table.add_row(e[0], str(e[1]))
+        print(table)
+
+
+def main(args):
+    console = Console(record=True)
+    run(console, args.build, args.force, args.u)
+
 
 
 def update_docx(docname):
@@ -371,7 +418,7 @@ def update_docx(docname):
             if '<w:smartTag ' in l and remove_open:
                 del lines[i]
                 remove_open = False
-            if '</w:smartTag'==l and not remove_open:
+            if '</w:smartTag' == l and not remove_open:
                 del lines[i]
                 remove_open = True
         file.close()
@@ -394,6 +441,7 @@ def parse_args(parser):
     # Check path
     return args
 
+
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description='Filter and format ECHR cases information')
     parser.add_argument('--build', type=str, default="./build/echr_database/")
@@ -402,4 +450,3 @@ if __name__ == "__main__":
     args = parse_args(parser)
 
     main(args)
- 
