@@ -1,268 +1,81 @@
 #!/bin/python3
 import subprocess
 import argparse
-import json
+import importlib
+from datetime import datetime
 import os
-from os import listdir
-from os.path import isfile, join
-import shutil
-import sys
-import time
-from pathlib import Path
+from rich.console import Console
+from rich.panel import Panel
+from echr.utils.build import prepare_build
+from echr.utils.cli import strfdelta
+from echr.utils.logger import getlogger, serialize_console_logs
 
-LATEST_VERSION = '2.0.0'
+OSF_DST = 'test'
+BUILD_PATH = './build'
+OSF_PARAMS = 'user=alexandre.quemy@gmail.com project=52rhg'
 
-MAX_DOCUMENTS = {
-    '1.0.0': 144579,
-    '2.0.0': 164767,
-    'test': 100
-}
+LOG_FOLDER = './logs'
+LOG_PATH = os.path.join(LOG_FOLDER, 'build.log')
+log = getlogger(logfile_path=LOG_PATH)
 
-MAX_DOCUMENTS['latest'] = MAX_DOCUMENTS[LATEST_VERSION]
+console = Console(record=True)
+print = console.print  # Redefine print
 
-STEPS = [
-    ['get_cases_info.py'],
-    ['filter_cases.py'],
-    ['get_documents.py'],
-    ['preprocess_documents.py'],
-    ['normalize_documents.py'],
-]
-PROCESSING_STEP = True
-DATASET_GEN_STEP = True
 LIMIT_TOKENS = 10000
 
-CASE_INFO_FOLDER = 'cases_info'
-
-def call_and_print(cmd):
-    p = subprocess.Popen(cmd, shell=True, stderr=subprocess.PIPE)
-    while True:
-        out = p.stderr.read(1)
-        if out == b'' and p.poll() != None:
-            break
-        if out != b'':
-            sys.stdout.write(out.decode('utf-8'))
-            sys.stdout.flush()
-
 def main(args):
+    print(Panel.fit('[bold yellow] :scales: {} :scales: '.format(
+            "European Court of Human Rights Open Data Building Process".upper()), ), justify="center")
 
-    if args.version is None:
-        print('No version specified, the number of documents to retrieve will be automatically determined.')
-    else:
-        if args.version in MAX_DOCUMENTS:
-            print('Version {} will be built with a maximum number of {} documents'.format(
-                args.version, MAX_DOCUMENTS[args.version]))
-            if STEPS:
-                STEPS[0].extend(['--max_documents', MAX_DOCUMENTS[args.version]])
+    workflow_steps, build_log_path, update, force = prepare_build(console, args)
+
+    def execute_step(step, build, args, title, index=None, chrono=True):
+        if index:
+            print(Panel('[bold yellow] {}'.format(title.upper()), title='STEP {}.'.format(index)))
         else:
-            print('Version "{}" is incorrect. Supported versions are: {}.'.format(
-                args.version, ', '.join(MAX_DOCUMENTS.keys())))
+            print(Panel('[bold yellow] {}'.format(title)))
+        step_start_time = datetime.now()
+        step.run(console=console, build=build, **args)
+        step_stop_time = datetime.now()
+        if chrono:
+            step_delta = step_stop_time - step_start_time
+            print('\n[blue]🕑 Step executed in {}'.format(strfdelta(step_delta, "{hours}h {minutes}min {seconds}s")))
 
-    start_time = time.time()
+    start_time = datetime.now()
+    for i, step_info in enumerate(workflow_steps.get('steps', [])):
+        step_args = step_info.get('args', {})
+        if step_info.get('updatable', False) and update:
+            step_args['update'] = True
+        if force:
+            step_args['force'] = True
 
-    build_path = args.build
-    if args.force:
-        try:
-            os.rmdir(build_path)
-        except OSError:
-            print("Deletion of the build directory {} failed".format(build_path))
-        else:
-            print("Successfully deleted the directory {}".format(build_path))
-    try:
-        Path(build_path).mkdir(parents=True, exist_ok=True)
-    except OSError as e:
-        print(e)
-        print("Creation of the build directory {} failed".format(build_path))
+        step_executor = importlib.import_module(step_info.get('run'))
+        execute_step(
+            step=step_executor,
+            build=args.build,
+            args=step_args,
+            title=step_info.get('title', 'Untitled'),
+            index=i
+        )
+    stop_time = datetime.now()
+    step_delta = stop_time - start_time
+    print('\n[blue]🕑 Building process executed in {}'.format(strfdelta(step_delta, "{hours}h {minutes}min {seconds}s")))
 
-    else:
-        print("Successfully created the directory {}".format(build_path))
-
-    flags = ['-f'] if args.force else []
-    flags.extend(['--build', args.build])
-
-    for step in STEPS:
-        cmd = ['python3'] + step + flags
-        cmd = ' '.join(map(str, cmd))
-        call_and_print(cmd)
-
-
-    path = os.path.join(args.build, CASE_INFO_FOLDER)
-    files = [f for f in listdir(path) if isfile(join(path, f))]
-    files = [f for f in files if f.startswith('raw_cases_info')]
-    datasets = [f.split('.')[0][len('raw_cases_info_'):] for f in files]
-    datasets = [f for f in datasets if f]
-    if PROCESSING_STEP:
-        base_cmd = ['python3', 'process_documents.py', '--processed_folder']
-        for d in datasets:
-            print('# Processing documents for dataset {}'.format(d))
-            flags_process = flags + ['--limit_tokens', LIMIT_TOKENS]
-            cmd = base_cmd + [d] + flags_process
-            cmd = ' '.join(map(str, cmd))
-            call_and_print(cmd)
-
-    if DATASET_GEN_STEP:
-        base_cmd = ['python3', 'generate_datasets.py', '--processed_folder']
-        for d in datasets:
-            print('# Generate dataset {}'.format(d))
-            flags_gen = []
-            nart = None
-            if d not in ['multiclass', 'multilabel']:
-                if '_' in d:
-                    nart = d.split('_')[-1]
-                if nart:
-                    flags_gen.extend(['--articles', nart])
-            cmd = []
-            cmd.extend(base_cmd + [d] + flags + flags_gen)
-            cmd = ' '.join(map(str, cmd))
-            call_and_print(cmd)
-
-    print("# Database and datasets generated in {}s".format(time.time() - start_time))
-    print("# Prepare release folder structure")
-    paths = ['unstructured', 'structured', 'raw']
-    for p in paths:
-        try:
-            os.mkdir(os.path.join(args.build, p))
-        except Exception:
-            pass
-
-
-    cases_files = [f for f in listdir(os.path.join(args.build, 'preprocessed_documents'))
-                   if isfile(os.path.join(args.build, 'preprocessed_documents', f)) and '.json' in f]
-    cases = []
-    for f in cases_files:
-        with open(os.path.join(args.build, 'preprocessed_documents', f)) as json_file:
-            data = json.load(json_file)
-            cases.append(data)
-
-    # Unstructured
-    with open(os.path.join(args.build, 'unstructured', 'cases.json'), 'w') as outfile:
-        json.dump(cases, outfile, indent=4)
-
-    # Structured
-    from normalize_database import format_structured_json, COL_HINT
-    flat_cases , representatives, extractedapp, scl, decision_body = format_structured_json(cases)
-    schema_hints = {
-        'article': {
-            'col_type': COL_HINT.HOT_ONE
-        },
-        'documentcollectionid': {
-            'col_type': COL_HINT.HOT_ONE
-        },
-        'applicability': {
-            'col_type': COL_HINT.HOT_ONE
-        },
-        'paragraphs': {
-            'col_type': COL_HINT.HOT_ONE
-        },
-        'conclusion': {
-            'col_type': COL_HINT.HOT_ONE,
-            'sub_element': 'flatten'
-        }
-    }
-
-    output_path = os.path.join(args.build, 'structured')
-    with open(os.path.join(output_path, 'flat_cases.json'), 'w') as outfile:
-        json.dump(flat_cases, outfile, indent=4)
-
-    with open(os.path.join(output_path, 'schema_hint.json'), 'w') as outfile:
-        json.dump(schema_hints, outfile, indent=4)
-
-    cmd = ['python3'] + ['normalize_database.py'] + flags + \
-          ['--database_json', os.path.join(output_path, 'flat_cases.json'),
-           '--schema_hints', os.path.join(output_path, 'schema_hint.json'),
-           '--output_prefix', 'cases',
-           '--build', output_path
-    ]
-    cmd = ' '.join(map(str, cmd))
-    call_and_print(cmd)
-    os.remove(os.path.join(output_path, 'flat_cases.json'))
-    os.remove(os.path.join(output_path, 'cases_flat_schema.json'))
-    os.remove(os.path.join(output_path, 'cases_flat_type_mapping.json'))
-    shutil.copy(os.path.join(args.build, 'datasets_documents', 'all', 'features_text.json'), os.path.join(output_path))
-    shutil.copy(os.path.join(args.build, 'datasets_documents', 'all', 'statistics_datasets.json'), os.path.join(output_path))
-
-    print('Generate appnos matrice')
-    matrice_appnos = {}
-    for k, v in extractedapp.items():
-        matrice_appnos[k] = {e:1 for e in v['appnos']}
-    with open(os.path.join(output_path, 'matrice_appnos.json'), 'w') as outfile:
-        json.dump(matrice_appnos, outfile, indent=4)
-
-    print('Generate scl matrice')
-    matrice_scl = {}
-    for k, v in scl.items():
-        matrice_scl[k] = {e: 1 for e in v['scl']}
-    with open(os.path.join(output_path, 'matrice_scl.json'), 'w') as outfile:
-        json.dump(matrice_scl, outfile, indent=4)
-
-    print('Generate representatives matrice')
-    matrice_representedby = {}
-    for k, v in representatives.items():
-        matrice_representedby[k] = {e: 1 for e in v['representedby']}
-    with open(os.path.join(output_path, 'matrice_representatives.json'), 'w') as outfile:
-        json.dump(matrice_representedby, outfile, indent=4)
-
-    print('Generate decision body matrice')
-    matrice_decision_body = {}
-    for k, v in decision_body.items():
-        matrice_decision_body[k] = {k:v for k,v in v['role'].items()}
-    with open(os.path.join(output_path, 'matrice_decision_body.json'), 'w') as outfile:
-        json.dump(matrice_decision_body, outfile, indent=4)
-
-    processed_folder = os.path.join(args.build, 'processed_documents', 'all')
-    try:
-        os.mkdir(os.path.join(args.build, 'structured', 'tfidf'))
-    except Exception:
-        pass
-    tfidf_files = [f for f in listdir(processed_folder)
-                   if isfile(os.path.join(processed_folder, f)) and 'tfidf.txt' in f]
-
-    for f in tfidf_files:
-        shutil.copy(os.path.join(processed_folder, f), os.path.join(args.build, 'structured', 'tfidf', f))
-
-    try:
-        os.mkdir(os.path.join(args.build, 'structured', 'bow'))
-    except Exception:
-        pass
-    bow_files = [f for f in listdir(processed_folder)
-                 if isfile(os.path.join(processed_folder, f)) and 'bow.txt' in f]
-
-    for f in bow_files:
-        shutil.copy(os.path.join(processed_folder, f), os.path.join(args.build, 'structured', 'bow', f))
-
-    # Raw
-    shutil.make_archive(os.path.join(args.build, 'raw', 'judgments'), 'zip',
-                        os.path.join(args.build, 'raw_documents'))
-    shutil.make_archive(os.path.join(args.build, 'raw', 'normalized'), 'zip',
-                        os.path.join(args.build, 'raw_normalized_documents'))
-
-    # All
-    from zipfile import ZipFile
-    with ZipFile(os.path.join(args.build, 'all.zip'), 'w') as zipObj:
-        # Iterate over all the files in directory
-        folders = ['unstructured', 'raw', 'structured']
-        for f in folders:
-            for folderName, subfolders, filenames in os.walk(os.path.join(args.build, f)):
-                for filename in filenames:
-                    if not filename.endswith('.zip'):
-                        filePath = os.path.join(folderName, filename)
-                        zipObj.write(filePath)
-
-    shutil.make_archive(os.path.join(args.build, 'structured', 'tfidf'), 'zip',
-                        os.path.join(args.build, 'structured', 'tfidf'))
-    shutil.make_archive(os.path.join(args.build, 'structured', 'bow'), 'zip',
-                        os.path.join(args.build, 'structured', 'bow'))
+    build_log_path = os.path.join(args.build, 'logs')
+    serialize_console_logs(console, filename='build', path=build_log_path)
 
 def parse_args(parser):
     args = parser.parse_args()
-
-    # Check path
     return args
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description='Generate the whole database')
     parser.add_argument('--build', type=str, default="./build/echr_database/")
     parser.add_argument('-f', '--force', action='store_true')
-    parser.add_argument('--version', type=str, help='Version to build among: {}'.format(
-        ', '.join(MAX_DOCUMENTS.keys())))
+    parser.add_argument('-s', '--strict', action='store_true')
+    parser.add_argument('--max_documents', type=int, help='Maximum number of documents to retrieve')
+    parser.add_argument('--params', type=str, help='Additional parameters to override workflow parameters')
+    parser.add_argument('-w', '--workflow', type=str, default='release', help='Workflow to execute')
+
     args = parse_args(parser)
     main(args)

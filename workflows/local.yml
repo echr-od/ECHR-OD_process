@@ -1,0 +1,31 @@
+steps:
+  - title: 'Get basic cases metadata'
+    run: echr.steps.cases_info
+    args:
+      max_documents: $MAX_DOCUMENTS
+
+  - title: 'Filter and format cases'
+    run: echr.steps.filter
+
+  - title: 'Get judgment documents'
+    run: echr.steps.get_documents
+    updatable: true
+
+  - title: 'Preprocess judgment documents'
+    run: echr.steps.preprocess_documents
+    updatable: true
+
+  - title: 'Normalize documents'
+    run: echr.steps.normalize_documents
+    updatable: true
+
+  - title: 'Process documents'
+    run: echr.steps.process_documents
+    args:
+      limit_tokens: $LIMIT_TOKENS
+    updatable: true
+
+  - title: 'Generate datasets'
+    run: echr.steps.generate_datasets
+
+

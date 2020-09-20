@@ -20,26 +20,17 @@ The purposes of such repository are many:
 
 If you are using the project, please consider citing:
 ```
-@article{Quemy2019_ECHROD,
-  title={European Court of Human Right Open Data project},
-  author={Alexandre Quemy},
-  journal={CoRR},
-  year={2019},
-  volume={abs/1810.03115}
+@article{ECHRDB,
+  title        = {On Integrating and Classifying Legal Text Documents},
+  author       = {Quemy, A. and Wrembel, R.},
+  year         = 2020,
+  journal      = {International Conference on Database and Expert Systems Applications (DEXA)}
 }
 ```
 
-## Building process
+## Installation & Usage
 
-The build process consists in the following steps:
-
-1. ```get_cases_info.py```: Retrieve the list and basic information about cases from HUDOC
-2. ```filter_cases.py```: Remove inconsistant, ambiguous or difficult-to-process cases
-3. ```preprocess_documents.py```: Analyse the raw judgments to construct a JSON nested structures representing the paragraphs
-4. ```process_documents.py```: Normalize the documents and generate a Bag-of-Words and TFID representation
-5. ```generate_datasets.py```: Combine all the information to generate several datasets
-
-# Installation & Usage (with docker)
+Recreating the database requires ```docker```.
 
 To build the environment image:
 ```
@@ -54,24 +45,47 @@ docker run -ti --mount src=$(pwd),dst=/tmp/echr_process/,type=bind echr_build -h
 
 In particular, to build the database:
 ```
-docker run -ti --mount src=$(pwd),dst=/tmp/echr_process/,type=bind echr_build build -h
+docker run -ti --mount src=$(pwd),dst=/tmp/echr_process/,type=bind echr_build build
 ```
 
-# Manual installation (without docker)
+# Build, Steps & Workflow
 
-Using the container is recommended but it is possible to install manually the dependencies:
+The entrypoint of the Extract-transform-load (ETL) process is `build.py`.   
+The different ETL steps can be found in the subfolder `echr/steps`.   
 
-## NLTK packages
+The main build script load a **workflow** made of **steps** and execute each of them.
+Workflows are YAML files and can be found in the folder `workflows`.
 
-In order to parse and normalize the documents, the following packages from ```nltk``` have to be installed: ```stopwords```,  ```averaged_perceptron_tagger``` and ```wordnet```. To install them, start ```bin/download-nltk```:
+The workflows provided with the project are:
+- **Local** (`release.yml`): full ETL build locally,
+- **Release** (`release.yml`): full ETL including deployment to the server.
+
+Workflows may define variables using uppercase name starting by `$` (e.g. `$MAX_DOCUMENTS`).
+The variables are replaced during the build process using the following order of priority:
+1. Environment variable
+2. CLI parameter
+3. From the configuration file, under `build.env.`
+4. Global variable defined in `build.py`
+
+# Configuration
+
+The general configuration file is `config.yml` and contains three parts:
+1. **logging:** related to logging files
+2. **steps:** configuration for each step on top of the workflow
+3. **build:** specific build configuration, in particular the section `env` contains the variables available by the workflow
+
+# Logs
+
+There are two log files:
+1. The build log file: `build/<build>/logs/build.html` and `build/<build>/logs/build.txt`
+2. The process log file, mostly used for debug: `logs/build.log`
+
+# Tests & Coverage
+
+To run the tests:
 ```
-python bin/download-nltk
-
+docker run -ti --mount src=$(pwd),dst=/tmp/echr_process/,type=bind echr_build test
 ```
-
-# Contributing
-
-TDB
 
 # Versions
 
@@ -81,4 +95,4 @@ TDB
 
 # Contributors
 
-- Alexandre Quemy <aquemy@pl.ibm.com>
+- Alexandre Quemy <alexandre.quemy@gmail.com>
