@@ -75,7 +75,7 @@ if __name__ == "__main__":
     parser.add_argument('-s', '--strict', action='store_true')
     parser.add_argument('--max_documents', type=int, help='Maximum number of documents to retrieve')
     parser.add_argument('--params', type=str, help='Additional parameters to override workflow parameters')
-    parser.add_argument('-w', '--workflow', type=str, default='release', help='Workflow to execute')
+    parser.add_argument('-w', '--workflow', type=str, default='local', help='Workflow to execute')
 
     args = parse_args(parser)
     main(args)
