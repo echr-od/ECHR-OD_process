@@ -16,3 +16,5 @@ urllib3
 rich
 pyyaml
 mock
+paramiko
+peewee

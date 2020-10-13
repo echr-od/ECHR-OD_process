@@ -29,4 +29,4 @@ jobs:
         uses: ./.github/actions/container_run
         with:
           cont_action: 'build'
-          action_params: '--version test --build ./build/test'
+          action_params: '--max_documents 200 --build ./build/test --workflow local'
