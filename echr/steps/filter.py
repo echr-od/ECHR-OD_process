@@ -283,7 +283,7 @@ def filter_cases(cases):
         exit(1)
     print(TAB + '> Remove non-english cases')
     cases = [i for i in cases if i["languageisocode"] == "ENG"]
-    print(TAB + '  ⮡ Remaining: {} ({:.4f}%)'.format(len(cases), 100 * float(len(cases)) / total))
+    print(TAB + '  ⮡ Remaining: {} ({:.4f}%)'.format(len(cases), 100  * float(len(cases)) / total))
     print(TAB + '> Keep only cases with a judgment document:')
     cases = [i for i in cases if i["doctype"] == "HEJUD"]
     print(TAB + '  ⮡ Remaining: {} ({:.4f}%)'.format(len(cases), 100 * float(len(cases)) / total))
@@ -406,17 +406,18 @@ def run(console, build, force=False):
         ccl = c['conclusion']
         for e in ccl:
             if e['type'] in ['violation', 'no-violation']:
-                if e['article'] not in outcomes:
-                    outcomes[e['article']] = {
-                        'violation': 0,
-                        'no-violation': 0,
-                        'total': 0
-                    }
-                outcomes[e['article']][e['type']] += 1
-                outcomes[e['article']]['total'] += 1
-                if e['article'] not in cases_per_articles:
-                    cases_per_articles[e['article']] = []
-                cases_per_articles[e['article']].append(c)
+                if 'article' in e:
+                    if e['article'] not in outcomes:
+                        outcomes[e['article']] = {
+                            'violation': 0,
+                            'no-violation': 0,
+                            'total': 0
+                        }
+                    outcomes[e['article']][e['type']] += 1
+                    outcomes[e['article']]['total'] += 1
+                    if e['article'] not in cases_per_articles:
+                        cases_per_articles[e['article']] = []
+                    cases_per_articles[e['article']].append(c)
 
     print(Markdown("- **Generate case listing for datasets**"))
     multilabel_cases = []

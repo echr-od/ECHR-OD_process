@@ -1,0 +1,8 @@
+steps:
+  - title: 'Deploy to OSF'
+    run: echr.steps.deploy
+    args:
+      method: 'osf'
+      dst: $OSF_DST
+      src: $BUILD_PATH
+      params: $OSF_PARAMS

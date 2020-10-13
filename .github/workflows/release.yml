@@ -32,3 +32,8 @@ jobs:
           password: ${{ secrets.DOCKER_PASSWORD }}
           repository: aquemy1/echr_build
           tags: ${{ steps.version.outputs.tag }}_${{ steps.date.outputs.date }}
+      - name: Build test dataset
+          uses: ./.github/actions/container_run
+          with:
+            cont_action: 'build'
+            action_params: '--build ./build/test --workflow release'
