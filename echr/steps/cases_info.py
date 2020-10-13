@@ -119,7 +119,7 @@ def get_case_info(base_url, max_documents, path):
             TAB + "> Downloading... [IN PROGRESS]\n",
             BarColumn(30),
             TimeRemainingColumn(),
-            "| Fetching information from cases {task.completed} to {task.fields[to_be_completed]}"
+            "| ({task.completed}/{task.total}) Fetching information from cases {task.completed} to {task.fields[to_be_completed]}"
             "{task.fields[error]}",
             transient=True,
 
@@ -197,8 +197,6 @@ def run(console, build, max_documents=-1, force=False):
     print(TAB + "> The total number of documents to retrieve: {}".format(max_documents))
     print(Markdown("- **Get case information from HUDOC**"))
     get_case_info(BASE_URL, max_documents, raw_case_folder)
-
-    build_log_path = os.path.join(build, 'logs')
 
 
 def main(args):

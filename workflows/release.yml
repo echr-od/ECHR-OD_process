@@ -30,7 +30,25 @@ steps:
 
   - title: 'Prepare release'
     run: echr.steps.prepare_release
+
+  - title: 'Generate SQL database'
+    run: echr.steps.generate_sqlite
+    updatable: true
     args:
-      output_prefix: 'echr'
+      cases: './build/echr_database/unstructured/cases.json'
 
+  - title: 'Deploy with SCP'
+    run: echr.steps.deploy
+    updatable: true
+    args:
+      method: 'scp'
+      dst: $SRV_DST
+      params: $SRV_PARAMS
 
+  - title: 'Deploy to OSF via Mirror Server'
+    run: echr.steps.deploy
+    updatable: true
+    args:
+      method: 'detach_osf'
+      dst: $SRV_DST
+      params: $SRV_PARAMS

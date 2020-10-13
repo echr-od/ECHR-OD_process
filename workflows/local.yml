@@ -28,4 +28,13 @@ steps:
   - title: 'Generate datasets'
     run: echr.steps.generate_datasets
 
+  - title: 'Prepare release'
+    run: echr.steps.prepare_release
+
+  - title: 'Generate SQL database'
+    run: echr.steps.generate_sqlite
+    updatable: true
+    args:
+      cases: './build/echr_database/unstructured/cases.json'
+
 
