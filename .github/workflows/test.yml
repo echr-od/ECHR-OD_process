@@ -20,6 +20,8 @@ jobs:
         uses: docker/build-push-action@v2
         with:
           push: false
+          load: true
+          context: .
           tags: develop
       - name: Run linter
         uses: ./.github/actions/container_run
