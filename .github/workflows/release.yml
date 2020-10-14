@@ -37,8 +37,7 @@ jobs:
       - name: Build and push image
         uses: docker/build-push-action@v2
         with:
-          repository: aquemy1/echr_build
-          tags: ${{ steps.version.outputs.tag }}_${{ steps.date.outputs.date }}
+          tags: aquemy1/echr_build:${{ steps.version.outputs.tag }}_${{ steps.date.outputs.date }}
       - name: Build test dataset
         uses: ./.github/actions/container_run
         with:
