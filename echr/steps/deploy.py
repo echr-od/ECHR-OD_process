@@ -32,7 +32,7 @@ def detach_osf(params_str, build, dst, detach, force, update):
     client.exec_command(cmd)
 
 
-def upload_osf(params_str, build, dst, force, update):
+def upload_osf(params_str, build, dst, detach, force, update):
     params = {e.split('=')[0]: e.split('=')[1] for e in params_str.split()}
 
     with Progress(
@@ -145,11 +145,9 @@ def upload_scp(params_str, build, dst, detach, force, update):
 
 def get_list_of_files(build):
     files_list = []
-    folders = ['structured', 'unstructured', 'logs']
-    for folder in folders:
-        for path, subdirs, files in os.walk(os.path.join(build, folder)):
-            for name in files:
-                files_list.append(os.path.join(path, name))
+    for path, subdirs, files in os.walk(build):
+        for name in files:
+            files_list.append(os.path.join(path, name))
     return files_list
 
 def run(console, method, build, dst, params, detach=False, force=False, update=False):
