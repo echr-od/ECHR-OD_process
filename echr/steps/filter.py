@@ -353,8 +353,8 @@ def run(console, build, force=False):
     print = __console.print
 
     print(Markdown("- **Step configuration**"))
-    input_folder = path.join(build, 'raw_cases_info')
-    output_folder = path.join(build, 'cases_info')
+    input_folder = os.path.join(build, 'raw', 'raw_cases_info')
+    output_folder = path.join(build, 'raw', 'cases_info')
     print(TAB + '> Step folder: {}'.format(path.join(build, 'cases_info')))
     make_build_folder(console, output_folder, force, strict=False)
 

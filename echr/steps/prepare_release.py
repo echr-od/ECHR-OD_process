@@ -278,7 +278,7 @@ def test():
 
     '''
 
-def run(console, build, output_prefix, force=False):
+def run(console, build, output_prefix='cases', force=False):
     __console = console
     global print
     print = __console.print
@@ -290,12 +290,13 @@ def run(console, build, output_prefix, force=False):
         make_build_folder(console, os.path.join(build, p), force, strict=False)
 
     print(Markdown("- **Normalize database**"))
-    cases_files = [f for f in listdir(os.path.join(build, 'preprocessed_documents'))
-                   if isfile(os.path.join(build, 'preprocessed_documents', f)) and '.json' in f]
+    input_folder = os.path.join(build, 'raw', 'preprocessed_documents')
+    cases_files = [f for f in listdir(input_folder)
+                   if isfile(os.path.join(input_folder, f)) and '.json' in f]
     print(TAB + "> Load cases in memory [green][DONE]")
     cases = []
     for f in cases_files:
-        with open(os.path.join(build, 'preprocessed_documents', f)) as json_file:
+        with open(os.path.join(input_folder, f)) as json_file:
             data = json.load(json_file)
             cases.append(data)
 
@@ -333,7 +334,6 @@ def run(console, build, output_prefix, force=False):
 
     X = flat_cases
     df, schema, flat_schema, flat_type_mapping, flat_domain_mapping = normalize(X, schema_hints)
-    output_prefix = 'cases'
     df.to_json(os.path.join(output_path, '{}.json'.format(output_prefix)), orient='records')
     df.to_csv(os.path.join(output_path, '{}.csv'.format(output_prefix)))
 
@@ -350,8 +350,8 @@ def run(console, build, output_prefix, force=False):
     os.remove(os.path.join(output_path, 'flat_cases.json'))
     os.remove(os.path.join(output_path, 'cases_flat_schema.json'))
     os.remove(os.path.join(output_path, 'cases_flat_type_mapping.json'))
-    shutil.copy(os.path.join(build, 'datasets_documents', 'all', 'features_text.json'), os.path.join(output_path))
-    shutil.copy(os.path.join(build, 'datasets_documents', 'all', 'statistics_datasets.json'), os.path.join(output_path))
+    shutil.copy(os.path.join(build, 'datasets', 'features_text.json'), os.path.join(output_path))
+    shutil.copy(os.path.join(build, 'datasets', 'statistics_datasets.json'), os.path.join(output_path))
 
     print(TAB + '> Generate appnos matrice [green][DONE]')
     matrice_appnos = {}
@@ -381,33 +381,12 @@ def run(console, build, output_prefix, force=False):
     with open(os.path.join(output_path, 'matrice_decision_body.json'), 'w') as outfile:
         json.dump(matrice_decision_body, outfile, indent=4)
 
-    processed_folder = os.path.join(build, 'processed_documents', 'all')
-    try:
-        os.mkdir(os.path.join(build, 'structured', 'tfidf'))
-    except Exception:
-        pass
-    tfidf_files = [f for f in listdir(processed_folder)
-                   if isfile(os.path.join(processed_folder, f)) and 'tfidf.txt' in f]
-
-    for f in tfidf_files:
-        shutil.copy(os.path.join(processed_folder, f), os.path.join(build, 'structured', 'tfidf', f))
-
-    try:
-        os.mkdir(os.path.join(build, 'structured', 'bow'))
-    except Exception:
-        pass
-    bow_files = [f for f in listdir(processed_folder)
-                 if isfile(os.path.join(processed_folder, f)) and 'bow.txt' in f]
-
-    for f in bow_files:
-        shutil.copy(os.path.join(processed_folder, f), os.path.join(build, 'structured', 'bow', f))
-
     print(TAB + '> Create archives [green][DONE]')
     # Raw
     shutil.make_archive(os.path.join(build, 'raw', 'judgments'), 'zip',
-                        os.path.join(build, 'raw_documents'))
+                        os.path.join(build, 'raw', 'judgments'))
     shutil.make_archive(os.path.join(build, 'raw', 'normalized'), 'zip',
-                        os.path.join(build, 'raw_normalized_documents'))
+                        os.path.join(build, 'raw', 'normalized_documents'))
 
     # All
     from zipfile import ZipFile

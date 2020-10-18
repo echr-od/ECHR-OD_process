@@ -175,9 +175,9 @@ def run(console, build, max_documents=-1, force=False):
     print = __console.print
 
     print(Markdown("- **Step configuration**"))
-    raw_case_folder = os.path.join(build, 'raw_cases_info')
-    print(TAB + '> Step folder: {}'.format(os.path.join(build, 'raw_cases_info')))
-    make_build_folder(console, raw_case_folder, force, strict=False)
+    output_folder = os.path.join(build, 'raw', 'raw_cases_info')
+    print(TAB + '> Step folder: {}'.format(output_folder))
+    make_build_folder(console, output_folder, force, strict=False)
 
     print(Markdown("- **Determining the number cases**"))
     if max_documents == -1:
@@ -196,7 +196,7 @@ def run(console, build, max_documents=-1, force=False):
                 progress.update(task, rc=rc)
     print(TAB + "> The total number of documents to retrieve: {}".format(max_documents))
     print(Markdown("- **Get case information from HUDOC**"))
-    get_case_info(BASE_URL, max_documents, raw_case_folder)
+    get_case_info(BASE_URL, max_documents, output_folder)
 
 
 def main(args):

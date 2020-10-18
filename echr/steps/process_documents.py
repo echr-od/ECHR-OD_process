@@ -31,13 +31,17 @@ def run(console, build, limit_tokens, processed_folder='all', force=False, updat
     global print
     print = __console.print
 
-    input_file = os.path.join(build, 'cases_info/raw_cases_info_{}.json'.format(processed_folder))
-    input_folder = os.path.join(build, 'raw_normalized_documents')
-    output_folder = os.path.join(build, 'processed_documents', processed_folder)
+    input_file = os.path.join(build, 'raw', 'cases_info', 'raw_cases_info_{}.json'.format(processed_folder))
+    input_folder = os.path.join(build, 'raw', 'normalized_documents')
+    output_folder = os.path.join(build, 'structured')
+    output_folder_tfidf = os.path.join(output_folder, 'tfidf')
+    output_folder_bow = os.path.join(output_folder, 'bow')
 
     print(Markdown("- **Step configuration**"))
-    print(TAB + '> Step folder: {}'.format(output_folder))
-    make_build_folder(console, output_folder, force, strict=False)
+    print(TAB + '> Step folder: {}'.format(output_folder_tfidf))
+    make_build_folder(console, output_folder_tfidf, force, strict=False)
+    print(TAB + '> Step folder: {}'.format(output_folder_bow))
+    make_build_folder(console, output_folder_bow, force, strict=False)
 
     try:
         config()['steps']['normalize']['ngrams']
@@ -109,7 +113,7 @@ def run(console, build, limit_tokens, processed_folder='all', force=False, updat
                                  doc=corpus_id[0])
         for i, doc in enumerate(corpus):
             error = ""
-            filename = os.path.join(output_folder, '{}_bow.txt'.format(corpus_id[i]))
+            filename = os.path.join(output_folder_bow, '{}_bow.txt'.format(corpus_id[i]))
             # if update and not os.path.isfile(filename):
             with open(filename, 'w') as file:
                 for f, v in doc:
@@ -131,7 +135,7 @@ def run(console, build, limit_tokens, processed_folder='all', force=False, updat
                                  doc=corpus_id[0])
         for i, doc in enumerate(corpus_tfidf):
             error = ""
-            with open(os.path.join(output_folder, '{}_tfidf.txt'.format(corpus_id[i])), 'w') as file:
+            with open(os.path.join(output_folder_tfidf, '{}_tfidf.txt'.format(corpus_id[i])), 'w') as file:
                 for f, v in doc:
                     file.write('{}:{} '.format(f, v))
             progress.update(task, advance=1, error=error, doc=corpus_id[i])
@@ -154,7 +158,7 @@ if __name__ == "__main__":
     parser = argparse.ArgumentParser(description='Turn a collection of documents into a BoW and TF-IDF representation.')
     parser.add_argument('--build', type=str, default="./build/echr_database/")
     parser.add_argument('--processed_folder', type=str, default="all")
-    parser.add_argument('--limit_tokens', type=int, default=5000)
+    parser.add_argument('--limit_tokens', type=int, default=10000)
     parser.add_argument('-f', action='store_true')
     parser.add_argument('-u', action='store_true')
     args = parse_args(parser)

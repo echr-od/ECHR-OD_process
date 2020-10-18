@@ -286,9 +286,9 @@ def run(console, build, force=False, update=False):
     print = __console.print
 
     print(Markdown("- **Step configuration**"))
-    input_file = os.path.join(build, 'cases_info/raw_cases_info_all.json')
-    input_folder = os.path.join(build, 'raw_documents')
-    output_folder = os.path.join(build, 'preprocessed_documents')
+    input_file = os.path.join(build, 'raw', 'cases_info', 'raw_cases_info_all.json')
+    input_folder = os.path.join(build, 'raw', 'judgments')
+    output_folder = os.path.join(build, 'raw', 'preprocessed_documents')
     print(TAB + '> Step folder: {}'.format(output_folder))
     make_build_folder(console, output_folder, force, strict=False)
 

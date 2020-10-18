@@ -46,7 +46,6 @@ def get_documents(id_list, folder, update):
     ) as progress:
         task = progress.add_task("Downloading...", total=len(id_list), error="", doc=id_list[0][0])
         for i, doc_id in enumerate(id_list):
-            #print(" - Document {}/{}: {}".format(i, len(id_list), doc_id[0]))
             if doc_id[1]:
                 filename = "%s.docx" % (doc_id[0].strip())
             else:
@@ -86,9 +85,9 @@ def run(console, build, force=False, update=False):
     print = __console.print
 
     print(Markdown("- **Step configuration**"))
-    input_file = os.path.join(build, 'cases_info/raw_cases_info_all.json')
-    output_folder = os.path.join(build, 'raw_documents')
-    print(TAB + '> Step folder: {}'.format(os.path.join(build, 'raw_documents')))
+    input_file = os.path.join(build, 'raw', 'cases_info', 'raw_cases_info_all.json')
+    output_folder = os.path.join(build, 'raw', 'judgments')
+    print(TAB + '> Step folder: {}'.format(os.path.join(build, 'raw', 'judgments')))
     make_build_folder(console, output_folder, force, strict=False)
     id_list = []
     try:
