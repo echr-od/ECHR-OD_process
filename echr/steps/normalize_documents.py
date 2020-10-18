@@ -83,8 +83,8 @@ def run(console, build, force=False, update=False):
     print = __console.print
 
     print(Markdown("- **Step configuration**"))
-    input_folder = os.path.join(build, 'preprocessed_documents')
-    output_folder = os.path.join(build, 'raw_normalized_documents')
+    input_folder = os.path.join(build, 'raw', 'preprocessed_documents')
+    output_folder = os.path.join(build, 'raw', 'normalized_documents')
     ngrams_config = {}
     try:
         ngrams_config = config()['steps']['normalize']['ngrams']

@@ -200,7 +200,7 @@ def populate_database(cases_file, update):
     db.close()
 
 
-def run(console, build, cases, force=True, update=True):
+def run(console, build, cases=None, force=True, update=True):
     __console = console
     global print
     print = __console.print
@@ -233,14 +233,15 @@ def run(console, build, cases, force=True, update=True):
                 create_tables()
             print(TAB + "> Create tables... [green][DONE]")
 
-    populate_database(cases, update)
+    cases_file = os.path.join(build, cases if cases is not None else "unstructured/cases.json")
+    populate_database(cases_file, update)
 
 
 def main(args):
     console = Console(record=True)
     run(console,
         build=args.build,
-        cases=args.cases,
+        cases= args.cases,
         force=args.f,
         update=args.u)
 
@@ -254,7 +255,7 @@ def parse_args(parser):
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description='Generate final dataset files')
     parser.add_argument('--build', type=str, default="./build/echr_database/")
-    parser.add_argument('--cases', type=str, default="'./build/echr_database/unstructured/cases.json'")
+    parser.add_argument('--cases', type=str, default="unstructured/cases.json")
     parser.add_argument('-f', action='store_true')
     parser.add_argument('-u', action='store_true')
     args = parse_args(parser)

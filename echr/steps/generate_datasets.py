@@ -74,14 +74,15 @@ def generate_dataset(cases, keys, keys_list, encoded_outcomes, feature_index, fe
                 f_dt.write(' '.join(map(str, encoded_case)) + ' ')
                 dataset_size += 1
                 dataset_full_doc_id.append(c['itemid'])
-                with open(os.path.join(processed_folder, '{}_bow.txt'.format(c['itemid'])), 'r') as bow_doc:
+                with open(os.path.join(processed_folder, 'bow', '{}_bow.txt'.format(c['itemid'])), 'r') as bow_doc:
                     bow = bow_doc.read()
                     bow = bow.split()
                     bow = ['{}:{}'.format(offset + int(b.split(':')[0]), b.split(':')[1]) for b in bow]
                     f_db.write(' '.join(map(str, bow)) + ' \n')
                     f_b.write(' '.join(map(str, bow)) + ' \n')
                     nb_features += len(bow)
-                with open(os.path.join(processed_folder, '{}_tfidf.txt'.format(c['itemid'])), 'r') as tfidf_doc:
+                print(processed_folder, os.path.join(processed_folder, 'tfidf', '{}_tfidf.txt'.format(c['itemid'])))
+                with open(os.path.join(processed_folder, 'tfidf', '{}_tfidf.txt'.format(c['itemid'])), 'r') as tfidf_doc:
                     tfidf = tfidf_doc.read()
                     tfidf = tfidf.split()
                     tfidf = ['{}:{}'.format(offset + int(b.split(':')[0]), b.split(':')[1]) for b in tfidf]
@@ -148,16 +149,17 @@ def run(console, build, articles=[], processed_folder='all', force=True):
     print = __console.print
 
     suffix = '_{}'.format(processed_folder)
-    input_file = os.path.join(build, 'cases_info/raw_cases_info{}.json'.format(suffix))
-    input_folder = os.path.join(build, 'processed_documents', processed_folder)
-    output_folder = os.path.join(build, 'datasets_documents', processed_folder)
+    input_file = os.path.join(build, 'raw', 'cases_info', 'raw_cases_info{}.json'.format(suffix))
+    input_folder = os.path.join(build, 'structured')
+    output_folder = os.path.join(build, 'datasets')
+    input_folder_bow = os.path.join(input_folder, 'bow')
 
     print(Markdown("- **Step configuration**"))
-    print(TAB + '> Step folder: {}'.format(os.path.join(build, 'datasets_documents', processed_folder)))
+    print(TAB + '> Step folder: {}'.format(output_folder))
     make_build_folder(console, output_folder, force, strict=False)
 
     # Get the list of cases s.t. we have a BoW and TF-IDF representation
-    files = [os.path.join(input_folder, f) for f in listdir(input_folder) if isfile(join(input_folder, f)) if
+    files = [os.path.join(input_folder, f) for f in listdir(input_folder_bow) if isfile(join(input_folder_bow, f)) if
              '_bow.txt' in f]
     id_list = [f.split('/')[-1].split('_')[0] for f in files]
 
@@ -246,7 +248,6 @@ def run(console, build, articles=[], processed_folder='all', force=True):
         count += 1
 
     offset = len(feature_to_encoded)
-    # print('OFFSET: {}'.format(offset))
 
     print(Markdown('- **Generate dataset**'))
     generate_dataset(
@@ -263,7 +264,6 @@ def run(console, build, articles=[], processed_folder='all', force=True):
         filter_classes=None if articles == [] else articles,
         force=force)
 
-    root_dir = os.path.join(build, 'dataset_documents', processed_folder)
     shutil.make_archive(output_folder, 'zip', output_folder)
 
 
