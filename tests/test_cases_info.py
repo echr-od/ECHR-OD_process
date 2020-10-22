@@ -79,4 +79,4 @@ class TestGetCasesInfo:
 
         rc = get_case_info(base_url="", max_documents=100, path='/tmp/')
         assert rc == 1
-        assert os.stat('/tmp/0.json').st_size == 0
+        assert not os.path.isfile('/tmp/0.json')
