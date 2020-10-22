@@ -40,5 +40,4 @@ steps:
     updatable: true
     args:
       method: 'scp'
-      dst: $SRV_DST
       params: $SRV_PARAMS
