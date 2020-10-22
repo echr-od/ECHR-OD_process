@@ -57,10 +57,136 @@ OLD_PARSER_TAGS = ['header', 'Normal', 'Body Text 2', 'Body Text Indent 3', 'Old
                    'Heading 4']
 
 internal_section_reference = {
-    'procedure': "",
-    'facts': "",
-    'law': "",
-    'conclusion': ""
+    'toc': ["Table of contents"],
+    'abbreviations': ["ABBREVIATIONS AND ACRONYMS"],
+    'introduction': ["INTRODUCTION"],
+    'procedure': ["CLAIMS MADE BY THE APPLICANTS", "I.  Locus standı", "PROCEDURE", "PROCEDURE”", "AS TO PROCEDURE",
+                  "PROCEDURE AND FACTS", "FACTS AND PROCEDURE", "I.   THE GOVERNMENT’S PRELIMINARY OBJECTION"],
+    'facts': ["THE FACTS", "AS TO THE FACTS", "COMPLAINTS", "COMPLAINT", "FACTS",
+              "THE FACT", "THE FACTSITMarkFactsComplaintsStart"
+              "THE CIRCUMSTANCES OF THE CASE",
+              "I.  THE CIRCUMSTANCES OF THE CASE",
+              "I. THE PARTICULAR CIRCUMSTANCES OF THE CASE"
+              'PROCEEDINGS', "PROCEEDINGS BEFORE THE COMMISSION",
+              "II. PROCEEDINGS BEFORE THE COMMISSION",
+              "PROCEEDINGS BEFORE THE COMMISSION  17."
+              ],
+    'law': ["THE LAW",
+            "LAW",
+            "IV.  COMPLIANCE WITH THE EXHAUSTION RULE",
+            "THE LAWS ON THE USE OF LANGUAGES IN EDUCATION IN",
+            "AS TO THE LAW",
+            "TO THE LAW",
+            "III. THE LAW",
+            "IN LAW",
+            "APPLICATION OF ARTICLE",
+            "II.  APPLICATION OF ARTICLE",
+            "IV.  COMPLIANCE WITH THE EXHAUSTION RULE",
+            "IV.  OTHER COMPLAINTS UNDER ARTICLE",
+            "I. ALLEGED LACK OF STANDING AS",
+            "ITMarkFactsComplaintsEndTHE LAW",
+            "ALLEGED VIOLATION OF ARTICLE",
+            "AS TO THE  ALLEGED VIOLATION OF ARTICLE",
+            "I.  ALLEGED VIOLATION OF ARTICLE",
+            "III.  ALLEGED VIOLATION OF ARTICLE",
+            "THE ALLEGED BREACHES OF ARTICLE",
+            "II.   ALLEGED VIOLATION OF ARTICLE"
+            "MERITS", "II.  MERITS", "III.  MERITS"
+            ],
+    'conclusion': ["CONCLUSION",
+                   "THE COURT UNANIMOUSLY",
+                   "REASONS, THE COURT, UNANIMOUSLY,",
+                   "FOR THESE REASONS, THE COURT UNANIMOUSLY",
+                   "FOR THESE REASONS, THE COURT ,UNANIMOUSLY,",
+                   "FOR THESE REASONS, THE COURT, UNANIMOUSLY,",
+                   "FOR THESE REASONS, THE COURT UNANIMOUSLY,",
+                   "FOR THESE REASONS, THE COURT,UNANIMOUSLY,",
+                   "FOR THESE REASONS, THE COURT, UNANIMOUSLY",
+                   "FOR THESE REASONS THE COURT UNANIMOUSLY",
+                   "FOR THESE REASONS, THE COURT UNANIMOUSLY:",
+                   "FOR THESE REASONS, THE COUR, UNANIMOUSLY,",
+                   "FOR THESE REASONS THE COURT",
+                   "FOR THESE RASONS, THE COURT UNANIMOUSLY",
+                   "FOR THESE REASONS, THE COURT:",
+                   "FOR THE REASONS, THE COURT",
+                   "THE COURT",
+                   "FOR THESE REASONS, THE COURT,",
+                   "FOR THESE REASONS, THE COURT"],
+    'relevant_law': ["RELEVANT DOMESTIC LAW",
+                     "II.  RELEVANT DOMESTIC LAW",
+                     "RELEVANT DOMESTIC LEGAL FRAMEWORK",
+                     "III.  RELEVANT ELEMENTS OF COMPARATIVE LAW",
+                     "II. RELEVANT DOMESTIC LAW",
+                     "II. RELEVANT DOMESTIC LAW AND PRACTICE",
+                     "RELEVANT DOMESTIC LAW AND CASE-LAW",
+                     "III.  RELEVANT INTERNATIONAL MATERIALS",
+                     "RELEVANT international material",
+                     "II.  RELEVANT DOMESTIC LAW AND PRACTICE",
+                     "RELEVANT DOMESTIC AND INTERNATIONAL LAW",
+                     "III.  RELEVANT INTERNATIONAL MATERIAL",
+                     "II.  RELEVANT DOMESTIC LAW AND PRACTICE AND INTERNATIONAL MATERIALS"
+                     "RELEVANT DOMESTIC LAW AND PRACTICE",
+                     "RELEVANT EUROPEAN UNION LAW",
+                     'relevant legal framework',
+                     "RELEVANT LEGAL FRAMEWORK AND PRACTICE",
+                     "III.  COMPARATIVE LAW AND PRACTICE",
+                     "RELEVANT LEGAL FRAMEWORK AND INTERNATIONAL MATERIAL",
+                     "RELEVANT LEGAL and factual FRAMEWORK",
+                     "RELEVANT LEGAL FRAMEWORK and the council of europe material",
+                     "Council of europe material",
+                     "LEGAL FRAMEWORK",
+                     "III.  RELEVANT INTERNATIONAL LAW",
+                     "RELEVANT COUNCIL OF EUROPE DOCUMENTS",
+                     "III.  RELEVANT COUNCIL OF EUROPE INSTRUMENTS",
+                     "II.  RELEVANT INTERNATIONAL MATERIAL"],
+    "opinion": ["STATEMENT OF DISSENT BY JUDGE KŪRIS",
+                "JOINT CONCURRING OPINION OF JUDGES YUDKIVSKA, VUČINIĆ, TURKOVIĆ AND HÜSEYNOV",
+                "JOINT PARTLY DISSENTING OPINION OF JUDGES RAIMONDI, SICILIANOS, KARAKAS, VUČINIĆ AND HARUTYUNYAN",
+                "PARTLY DISSENTING OPINION OF JUDGE DE GAETANO, JOINED BY JUDGE VUČINIĆ",
+                "PARTLY DISSENTING OPINION OF JUDGE KŪRIS",
+                "PARTLY DISSENTING OPINION OF JUDGE GROZEV",
+                "DISSENTING OPINION OF JUDGE KOSKELO",
+                "CONCURRING OPINION OF JUDGE PINTO DE ALBUQUERQUE",
+                "DISSENTING OPINION OF JUDGE BAKA",
+                "PARTLY DISSENTING OPINION OF JUDGE SICILIANOS",
+                "PARTLY DISSENTING OPINION OF JUDGE EICKE",
+                "PARTLY DISSENTING OPINION OF JUDGE EICKE",
+                "CONCURRING OPINION OF JUDGE JEBENS",
+                "CONCURRING OPINION OF JUDGE GÖLCÜKLÜ",
+                "ConcurRing opinion of Judge Bonello",
+                "CONCURRING OPINION OF JUDGE SERGHIDES",
+                "DISSENTING OPINION OF JUDGE SERGHIDES",
+                "DISSENTING OPINION OF JUDGE ROZAKIS",
+                "PARTLY DISSENTING OPINION OF JUDGE GÖLCÜKLÜ",
+                "JOINT DISSENTING OPINION OF JUDGES GROZEV AND O’LEARY",
+                "JOINT PARTLY DISSENTING OPINION OF JUDGES LOUCAIDES AND TULKENS"],
+    "appendix": ['APPENDIX', "APPENDIX: LIST OF APPLICANTS", "APPENDIX 1", "ANNEX",
+                 "APPENDIX 2", "ANNEX 1:", "ANNEX 2:", "Annex I", "Annex II", "Appendix to the judgment"],
+    "submission": ["FINAL SUBMISSIONS TO THE COURT",
+                   "THE GOVERNMENT’S FINAL SUBMISSIONS TO THE COURT",
+                   "FINAL SUBMISSIONS BY THE GOVERNMENT TO THE COURT",
+                   "FINAL SUBMISSIONS SUBMITTED TO THE COURT BY THE GOVERNMERNT",
+                   "DISSENTING OPINION OF JUDGE SCHEMBRI ORLAND",
+                   "GOVERNMENT’S FINAL SUBMISSIONS TO THE COURT",
+                   "FINAL SUBMISSIONS TO THE COURT BY THE GOVERNMENT",
+                   "FINAL SUBMISSIONS MADE TO THE COURT",
+                   "FOR THESE REASONS, THE COUR",
+                   "SUBMISSIONS OF THE PARTIES",
+                   "CONCLUDING SUBMISSIONS MADE TO THE COURT",
+                   "CONCLUDING SUBMISSIONS MADE TO THE COURT",
+                   "THE GOVERNMENT’S SUBMISSIONS TO THE COURT",
+                   "THE GOVERNMENT’S FINAL SUBMISSIONS",
+                   "FINAL SUBMISSIONS PRESENTED BY THE GOVERNMENT",
+                   "FINAL SUBMISSIONS PRESENTED TO THE COURT",
+                   "FINAL SUBMISSIONS AND OBSERVATIONS MADE TO THE COURT",
+                   "FINAL SUBMISSIONS AND OBSERVATIONS MADE TO THE COURT",
+                   "FINAL SUBMISSIONS MADE TO THE COURT BY THE GOVERNMENT",
+                   "FINAL SUBMISSIONS MADE BY THE GOVERNMENT TO THE COURT",
+                   "SUBMISSIONS MADE BY THE GOVERNMENT TO THE COURT",
+                   "CONCLUDING SUBMISSIONS BY THE GOVERNMENT",
+                   "FINAL SUBMISSIONS MADE BY THE GOVERNMENT",
+                   "FINAL SUBMISSIONS BY THOSE APPEARING BEFORE THE COURT"],
+    'schedule': ["SCHEDULE"]
 }
 
 
@@ -75,9 +201,15 @@ def tag_elements(parsed):
         :return: parsed document with internal section references
         :rtype: dict
     """
-    for i, section in parsed['elements']:
-        pass  # TODO: Tag the element in the parsed document
-    parsed['elements'][-1]['section_name'] = 'conclusion'
+
+    for i, section in enumerate(parsed['elements']):
+        for section_reference, values in internal_section_reference.items():
+            if any(section['content'].strip().upper().startswith(v.upper()) for v in values):
+                parsed['elements'][i]['section_name'] = section_reference
+                break
+        #if not 'section_name' in parsed['elements'][i]:
+        #    print('Could not tag section {}'.format(section['content']))
+        #    print(section['content'])
     return parsed
 
 
@@ -248,7 +380,7 @@ def json_to_text_(doc, text_only=True, except_section=[]):
     # text_only: remove the titles
     for e in doc['elements']:
         if not 'section_name' in e or e['section_name'] not in except_section:
-            res.extend(json_to_text_(e, text_only=True, except_section=except_section))
+            res.extend(json_to_text_(e, text_only=text_only, except_section=except_section))
     return res
 
 
@@ -336,7 +468,7 @@ def run(console, build, force=False, update=False):
                         parsed.update(cases[cases_index[id_doc]])
                         with open(os.path.join(output_folder, '{}_text_without_conclusion.txt'.format(id_doc)),
                                   'w') as toutfile:
-                            toutfile.write(json_to_text(parsed, True, ['conclusion']))
+                            toutfile.write(json_to_text(parsed, True, ['conclusion', 'law']))
                         parsed['documents'] = ['{}.docx'.format(id_doc)]
                         parsed['content'] = {
                             '{}.docx'.format(id_doc): parsed['elements']
@@ -348,6 +480,7 @@ def run(console, build, force=False, update=False):
                     else:
                         raise Exception("OLD parser is not available yet.")
                 except Exception as e:
+                    #__console.print_exception()
                     failed.append((id_doc, e))
                     error = "\n| Could not preprocess {}".format(id_doc)
                     error += "\n| {}".format(e)
@@ -373,7 +506,6 @@ def run(console, build, force=False, update=False):
         for e in failed:
             table.add_row(e[0], str(e[1]))
         print(table)
-
 
 def main(args):
     console = Console(record=True)
