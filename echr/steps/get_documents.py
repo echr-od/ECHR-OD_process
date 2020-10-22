@@ -4,6 +4,7 @@ import requests
 import json
 import os
 import urllib3
+from concurrent.futures import ThreadPoolExecutor
 
 from echr.utils.folders import make_build_folder
 from echr.utils.logger import getlogger
@@ -36,6 +37,40 @@ def get_documents(id_list, folder, update):
         :param update: overwrite existing documents
         :type: bool
     """
+
+    def get_documents_step(doc_id, progress, task):
+        if doc_id[1]:
+            filename = "%s.docx" % (doc_id[0].strip())
+        else:
+            filename = "%s.pdf" % (doc_id[0].strip())
+        filename = os.path.join(folder, filename)
+        if not update or not os.path.isfile(filename):
+            if doc_id[1]:
+                url = BASE_URL + "docx/?library=ECHR&filename=please_give_me_the_document.docx&id=" + doc_id[0].strip()
+            else:
+                url = BASE_URL + "docx/pdf?library=ECHR&filename=please_give_me_the_document.pdf&id=" + doc_id[
+                    0].strip()
+            for j in range(MAX_RETRY):
+                try:
+                    r = requests.get(url, stream=True, timeout=5)
+                    if not r.ok:
+                        raise Exception()
+                    with open(filename, 'wb') as f:
+                        for block in r.iter_content(1024):
+                            f.write(block)
+                    error = "\n| Request complete, see [cyan]%s" % (filename)
+                    break
+                except Exception as e:
+                    log.debug(e)
+                    error = '\n| ({}/{}) Failed to fetch document {}'.format(
+                        j + 1, MAX_RETRY, doc_id[0])
+                    error += '\n| URL: %s' % (url)
+                    error += '\n| Permalink: %s' % (PERMA_URL + doc_id[0].strip())
+                    progress.update(task, advance=0, error=error, doc=doc_id[0])
+        else:
+            error = "\n| Skip as document exists already"
+        progress.update(task, advance=1, error=error, doc=doc_id[0])
+
     with Progress(
         TAB + "> Downloading... [IN PROGRESS]\n",
         BarColumn(30),
@@ -45,38 +80,10 @@ def get_documents(id_list, folder, update):
         transient=True,
     ) as progress:
         task = progress.add_task("Downloading...", total=len(id_list), error="", doc=id_list[0][0])
-        for i, doc_id in enumerate(id_list):
-            if doc_id[1]:
-                filename = "%s.docx" % (doc_id[0].strip())
-            else:
-                filename = "%s.pdf" % (doc_id[0].strip())
-            filename = os.path.join(folder, filename)
-            if not update or not os.path.isfile(filename):
-                if doc_id[1]:
-                    url = BASE_URL + "docx/?library=ECHR&filename=please_give_me_the_document.docx&id=" + doc_id[0].strip()
-                else:
-                    url = BASE_URL + "docx/pdf?library=ECHR&filename=please_give_me_the_document.pdf&id=" + doc_id[
-                        0].strip()
-                for j in range(MAX_RETRY):
-                    try:
-                        r = requests.get(url, stream=True)
-                        if not r.ok:
-                            raise Exception()
-                        with open(filename, 'wb') as f:
-                            for block in r.iter_content(1024):
-                                f.write(block)
-                        error = "\n| Request complete, see [cyan]%s" % (filename)
-                        break
-                    except Exception as e:
-                        log.debug(e)
-                        error = '\n| ({}/{}) Failed to fetch document {}'.format(
-                            j + 1, MAX_RETRY, doc_id[0])
-                        error += '\n| URL: %s' % (url)
-                        error += '\n| Permalink: %s' % (PERMA_URL + doc_id[0].strip())
-                        progress.update(task, advance=0, error=error, doc=doc_id[0])
-            else:
-                error = "\n| Skip as document exists already"
-            progress.update(task, advance=1, error=error, doc=doc_id[0])
+        f = lambda x: get_documents_step(x, progress, task)
+        with ThreadPoolExecutor(16) as executor:
+            executor.map(f, id_list)
+
     print(TAB + "> Downloading... [green][DONE]\n",)
 
 def run(console, build, force=False, update=False):
