@@ -39,7 +39,7 @@ jobs:
         with:
           push: true
           tags: aquemy1/echr_build:${{ steps.version.outputs.tag }}_${{ steps.date.outputs.date }}
-      - name: Build test dataset
+      - name: Build database and dataset
         uses: ./.github/actions/container_run
         env:
           SRV_PARAMS: ${{ secrets.SRV_PARAMS }}
