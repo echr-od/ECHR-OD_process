@@ -3,7 +3,8 @@ import argparse
 import os
 from sh import osf, scp
 import paramiko
-import shutil
+import datetime
+import sys
 
 from echr.utils.logger import getlogger
 from echr.utils.cli import TAB
@@ -32,9 +33,9 @@ def detach_osf(params_str, build, dst, detach, force, update):
     client.exec_command(cmd)
 
 
-def upload_osf(params_str, build, dst, detach, force, update):
+def upload_osf(params_str, build, detach, force, update):
     params = {e.split('=')[0]: e.split('=')[1] for e in params_str.split()}
-
+    dst = params['folder']
     with Progress(
             TAB + "> Retrieving list of files in the project... [IN PROGRESS]\n",
             transient=True,
@@ -75,8 +76,10 @@ def upload_osf(params_str, build, dst, detach, force, update):
     print(TAB + "> Upload... [green][DONE]\n")
 
 
-def upload_scp(params_str, build, dst, detach, force, update):
+def upload_scp(params_str, build, detach, force, update):
     params = {e.split('=')[0]: e.split('=')[1] for e in params_str.split()}
+    dst = params['folder']
+    dst_without_update = os.path.join(dst, 'raw', 'judgments')
     with Progress(
             TAB + "> Retrieving list of files in the project... [IN PROGRESS]\n",
             transient=True,
@@ -86,7 +89,7 @@ def upload_scp(params_str, build, dst, detach, force, update):
         client = paramiko.SSHClient()
         client.set_missing_host_key_policy(paramiko.AutoAddPolicy())
         client.connect(params['host'], username=params['user'], password=get_password())
-        client.exec_command("du -a {} &> /tmp/list.txt".format(dst))
+        client.exec_command("du -a {} &> /tmp/list.txt".format(dst_without_update))
         sftp = client.open_sftp()
         sftp.get('/tmp/list.txt', '/tmp/list.txt')
         with open('/tmp/list.txt', 'r') as f:
@@ -106,41 +109,85 @@ def upload_scp(params_str, build, dst, detach, force, update):
             client.exec_command('mkdir -p {}'.format(dst))
         print(TAB + "> Creating the destination folder [green][DONE]")
 
+    start = datetime.datetime.now()
+    def upload_status(sent, size):
+        sent_mb = round(float(sent) / 1000000, 1)
+        remaining_mb = round(float(size - sent) / 1000000, 1)
+        size_mb = round(size / 1000000, 1)
+        time = datetime.datetime.now()
+        elapsed = time - start
+        if sent > 0:
+            remaining_seconds = elapsed.total_seconds() * (float(size - sent) / sent)
+        else:
+            remaining_seconds = 0
+        remaining_hours, remaining_remainder = divmod(remaining_seconds, 3600)
+        remaining_minutes, remaining_seconds = divmod(remaining_remainder, 60)
 
-    files = get_list_of_files(build)
+        sys.stdout.write(
+            (TAB + "Total size:{0} MB | Sent:{1} MB | Remaining:{2} MB | Time remaining:{3:02}:{4:02}:{5:02}").
+                format(
+                size_mb, sent_mb, remaining_mb,
+                int(remaining_hours), int(remaining_minutes), int(remaining_seconds)))
+        sys.stdout.write('\r')
+
+    files = [os.path.join(build, e) for e in ['all.zip', 'datasets.zip']]
+    client = paramiko.SSHClient()
+    client.set_missing_host_key_policy(paramiko.AutoAddPolicy())
+    client.connect(params['host'], username=params['user'], password=get_password())
+    for i, file in enumerate(files):
+        error = ""
+        dst_file = file.replace(build, dst + '/')
+        if not update or dst_file not in server_files:
+            for j in range(MAX_RETRY):
+                try:
+                    head, _ = os.path.split(dst_file)
+                    client.exec_command('mkdir -p {}'.format(head))
+                    sftp = client.open_sftp()
+                    sftp.put(file, dst_file, upload_status)
+                    break
+                except Exception as e:
+                    log.debug(e)
+    print('\r')
+    print(TAB + "> Upload... [green][DONE]\n")
+
     with Progress(
-        TAB + "> Uploading... [IN PROGRESS]\n",
+        TAB + "> Decompress archives... [IN PROGRESS]\n",
         BarColumn(30),
         TimeRemainingColumn(),
         "| ({task.completed}/{task.total}) Uploading [blue]{task.fields[file]} [white]"
         "{task.fields[error]}",
         transient=True,
     ) as progress:
-        task = progress.add_task("Uploading...", total=len(files), error="", file=files[0])
+        task = progress.add_task("Decompress...", total=len(files), error="", file=files[0])
         client = paramiko.SSHClient()
         client.set_missing_host_key_policy(paramiko.AutoAddPolicy())
         client.connect(params['host'], username=params['user'], password=get_password())
         for i, file in enumerate(files):
             error = ""
             dst_file = file.replace(build, dst + '/')
-            if not update or dst_file not in server_files:
-                for j in range(MAX_RETRY):
-                    try:
-                        head, _ = os.path.split(dst_file)
-                        client.exec_command('mkdir -p {}'.format(head))
-                        sftp = client.open_sftp()
-                        sftp.put(file, dst_file)
-                        break
-                    except Exception as e:
-                        log.debug(e)
-                        error = '\n| ({}/{}) Failed to upload document {}'.format(
-                            j + 1, MAX_RETRY, file)
-                        error += '\n| {}'.format(str(e))
-                        progress.update(task, advance=0, error=error, file=file)
-            else:
-                error = "\n| Skip as document exists already"
-            progress.update(task, advance=1, error=error, file=file)
-    print(TAB + "> Upload... [green][DONE]\n")
+            for j in range(MAX_RETRY):
+                try:
+                    head, tail = os.path.split(dst_file)
+                    cmd = 'unzip -o "{}"'.format(dst_file)
+                    if tail == 'all.zip':
+                        cmd += ' -d "{}"'.format(os.path.join(head, '..', '..'))
+                    else:
+                        cmd += ' -d "{}"'.format(os.path.join(head, tail.split('.')[0]))
+                    stdin, stdout, stderr = client.exec_command(cmd)
+                    while not stdout.channel.exit_status_ready():
+                        if stdout.channel.recv_ready():
+                            stdoutLines = stdout.readlines()
+                            log.debug(stdoutLines)
+                    break
+                except Exception as e:
+                    print(e)
+                    log.debug(e)
+                    error = '\n| ({}/{}) Failed to decompress archive {}'.format(
+                        j + 1, MAX_RETRY, file)
+                    error += '\n| {}'.format(str(e))
+                    progress.update(task, advance=0, error=error, file=file)
+        progress.update(task, advance=1, error=error, file=file)
+    print(TAB + "> Decompress archives... [green][DONE]\n")
 
 
 def get_list_of_files(build):
@@ -150,16 +197,16 @@ def get_list_of_files(build):
             files_list.append(os.path.join(path, name))
     return files_list
 
-def run(console, method, build, dst, params, detach=False, force=False, update=False):
+def run(console, method, build, params, detach=False, force=False, update=False):
     __console = console
     global print
     print = __console.print
 
-    METHODS.get(method)(params, build, dst, detach, force, update)
+    METHODS.get(method)(params, build, detach, force, update)
 
 def main(args):
     console = Console(record=True)
-    run(console, args.method, args.build, args.dst, args.params, args.force, args.update)
+    run(console, args.method, args.build, args.params, args.force, args.update)
 
 
 def parse_args(parser):
@@ -179,7 +226,6 @@ METHODS = {
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description='Deploy the dataset')
     parser.add_argument('--build', type=str, default="./build/echr_database/")
-    parser.add_argument('--dst', type=str, help='Destination folder')
     parser.add_argument('--method', type=str, help='Method of deployment among: {}'.format(
         ', '.join(METHODS.keys())))
     parser.add_argument('--params', type=str, help='Parameters for the method')

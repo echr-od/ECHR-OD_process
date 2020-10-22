@@ -14,7 +14,5 @@ build:
   env:
     LIMIT_TOKENS: 10000
     OSF_PARAMS: 'change me'
-    OSF_DST: 'data'
-    SRV_DST: 'change me'
     SRV_PARAMS: 'change me'
 
