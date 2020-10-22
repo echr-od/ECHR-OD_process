@@ -4,6 +4,7 @@ import requests
 import json
 import os
 import urllib3
+from concurrent.futures import ThreadPoolExecutor
 
 from echr.utils.logger import getlogger
 from echr.utils.cli import StatusColumn, TAB
@@ -115,6 +116,34 @@ def get_case_info(base_url, max_documents, path):
     if length <= 0:
         return 2
     failed_to_get_some_cases = False
+
+    def get_cases_info_step(start, length, progress, task):
+        error = ""
+        with open(os.path.join(path, "%d.json" % (start)), 'wb') as f:
+            url = base_url + "&start=%d&length=%d" % (start, length)
+            for i in range(MAX_RETRY):
+                error = ""
+                try:
+                    r = requests.get(url, stream=True, timeout=10)
+                    if not r.ok:
+                        raise Exception()
+                    for block in r.iter_content(1024):
+                        f.write(block)
+                    break
+                except Exception as e:
+                    __console.print_exception()
+                    failed_to_get_some_cases = True
+                    log.error('({}/{}) Failed to fetch information {} to {}'.format(
+                        i + 1, MAX_RETRY, start, start + length))
+                    error = '\n| ({}/{}) Failed to fetch information {} to {}'.format(
+                        i + 1, MAX_RETRY, start, start + length)
+                    import time
+                    time.sleep(0.001)
+                if error:
+                    progress.update(task, advance=0, error=error)
+        progress.update(task, advance=length, to_be_completed=start + 2 * length)
+
+
     with Progress(
             TAB + "> Downloading... [IN PROGRESS]\n",
             BarColumn(30),
@@ -125,31 +154,9 @@ def get_case_info(base_url, max_documents, path):
 
     ) as progress:
         task = progress.add_task("Downloading...", total=max_documents, to_be_completed=length, error="")
-        for start in range(0, max_documents, length):
-            error = ""
-            with open(os.path.join(path, "%d.json" % (start)), 'wb') as f:
-                url = base_url + "&start=%d&length=%d" % (start, length)
-                for i in range(MAX_RETRY):
-                    error = ""
-                    try:
-                        r = requests.get(url, stream=True)
-                        if not r.ok:
-                            raise Exception()
-                        for block in r.iter_content(1024):
-                            f.write(block)
-                        break
-                    except Exception as e:
-                        __console.print_exception()
-                        failed_to_get_some_cases = True
-                        log.error('({}/{}) Failed to fetch information {} to {}'.format(
-                            i + 1, MAX_RETRY, start, start + length))
-                        error = '\n| ({}/{}) Failed to fetch information {} to {}'.format(
-                            i + 1, MAX_RETRY, start, start + length)
-                        import time
-                        time.sleep(0.001)
-                    if error:
-                        progress.update(task, advance=0, error=error)
-            progress.update(task, advance=length, to_be_completed=start + 2 * length)
+        f = lambda x: get_cases_info_step(x, length, progress, task)
+        with ThreadPoolExecutor(16) as executor:
+            executor.map(f, range(0, max_documents, length))
     if failed_to_get_some_cases:
         print(TAB + '> Downloading... [yellow][WARNING]')
         print(TAB + "[bold yellow]:warning: Some information could not be downloaded")
