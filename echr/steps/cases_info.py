@@ -115,11 +115,12 @@ def get_case_info(base_url, max_documents, path):
     length = min(LENGTH, max_documents)
     if length <= 0:
         return 2
-    failed_to_get_some_cases = False
 
     def get_cases_info_step(start, length, progress, task):
         error = ""
-        with open(os.path.join(path, "%d.json" % (start)), 'wb') as f:
+        file_path = os.path.join(path, "{}.json".format(start))
+        failed_to_get_some_cases = False
+        with open(file_path, 'wb') as f:
             url = base_url + "&start=%d&length=%d" % (start, length)
             for i in range(MAX_RETRY):
                 error = ""
@@ -131,8 +132,11 @@ def get_case_info(base_url, max_documents, path):
                         f.write(block)
                     break
                 except Exception as e:
+                    try:  # Delete the incorrect file if it exists
+                        os.remove(file_path)
+                    except:
+                        pass
                     __console.print_exception()
-                    failed_to_get_some_cases = True
                     log.error('({}/{}) Failed to fetch information {} to {}'.format(
                         i + 1, MAX_RETRY, start, start + length))
                     error = '\n| ({}/{}) Failed to fetch information {} to {}'.format(
@@ -141,7 +145,10 @@ def get_case_info(base_url, max_documents, path):
                     time.sleep(0.001)
                 if error:
                     progress.update(task, advance=0, error=error)
+            else:
+                failed_to_get_some_cases = True
         progress.update(task, advance=length, to_be_completed=start + 2 * length)
+        return failed_to_get_some_cases
 
 
     with Progress(
@@ -156,13 +163,14 @@ def get_case_info(base_url, max_documents, path):
         task = progress.add_task("Downloading...", total=max_documents, to_be_completed=length, error="")
         f = lambda x: get_cases_info_step(x, length, progress, task)
         with ThreadPoolExecutor(16) as executor:
-            executor.map(f, range(0, max_documents, length))
+            results = list(executor.map(f, range(0, max_documents, length)))
+    failed_to_get_some_cases = all(results)
     if failed_to_get_some_cases:
         print(TAB + '> Downloading... [yellow][WARNING]')
         print(TAB + "[bold yellow]:warning: Some information could not be downloaded")
         print(TAB + "  [bold yellow]THE FINAL DATABASE WILL BE INCOMPLETE!")
         print(TAB + "  [bold yellow]Use --strict flag to exit on single failure")
-        return 1
+        return failed_to_get_some_cases
     else:
         print(TAB + '> Downloading... [green][DONE]')
         return 0
