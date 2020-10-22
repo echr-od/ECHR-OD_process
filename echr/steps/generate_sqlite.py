@@ -241,7 +241,7 @@ def main(args):
     console = Console(record=True)
     run(console,
         build=args.build,
-        cases= args.cases,
+        cases=args.cases,
         force=args.f,
         update=args.u)
 

@@ -157,7 +157,7 @@ def run(console, build, force=False, update=False):
                 TimeRemainingColumn(),
                 "| Document [blue]{task.fields[doc]} [white]({task.completed}/{task.total})"
                 "{task.fields[error]}",
-                transient=False,
+                transient=True,
         ) as progress:
             task = progress.add_task("Compute tokens...", total=len(corpus_id), error="", doc=corpus_id[0])
             for i, doc in enumerate(normalized_tokens):

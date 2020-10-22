@@ -81,7 +81,6 @@ def generate_dataset(cases, keys, keys_list, encoded_outcomes, feature_index, fe
                     f_db.write(' '.join(map(str, bow)) + ' \n')
                     f_b.write(' '.join(map(str, bow)) + ' \n')
                     nb_features += len(bow)
-                print(processed_folder, os.path.join(processed_folder, 'tfidf', '{}_tfidf.txt'.format(c['itemid'])))
                 with open(os.path.join(processed_folder, 'tfidf', '{}_tfidf.txt'.format(c['itemid'])), 'r') as tfidf_doc:
                     tfidf = tfidf_doc.read()
                     tfidf = tfidf.split()
@@ -229,7 +228,6 @@ def run(console, build, articles=[], processed_folder='all', force=True):
         ccl = c[conclusion_key]
         for e in ccl:
             if e['type'] in ['violation', 'no-violation']:
-                # print(c['itemid'], e)
                 if e['article'] not in outcomes:
                     outcomes[e['article']] = {
                         'violation': 0,
