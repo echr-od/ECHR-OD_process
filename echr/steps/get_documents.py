@@ -61,6 +61,10 @@ def get_documents(id_list, folder, update):
                     error = "\n| Request complete, see [cyan]%s" % (filename)
                     break
                 except Exception as e:
+                    try:  # Delete the incorrect file if it exists
+                        os.remove(filename)
+                    except:
+                        pass
                     log.debug(e)
                     error = '\n| ({}/{}) Failed to fetch document {}'.format(
                         j + 1, MAX_RETRY, doc_id[0])

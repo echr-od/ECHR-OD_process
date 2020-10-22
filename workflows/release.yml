@@ -42,11 +42,3 @@ steps:
       method: 'scp'
       dst: $SRV_DST
       params: $SRV_PARAMS
-
-  - title: 'Deploy to OSF via Mirror Server'
-    run: echr.steps.deploy
-    updatable: true
-    args:
-      method: 'detach_osf'
-      dst: $SRV_DST
-      params: $SRV_PARAMS
