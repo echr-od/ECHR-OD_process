@@ -43,4 +43,4 @@ jobs:
         uses: ./.github/actions/container_run
         with:
           cont_action: 'build'
-          action_params: '--build ./build/test --workflow release'
+          action_params: '--build ./build/echr_database --workflow release'
