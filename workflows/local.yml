@@ -34,7 +34,5 @@ steps:
   - title: 'Generate SQL database'
     run: echr.steps.generate_sqlite
     updatable: true
-    args:
-      cases: './build/echr_database/unstructured/cases.json'
 
 
