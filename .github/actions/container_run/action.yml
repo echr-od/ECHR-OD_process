@@ -11,9 +11,6 @@ inputs:
 runs:
   using: 'docker'
   image: 'aquemy1/echr_build:develop'
-  env:
-    SRV_PARAMS: ${{ SRV_PARAMS }}
-    ECHR_PASSWORD: ${{ ECHR_PASSWORD }}
   args:
     - ${{ inputs.cont_action }}
     - ${{ inputs.action_params }}
