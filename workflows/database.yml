@@ -1,0 +1,18 @@
+steps:
+  - run: 'case_info'
+    type: 'action'
+
+  - run: 'filter'
+    type: 'action'
+
+  - run: 'get_documents'
+    type: 'action'
+
+  - run: 'preprocess_documents'
+    type: 'action'
+
+  - run: 'prepare_database'
+    type: 'action'
+
+  - run: 'generate_sqlite'
+    type: 'action'

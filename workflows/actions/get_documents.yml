@@ -1,0 +1,4 @@
+title: 'Get Documents'
+description: 'Retrieve judgment documents from HUDOC'
+run: echr.steps.get_documents
+updatable: true

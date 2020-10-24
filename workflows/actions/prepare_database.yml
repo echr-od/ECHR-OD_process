@@ -1,0 +1,3 @@
+title: 'Prepare Database'
+description: 'Preparing database files'
+run: echr.steps.prepare_database
