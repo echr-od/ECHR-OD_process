@@ -1,0 +1,5 @@
+title: 'Case Info'
+description: 'Retrieve basic cases metadata'
+run: echr.steps.cases_info
+args:
+  max_documents: $MAX_DOCUMENTS

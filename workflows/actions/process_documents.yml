@@ -1,0 +1,6 @@
+title: 'Processing'
+description: 'Process judgment documents'
+run: echr.steps.process_documents
+args:
+  limit_tokens: $LIMIT_TOKENS
+updatable: true

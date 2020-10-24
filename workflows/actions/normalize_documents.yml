@@ -1,0 +1,4 @@
+title: 'Normalization'
+description: 'Normalize judgment documents'
+run: echr.steps.normalize_documents
+updatable: true

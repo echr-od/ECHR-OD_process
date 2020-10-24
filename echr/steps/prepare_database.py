@@ -350,8 +350,6 @@ def run(console, build, output_prefix='cases', force=False):
     os.remove(os.path.join(output_path, 'flat_cases.json'))
     os.remove(os.path.join(output_path, 'cases_flat_schema.json'))
     os.remove(os.path.join(output_path, 'cases_flat_type_mapping.json'))
-    shutil.copy(os.path.join(build, 'datasets', 'features_text.json'), os.path.join(output_path))
-    shutil.copy(os.path.join(build, 'datasets', 'statistics_datasets.json'), os.path.join(output_path))
 
     print(TAB + '> Generate appnos matrice [green][DONE]')
     matrice_appnos = {}
@@ -385,8 +383,6 @@ def run(console, build, output_prefix='cases', force=False):
     # Raw
     shutil.make_archive(os.path.join(build, 'raw', 'judgments'), 'zip',
                         os.path.join(build, 'raw', 'judgments'))
-    shutil.make_archive(os.path.join(build, 'raw', 'normalized'), 'zip',
-                        os.path.join(build, 'raw', 'normalized_documents'))
 
     # All
     from zipfile import ZipFile
@@ -399,12 +395,6 @@ def run(console, build, output_prefix='cases', force=False):
                     if not filename.endswith('.zip'):
                         filePath = os.path.join(folderName, filename)
                         zipObj.write(filePath)
-
-    shutil.make_archive(os.path.join(build, 'structured', 'tfidf'), 'zip',
-                        os.path.join(build, 'structured', 'tfidf'))
-    shutil.make_archive(os.path.join(build, 'structured', 'bow'), 'zip',
-                        os.path.join(build, 'structured', 'bow'))
-
 
 def main(args):
     console = Console(record=True)

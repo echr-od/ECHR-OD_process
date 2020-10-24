@@ -23,6 +23,7 @@ print = console.print  # Redefine print
 
 LIMIT_TOKENS = 10000
 
+
 def main(args):
     print(Panel.fit('[bold yellow] :scales: {} :scales: '.format(
             "European Court of Human Rights Open Data Building Process".upper()), ), justify="center")
@@ -42,7 +43,7 @@ def main(args):
             print('\n[blue]🕑 Step executed in {}'.format(strfdelta(step_delta, "{hours}h {minutes}min {seconds}s")))
 
     start_time = datetime.now()
-    for i, step_info in enumerate(workflow_steps.get('steps', [])):
+    for i, step_info in enumerate(workflow_steps):
         step_args = step_info.get('args', {})
         if step_info.get('updatable', False) and update:
             step_args['update'] = True
@@ -64,9 +65,11 @@ def main(args):
     build_log_path = os.path.join(args.build, 'logs')
     serialize_console_logs(console, filename='build', path=build_log_path)
 
+
 def parse_args(parser):
     args = parser.parse_args()
     return args
+
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description='Generate the whole database')

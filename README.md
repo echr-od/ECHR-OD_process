@@ -75,7 +75,18 @@ Workflows are YAML files and can be found in the folder `workflows`.
 
 The workflows provided with the project are:
 - **Local** (`local.yml`): full ETL build locally,
-- **Release** (`release.yml`): full ETL including deployment to the server.
+- **Release** (`release.yml`): full ETL including deployment to the server,
+- **Database** (`database.yml`): build the database only (no NLP model, no datasets),
+- **Datasets** (`datasets.yml`): build the datasets only (does not generate the database),
+- **NLP Model** (`NLP_model.yml`): build only the NLP model.
+
+We have the following relations:
+- `Datasets = NLP Model + datasets generation step`
+- `Local = Database + Datasets`
+- `Release = Local + deployment step`
+
+This separation have been made because generating the NLP model takes up 95% of the whole `Release` workflow time 
+and a tremendous amount of RAM (>16 Go).
 
 Workflows may define variables using uppercase name starting by `$` (e.g. `$MAX_DOCUMENTS`).
 The variables are replaced during the build process using the following order of priority:
