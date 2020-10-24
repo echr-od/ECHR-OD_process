@@ -38,6 +38,7 @@ function handle_input {
     if [[ "$#" -eq 0 ]] ; then
         display_help
     else
+        coverage_output_path="./coverage_data/coverage.xml"
         if [[ "$1" = 'bash' || "$1" = '/bin/bash' ]] ; then
             /bin/bash
         elif [[ "$1" = "build" ]] ; then
@@ -47,6 +48,7 @@ function handle_input {
             lint_source_code
         elif [[ "$1" = "test" ]] ; then
             python -m pytest -v -c ./.pytest.ini --disable-warnings
+            python -m pytest --cov-report term-missing --cov=echr tests/
         elif [[ "$1" = 'lint' ]] ; then
             lint_source_code
         else
