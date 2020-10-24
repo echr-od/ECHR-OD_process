@@ -18,3 +18,5 @@ pyyaml
 mock
 paramiko
 peewee
+pytest
+pytest-cov
