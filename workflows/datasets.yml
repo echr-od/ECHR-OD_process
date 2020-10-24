@@ -1,0 +1,7 @@
+steps:
+  - run: 'NLP_model'
+    type: 'workflow'
+
+  - run: 'generate_datasets'
+    type: 'action'
+

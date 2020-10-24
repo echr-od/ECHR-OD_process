@@ -1,0 +1,3 @@
+title: 'Datasets generation'
+description: 'Generate datasets'
+run: echr.steps.generate_datasets

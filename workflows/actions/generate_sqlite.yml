@@ -1,0 +1,4 @@
+title: 'Generate SQL database'
+description: 'Generate normalized SQL database'
+run: echr.steps.generate_sqlite
+updatable: true
