@@ -38,3 +38,14 @@ jobs:
         uses: ./.github/actions/container_run
         with:
           cont_action: 'test'
+      - name: Get coverage
+        run: echo "COV=`cat cov_html/index.html | grep class=\"pc_cov\ | grep -oEi '\d*%'`" >> $GITHUB_ENV
+      - name: Coverage badge
+        uses: schneegans/dynamic-badges-action@v1.0.0
+        with:
+          auth: ${{ secrets.GIST_SECRET }}
+          gistID: 0a01112a76f73945a9f27710cf9c7a25
+          filename: coverage.json
+          label: Coverage
+          message: ${{ env.COV }}
+          color: green
