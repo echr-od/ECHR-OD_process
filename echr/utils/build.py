@@ -2,6 +2,7 @@ import os
 import shutil
 import yaml
 from pathlib import Path
+from datetime import datetime
 from rich.markdown import Markdown
 
 from echr.utils.config import config
@@ -45,7 +46,6 @@ def parse_workflow(console, steps_names, workflow, workflow_path, actions_path):
     available_workflows = [f.split('.')[0] for f in os.listdir(workflow_path) if
                            os.path.splitext(f)[1] in ['.yaml', '.yml']]
     for e in workflow.get('steps', []):
-        print(e)
         if e.get('type') == 'action':
             action_name = e.get('run')
             if action_name not in available_actions:
@@ -97,7 +97,7 @@ def load_workflow(console, args):
                                os.path.splitext(f)[1] in ['.yaml', '.yml']]
         if workflow not in available_workflows:
             console.print(TAB + '  ⮡ [bold red]:double_exclamation_mark: Workflow {} does not exist. '
-                        'Available workflows are: {}'.format(workflow, ', '.join(available_workflows)))
+                          'Available workflows are: {}'.format(workflow, ', '.join(available_workflows)))
             exit(1)
         else:
             try:
@@ -217,11 +217,40 @@ def prepare_logs(console, args):
             log.error(e)
             console.print(TAB + '  ⮡ [bold red]:double_exclamation_mark: Creation of the build log directory {} failed'.format(
                 build_log_path))
-            console.print(1)
+            exit(1)
         else:
             console.print(
                 TAB + '  ⮡ [green]:heavy_check_mark: Successfully created the build log directory {}'.format(build_log_path))
     return log_folder
+
+def place_lock(console, build='./build', name='.lock'):
+    token_path = os.path.join(build, name)
+    if os.path.isfile(token_path):
+        console.print(
+            TAB + '  ⮡ [bold red]:double_exclamation_mark: A lock file already exists: {}'.format(
+                token_path))
+        exit(1)
+    else:
+        with open(token_path, 'w'): pass
+        console.print(TAB + '  ⮡ [green]:heavy_check_mark: Successfully placed the lock')
+
+def remove_lock(console, build='./build', name='.lock'):
+    token_path = os.path.join(build, name)
+    if os.path.isfile(token_path):
+        try:
+            os.remove(token_path)
+            console.print(TAB + '  ⮡ [green]:heavy_check_mark: Successfully removed the lock')
+        except:
+            pass
+
+
+def append_history(workflow, build='./build', name='.build_history'):
+    history_path = os.path.join(build, name)
+    now = datetime.now()
+    date_time = now.strftime("%Y/%m/%d %H:%M:%S")
+    with open(history_path, 'a+') as f:
+        f.write('{}::{}\n'.format(date_time, workflow))
+
 
 def prepare_build(console, args):
     console.print(Markdown("- **Check the build configuration**"))
@@ -235,5 +264,6 @@ def prepare_build(console, args):
 
     workflow = load_workflow(console, args)
     force, update = prepare_build_folder(console, args)
+    place_lock(console)
     build_log_path = prepare_logs(console, args)
     return workflow, build_log_path, update, force

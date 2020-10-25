@@ -4,10 +4,13 @@ import argparse
 import importlib
 from datetime import datetime
 import os
+import signal
+import sys
 from rich.console import Console
 from rich.panel import Panel
-from echr.utils.build import prepare_build
-from echr.utils.cli import strfdelta
+from rich.markdown import Markdown
+from echr.utils.build import prepare_build, remove_lock, append_history
+from echr.utils.cli import strfdelta, TAB
 from echr.utils.logger import getlogger, serialize_console_logs
 
 OSF_DST = 'test'
@@ -23,6 +26,7 @@ print = console.print  # Redefine print
 
 LIMIT_TOKENS = 10000
 
+signal.signal(signal.SIGINT, signal.default_int_handler)
 
 def main(args):
     print(Panel.fit('[bold yellow] :scales: {} :scales: '.format(
@@ -62,8 +66,18 @@ def main(args):
     step_delta = stop_time - start_time
     print('\n[blue]🕑 Building process executed in {}'.format(strfdelta(step_delta, "{hours}h {minutes}min {seconds}s")))
 
+    print(Panel('[bold yellow] POST BUILD STEP'))
+
+    print(Markdown("- **Post build cleaning**"))
+    print(TAB + '> Serialize console logs')
     build_log_path = os.path.join(args.build, 'logs')
     serialize_console_logs(console, filename='build', path=build_log_path)
+
+    print(TAB + '> Append build run to build history')
+    append_history(args.workflow)
+
+    print(TAB + '> Remove lock file')
+    remove_lock(console)
 
 
 def parse_args(parser):
@@ -81,4 +95,7 @@ if __name__ == "__main__":
     parser.add_argument('-w', '--workflow', type=str, default='local', help='Workflow to execute')
 
     args = parse_args(parser)
-    main(args)
+    try:
+        main(args)
+    except KeyboardInterrupt:
+        remove_lock(console)
