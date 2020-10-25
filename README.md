@@ -78,7 +78,8 @@ The workflows provided with the project are:
 - **Release** (`release.yml`): full ETL including deployment to the server,
 - **Database** (`database.yml`): build the database only (no NLP model, no datasets),
 - **Datasets** (`datasets.yml`): build the datasets only (does not generate the database),
-- **NLP Model** (`NLP_model.yml`): build only the NLP model.
+- **NLP Model** (`NLP_model.yml`): build only the NLP model,
+= **Runner** (`runner.yml`): execute a workflow on an external runner.
 
 We have the following relations:
 - `Datasets = NLP Model + datasets generation step`
