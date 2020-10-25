@@ -1,4 +1,4 @@
-name: 'Cyclic Release'
+name: 'Cyclic Database Release'
 
 on:
   schedule:
@@ -8,7 +8,7 @@ on:
 jobs:
   build_image:
     runs-on: ubuntu-latest
-
+    name: 'Building Database'
     steps:
       - name: Checkout code
         uses: actions/checkout@v2
@@ -43,7 +43,6 @@ jobs:
         uses: ./.github/actions/container_run
         env:
           SRV_PARAMS: ${{ secrets.SRV_PARAMS }}
-          ECHR_PASSWORD: ${{ secrets.ECHR_PASSWORD }}
         with:
           cont_action: 'build'
-          action_params: '--build ./build/echr_database --workflow database'
+          action_params: '--build ./build/echr_database --workflow runner'
