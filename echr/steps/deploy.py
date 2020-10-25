@@ -64,7 +64,7 @@ def runner(params_str, build, detach, force, update):
     stdin, stdout, stderr = client.exec_command(';'.join(cmd))
     print(TAB + "> Fetch and rebase the repository... [green][DONE]")
 
-    cmd = 'nohup "docker run --mount src={},dst=/tmp/echr_process/,type=bind echr_build build --workflow {}" &'.format(REPO_PATH, params['workflow'])
+    cmd = 'nohup docker run --mount src={},dst=/tmp/echr_process/,type=bind echr_build build --workflow {} &'.format(REPO_PATH, params['workflow'])
     stdin, stdout, stderr = client.exec_command(cmd)
     print(TAB + "> Run workflow and detach... [green][DONE]")
 
