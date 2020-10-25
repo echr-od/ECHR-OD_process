@@ -48,7 +48,9 @@ function handle_input {
             lint_source_code
         elif [[ "$1" = "test" ]] ; then
             python -m pytest -v -c ./.pytest.ini --disable-warnings
-            python -m pytest --cov-report term-missing --cov=echr tests/
+            python -m pytest --cov-report xml:cov.xml  --cov-report html:cov_html --cov-report term-missing --cov=echr tests/
+            coverage=`cat cov_html/index.html | grep class=\"pc_cov\" | grep -oEi '[0-9]+%'`
+            return `cat cov_html/index.html | grep class=\"pc_cov\" | grep -oEi '[0-9]+%'`
         elif [[ "$1" = 'lint' ]] ; then
             lint_source_code
         else
