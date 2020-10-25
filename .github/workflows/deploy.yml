@@ -39,7 +39,7 @@ jobs:
         with:
           cont_action: 'test'
       - name: Get coverage
-        run: echo "COV=`cat cov_html/index.html | grep class=\"pc_cov\" | grep -oEi '[0-9]+%'`" >> $GITHUB_ENV
+        run: echo COV=`cat cov_html/index.html | grep class=\"pc_cov\" | grep -oEi '[0-9]+%'` >> $GITHUB_ENV
       - name: Coverage badge
         uses: schneegans/dynamic-badges-action@v1.0.0
         with:
