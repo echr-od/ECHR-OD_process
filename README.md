@@ -13,7 +13,7 @@ to check the intermediate files to understand if the results are correct or not 
 <a href="https://echr-opendata.eu/download">DOWNLOAD DATA</a>
 </p>
 
-![](https://img.shields.io/endpoint?url=https%3A%2F%2Fgist.githubusercontent.com%2Faquemy%2F0a01112a76f73945a9f27710cf9c7a25%2Fraw%2F917ebc768a6ab86d5bbb8df09e9a0544fc145ba6%2Fcoverage.json)
+![](https://img.shields.io/endpoint?url=https%3A%2F%2Fgist.githubusercontent.com%2Faquemy%2F0a01112a76f73945a9f27710cf9c7a25%2Fraw%2Fcoverage.json)
 
 ## General information
 
