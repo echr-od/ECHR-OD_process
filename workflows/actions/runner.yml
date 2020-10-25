@@ -1,0 +1,6 @@
+title: 'Runner'
+description: 'Execute workflow on an external runner'
+run: echr.steps.deploy
+args:
+  method: 'runner'
+  params: $SRV_PARAMS

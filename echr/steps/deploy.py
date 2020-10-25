@@ -21,16 +21,52 @@ MAX_RETRY = 3
 def get_password():
     return os.environ.get('ECHR_PASSWORD')
 
-def detach_osf(params_str, build, dst, detach, force, update):
+def runner(params_str, build, detach, force, update):
     params = {e.split('=')[0]: e.split('=')[1] for e in params_str.split()}
 
-    cmd = '/usr/bin/nohup sh -c "cd {}; docker run --env ECHR_PASSWORD={} -ti ' \
-          '--mount src=$(pwd),dst=/tmp/echr_process/,type=bind echr_build build ' \
-          '--workflow deploy_to_OSF" &'.format(params['folder'], os.environ.get('ECHR_PASSWORD'))
+    GIT_REPO = "https://github.com/echr-od/ECHR-OD_process.git"
+    DEFAULT_BRANCH = 'develop'
+    REPO_PATH = os.path.join(params['folder'], GIT_REPO.split('/')[-1].split('.')[0])
+
     client = paramiko.SSHClient()
     client.set_missing_host_key_policy(paramiko.AutoAddPolicy())
     client.connect(params['host'], username=params['user'], password=params['password'])
-    client.exec_command(cmd)
+
+    stdin, stdout, stderr = client.exec_command("[ -d '{}' ] && echo 'exists'".format(params['folder']), get_pty=True)
+    output = stdout.read().decode().strip()
+    print(TAB + "> Check if the target folder exists... [green][DONE]")
+    if not output:
+        cmd = [
+            'mkdir -p {}'.format(params['folder']),
+        ]
+        stdin, stdout, stderr = client.exec_command(';'.join(cmd))
+        print(stdout.read().decode().strip())
+        print(TAB + "> Create the target folder... [green][DONE]")
+
+    stdin, stdout, stderr = client.exec_command("[ -d '{}' ] && echo 'exists'".format(REPO_PATH),  get_pty=True)
+    output = stdout.read().decode().strip()
+    print(TAB + "> Check if the repository is cloned... [green][DONE]")
+    if not output:
+        cmd = [
+            'cd {}'.format(params['folder']),
+            'git clone {}'.format(GIT_REPO)
+        ]
+        stdin, stdout, stderr = client.exec_command(';'.join(cmd))
+        print(TAB + "> Clone repository... [green][DONE]")
+
+    # Fetch and rebase
+    cmd = [
+        'cd {}'.format(REPO_PATH),
+        'git fetch origin {}'.format(params.get('branch', DEFAULT_BRANCH)),
+        'git rebase origin {}'.format(params.get('branch', DEFAULT_BRANCH)),
+        'git checkout {}'.format(params.get('branch', DEFAULT_BRANCH))
+    ]
+    stdin, stdout, stderr = client.exec_command(';'.join(cmd))
+    print(TAB + "> Fetch and rebase the repository... [green][DONE]")
+
+    cmd = 'nohup "docker run --mount src={},dst=/tmp/echr_process/,type=bind echr_build build --workflow {}" &'.format(REPO_PATH, params['workflow'])
+    stdin, stdout, stderr = client.exec_command(cmd)
+    print(TAB + "> Run workflow and detach... [green][DONE]")
 
 
 def upload_osf(params_str, build, detach, force, update):
@@ -220,7 +256,7 @@ def parse_args(parser):
 METHODS = {
     'osf': upload_osf,
     'scp': upload_scp,
-    'detach_osf': detach_osf
+    'runner': runner
 }
 
 if __name__ == "__main__":
