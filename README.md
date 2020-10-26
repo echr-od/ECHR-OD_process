@@ -1,5 +1,7 @@
 # European Court of Human Rights OpenData construction process
 
+[![Codacy Badge](https://api.codacy.com/project/badge/Grade/8a607d6bc2324e0eabb11741e762fbbb)](https://app.codacy.com/gh/echr-od/ECHR-OD_process?utm_source=github.com&utm_medium=referral&utm_content=echr-od/ECHR-OD_process&utm_campaign=Badge_Grade)
+
 This repository contains the scripts to build the database and datasets from the 
 European Court of Human Rights OpenData (ECHR-OD) project.
 The purposes of such repository are many:
