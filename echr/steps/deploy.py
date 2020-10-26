@@ -65,16 +65,21 @@ def runner(params_str, build, detach, force, update):
     cmd = [
         'cd {}'.format(REPO_PATH),
         'git fetch origin {}'.format(params.get('branch', DEFAULT_BRANCH)),
-        'git rebase origin {}'.format(params.get('branch', DEFAULT_BRANCH)),
-        'git checkout {}'.format(params.get('branch', DEFAULT_BRANCH))
+    ]
+    stdin, stdout, stderr = client.exec_command(';'.join(cmd))
+    cmd = [
+        'cd {}'.format(REPO_PATH),
+        'git rebase origin {}'.format(params.get('branch', DEFAULT_BRANCH))
     ]
     stdin, stdout, stderr = client.exec_command(';'.join(cmd))
     print(TAB + "> Fetch and rebase the repository... [green][DONE]")
-    print(stdout.read().decode().strip())
 
-    cmd = 'nohup docker run --mount src={},dst=/tmp/echr_process/,type=bind echr_build build --workflow {} &'.format(REPO_PATH, params['workflow'])
+    print(TAB + "> Run workflow and detach... [green][DONE]")
+    cmd = 'tmux new -A -s echr -d "docker run -ti ' \
+          '--mount src={},dst=/tmp/echr_process/,type=bind ' \
+          'echr_build build --workflow {}"'.format(REPO_PATH, params['workflow'])
     stdin, stdout, stderr = client.exec_command(cmd)
-    print(stdout.read().decode().strip())
+
 
 def upload_osf(params_str, build, detach, force, update):
     params = {e.split('=')[0]: e.split('=')[1] for e in params_str.split()}
