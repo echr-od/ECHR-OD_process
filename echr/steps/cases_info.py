@@ -102,7 +102,7 @@ def determine_max_documents(base_url, default_value):
     return 1, max_documents
 
 
-def get_case_info(base_url, max_documents, path):
+def get_case_info(console, base_url, max_documents, path):
     """Get case information from HUDOC
 
         :param base_url: base url to query for documents
@@ -158,7 +158,7 @@ def get_case_info(base_url, max_documents, path):
             "| ({task.completed}/{task.total}) Fetching information from cases {task.completed} to {task.fields[to_be_completed]}"
             "{task.fields[error]}",
             transient=True,
-
+            console=console
     ) as progress:
         task = progress.add_task("Downloading...", total=max_documents, to_be_completed=length, error="")
         f = lambda x: get_cases_info_step(x, length, progress, task)
@@ -204,6 +204,8 @@ def run(console, build, max_documents=-1, force=False):
                     0: '[green] [DONE]',
                     1: '[red] [FAILED]'
             }),
+            transient=True,
+            console=console
         ) as progress:
             task = progress.add_task("Get total number of documents")
             while not progress.finished:
@@ -211,7 +213,7 @@ def run(console, build, max_documents=-1, force=False):
                 progress.update(task, rc=rc)
     print(TAB + "> The total number of documents to retrieve: {}".format(max_documents))
     print(Markdown("- **Get case information from HUDOC**"))
-    get_case_info(BASE_URL, max_documents, output_folder)
+    get_case_info(console, BASE_URL, max_documents, output_folder)
 
 
 def main(args):

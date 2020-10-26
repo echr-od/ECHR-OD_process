@@ -184,7 +184,7 @@ def prepare_build_folder(console, args):
                 TAB + '  ⮡ [bold red]:double_exclamation_mark: Creation of the build directory {} failed'.format(build))
             exit(1)
         else:
-            print(TAB + '  ⮡ [green]:heavy_check_mark: Successfully created the directory {}'.format(build))
+            console.print(TAB + '  ⮡ [green]:heavy_check_mark: Successfully created the directory {}'.format(build))
 
     return force, update
 

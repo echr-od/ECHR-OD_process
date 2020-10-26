@@ -27,7 +27,7 @@ PERMA_URL = "https://hudoc.echr.coe.int/eng?i="
 MAX_RETRY = 5
 
 
-def get_documents(id_list, folder, update):
+def get_documents(console, id_list, folder, update):
     """Get documents according to the specified list
 
         :param id_list: list of document id
@@ -81,7 +81,8 @@ def get_documents(id_list, folder, update):
         TimeRemainingColumn(),
         "| Fetching document of case [blue]{task.fields[doc]} [white]({task.completed}/{task.total})"
         "{task.fields[error]}",
-        transient=True,
+            transient=True,
+            console=console
     ) as progress:
         task = progress.add_task("Downloading...", total=len(id_list), error="", doc=id_list[0][0])
         f = lambda x: get_documents_step(x, progress, task)
@@ -111,7 +112,7 @@ def run(console, build, force=False, update=False):
         exit(1)
 
     print(Markdown("- **Get documents from HUDOC**"))
-    get_documents(id_list, output_folder, update)
+    get_documents(console, id_list, output_folder, update)
 
 
 def main(args):

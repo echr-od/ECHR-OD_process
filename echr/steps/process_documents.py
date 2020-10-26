@@ -70,6 +70,7 @@ def run(console, build, limit_tokens, processed_folder='all', force=False, updat
             "| Document [blue]{task.fields[doc]} [white]({task.completed}/{task.total})"
             "{task.fields[error]}",
             transient=True,
+            console=console
     ) as progress:
         task = progress.add_task("Loading...", total=len(files), error="",
                                  doc=files[0].split('/')[-1].split('_normalized.txt')[0])
@@ -108,6 +109,7 @@ def run(console, build, limit_tokens, processed_folder='all', force=False, updat
             "| Document [blue]{task.fields[doc]} [white]({task.completed}/{task.total})"
             "{task.fields[error]}",
             transient=True,
+            console=console
     ) as progress:
         task = progress.add_task("Loading...", total=len(corpus), error="",
                                  doc=corpus_id[0])
@@ -130,6 +132,7 @@ def run(console, build, limit_tokens, processed_folder='all', force=False, updat
             "| Document [blue]{task.fields[doc]} [white]({task.completed}/{task.total})"
             "{task.fields[error]}",
             transient=True,
+            console=console
     ) as progress:
         task = progress.add_task("Loading...", total=len(corpus_tfidf), error="",
                                  doc=corpus_id[0])
