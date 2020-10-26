@@ -2,6 +2,7 @@ from mock import patch
 from unittest.mock import MagicMock
 import json
 import os
+from rich.console import Console
 
 from echr.steps.cases_info import determine_max_documents, get_case_info
 
@@ -47,7 +48,7 @@ class TestDetermineMaxDocuments:
 class TestGetCasesInfo:
 
     def test_negative_document_number(self):
-        rc = get_case_info(base_url="", max_documents=-1, path='/tmp')
+        rc = get_case_info(Console(), base_url="", max_documents=-1, path='/tmp')
         assert rc == 2
 
     @patch('requests.get')
@@ -56,7 +57,7 @@ class TestGetCasesInfo:
         get.return_value = MagicMock(ok=True,
                                      content=content)
 
-        rc = get_case_info(base_url="", max_documents=100, path='/tmp/')
+        rc = get_case_info(Console(), base_url="", max_documents=100, path='/tmp/')
         assert rc == 0
         assert os.path.isfile('/tmp/0.json')
 
@@ -66,7 +67,7 @@ class TestGetCasesInfo:
         get.return_value = MagicMock(ok=True,
                                      content=json.dumps(content))
 
-        rc = get_case_info(base_url="", max_documents=950, path='/tmp/')
+        rc = get_case_info(Console(), base_url="", max_documents=950, path='/tmp/')
         assert rc == 0
         assert os.path.isfile('/tmp/0.json')
         assert os.path.isfile('/tmp/500.json')
@@ -77,6 +78,6 @@ class TestGetCasesInfo:
         get.return_value = MagicMock(ok=False,
                                      content=json.dumps({"resultcount": "120", "results": []}))
 
-        rc = get_case_info(base_url="", max_documents=100, path='/tmp/')
+        rc = get_case_info(Console(), base_url="", max_documents=100, path='/tmp/')
         assert rc == 1
         assert not os.path.isfile('/tmp/0.json')
