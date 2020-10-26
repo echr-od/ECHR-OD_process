@@ -13,7 +13,11 @@ to check the intermediate files to understand if the results are correct or not 
 <a href="https://echr-opendata.eu/download">DOWNLOAD DATA</a>
 </p>
 
-![](https://img.shields.io/endpoint?url=https%3A%2F%2Fgist.githubusercontent.com%2Faquemy%2F0a01112a76f73945a9f27710cf9c7a25%2Fraw%2Fcoverage.json)
+
+![](https://github.com/echr-od/ECHR-OD_process/workflows/Image%20Building/badge.svg?branch=develop)
+![](https://img.shields.io/endpoint?url=https%3A%2F%2Fgist.githubusercontent.com%2Faquemy%2F0a01112a76f73945a9f27710cf9c7a25%2Fraw%2Fcoverage.json&logo=coveralls)
+[![Codacy Badge](https://api.codacy.com/project/badge/Grade/8a607d6bc2324e0eabb11741e762fbbb)](https://app.codacy.com/gh/echr-od/ECHR-OD_process?utm_source=github.com&utm_medium=referral&utm_content=echr-od/ECHR-OD_process&utm_campaign=Badge_Grade)
+![](https://img.shields.io/github/license/echr-od/ECHR-OD_process)
 
 ## General information
 
