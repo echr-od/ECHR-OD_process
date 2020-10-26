@@ -107,6 +107,7 @@ def run(console, build, force=False, update=False):
             "| Document [blue]{task.fields[doc]} [white]({task.completed}/{task.total})"
             "{task.fields[error]}",
             transient=True,
+            console=console
     ) as progress:
         task = progress.add_task("Loading...", total=len(files), error="",
                                  doc=files[0].split('/')[-1].split('_text_without_conclusion.txt')[0])
@@ -132,6 +133,7 @@ def run(console, build, force=False, update=False):
                 "| Document [blue]{task.fields[doc]} [white]({task.completed}/{task.total})"
                 "{task.fields[error]}",
                 transient=True,
+                console=console
         ) as progress:
             task = progress.add_task("Compute tokens...", total=len(raw_corpus), error="", doc=corpus_id[0])
             for i, doc in enumerate(raw_corpus):
@@ -158,6 +160,7 @@ def run(console, build, force=False, update=False):
                 "| Document [blue]{task.fields[doc]} [white]({task.completed}/{task.total})"
                 "{task.fields[error]}",
                 transient=True,
+                console=console
         ) as progress:
             task = progress.add_task("Compute tokens...", total=len(corpus_id), error="", doc=corpus_id[0])
             for i, doc in enumerate(normalized_tokens):
@@ -194,6 +197,7 @@ def run(console, build, force=False, update=False):
             "| Document [blue]{task.fields[doc]} [white]({task.completed}/{task.total})"
             "{task.fields[error]}",
             transient=True,
+            console=console
     ) as progress:
         task = progress.add_task("Compute tokens...", total=len(doc_grammed), error="", doc=corpus_id[0])
         for i, doc in enumerate(doc_grammed):

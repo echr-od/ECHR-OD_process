@@ -42,6 +42,9 @@ def runner(params_str, build, detach, force, update):
         stdin, stdout, stderr = client.exec_command(';'.join(cmd))
         print(stdout.read().decode().strip())
         print(TAB + "> Create the target folder... [green][DONE]")
+    else:
+        print(TAB + "> Target folder already exists... [green][DONE]")
+        print(stdout.read().decode().strip())
 
     stdin, stdout, stderr = client.exec_command("[ -d '{}' ] && echo 'exists'".format(REPO_PATH),  get_pty=True)
     output = stdout.read().decode().strip()
@@ -53,6 +56,10 @@ def runner(params_str, build, detach, force, update):
         ]
         stdin, stdout, stderr = client.exec_command(';'.join(cmd))
         print(TAB + "> Clone repository... [green][DONE]")
+        print(stdout.read().decode().strip())
+    else:
+        print(TAB + "> Repository already cloned... [green][DONE]")
+        print(stdout.read().decode().strip())
 
     # Fetch and rebase
     cmd = [
@@ -63,11 +70,11 @@ def runner(params_str, build, detach, force, update):
     ]
     stdin, stdout, stderr = client.exec_command(';'.join(cmd))
     print(TAB + "> Fetch and rebase the repository... [green][DONE]")
+    print(stdout.read().decode().strip())
 
     cmd = 'nohup docker run --mount src={},dst=/tmp/echr_process/,type=bind echr_build build --workflow {} &'.format(REPO_PATH, params['workflow'])
     stdin, stdout, stderr = client.exec_command(cmd)
-    print(TAB + "> Run workflow and detach... [green][DONE]")
-
+    print(stdout.read().decode().strip())
 
 def upload_osf(params_str, build, detach, force, update):
     params = {e.split('=')[0]: e.split('=')[1] for e in params_str.split()}

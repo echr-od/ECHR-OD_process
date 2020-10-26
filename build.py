@@ -29,6 +29,13 @@ LIMIT_TOKENS = 10000
 signal.signal(signal.SIGINT, signal.default_int_handler)
 
 def main(args):
+    global console
+    global print
+    if args.no_tty:
+        file = open(os.path.join(BUILD_PATH, 'run.log'), 'w')
+        console = Console(record=True, file=file)
+        print = console.print  # Redefine print
+
     print(Panel.fit('[bold yellow] :scales: {} :scales: '.format(
             "European Court of Human Rights Open Data Building Process".upper()), ), justify="center")
 
@@ -90,6 +97,7 @@ if __name__ == "__main__":
     parser.add_argument('--build', type=str, default="./build/echr_database/")
     parser.add_argument('-f', '--force', action='store_true')
     parser.add_argument('-s', '--strict', action='store_true')
+    parser.add_argument('--no-tty', action='store_true')
     parser.add_argument('--max_documents', type=int, help='Maximum number of documents to retrieve')
     parser.add_argument('--params', type=str, help='Additional parameters to override workflow parameters')
     parser.add_argument('-w', '--workflow', type=str, default='local', help='Workflow to execute')

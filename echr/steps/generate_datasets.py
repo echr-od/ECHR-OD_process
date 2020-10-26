@@ -9,12 +9,6 @@ from echr.utils.folders import make_build_folder
 from echr.utils.cli import StatusColumn, TAB
 from rich.markdown import Markdown
 from rich.console import Console
-from rich.table import Table
-from rich.progress import (
-    Progress,
-    BarColumn,
-    TimeRemainingColumn,
-)
 
 
 def generate_dataset(cases, keys, keys_list, encoded_outcomes, feature_index, feature_to_encoded, output_path, name,

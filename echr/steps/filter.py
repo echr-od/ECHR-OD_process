@@ -197,7 +197,7 @@ def format_subarticle(article):
     return res
 
 
-def format_cases(cases):
+def format_cases(console, cases):
     """
         Format the cases from raw information
 
@@ -224,7 +224,8 @@ def format_cases(cases):
             "| Cases ({task.completed} / {task.total})",
             BarColumn(30),
             TimeRemainingColumn(),
-            transient=True
+            transient=True,
+            console=console
     ) as progress:
         task = progress.add_task("Format", total=len(cases))
         for i, c in enumerate(cases):
@@ -374,7 +375,7 @@ def run(console, build, force=False):
     print(Markdown("- **Filter cases**"))
     cases = filter_cases(cases)
     print(Markdown("- **Format cases metadata**"))
-    cases = format_cases(cases)
+    cases = format_cases(console, cases)
 
     print(Markdown("- **Generate statistics**"))
     stats = generate_statistics(cases)
@@ -426,6 +427,7 @@ def run(console, build, force=False):
             TAB + "> Generate case info for specific article [IN PROGRESS]",
             "| {task.fields[progress_array]}",
             transient=True,
+            console=console
     ) as progress:
         progress_array = []
         def to_str(a):

@@ -450,6 +450,7 @@ def run(console, build, force=False, update=False):
             "| Document [blue]{task.fields[doc]} [white]({task.completed}/{task.total})"
             "{task.fields[error]}",
             transient=True,
+            console=console
     ) as progress:
         task = progress.add_task("Preprocessing...", total=len(files), error="",
                                  doc=files[0].split('/')[-1].split('.')[0])

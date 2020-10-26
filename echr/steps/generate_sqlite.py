@@ -44,10 +44,11 @@ def create_tables():
                           Mention, Party, PartyCase, Representative, RepresentativeCase, KPThesaurus, ExternalSource,
                           Issue, DocumentCollectionId, ExtractedApp, SCL, SCLCase])
 
-def populate_database(cases_file, update):
+def populate_database(console, cases_file, update):
     with Progress(
             TAB + "> Loading cases in memory... [IN PROGRESS]\n",
             transient=True,
+            console=console
     ) as progress:
         _ = progress.add_task("Loading...")
         with open(cases_file) as f:
@@ -63,6 +64,7 @@ def populate_database(cases_file, update):
                 "| Adding case [blue]{task.fields[doc]} [white]({task.completed}/{task.total})"
                 "{task.fields[error]}",
                 transient=True,
+                console=console
         ) as progress:
             task = progress.add_task("Adding...", total=len(cases), error="", doc=cases[0]['itemid'])
             for case in cases:
@@ -228,13 +230,14 @@ def run(console, build, cases=None, force=True, update=True):
             with Progress(
                     TAB + "> Create tables... [IN PROGRESS]",
                     transient=True,
+                    console=console
             ) as progress:
                 _ = progress.add_task("Loading...")
                 create_tables()
             print(TAB + "> Create tables... [green][DONE]")
 
     cases_file = os.path.join(build, cases if cases is not None else "unstructured/cases.json")
-    populate_database(cases_file, update)
+    populate_database(console, cases_file, update)
 
 
 def main(args):
