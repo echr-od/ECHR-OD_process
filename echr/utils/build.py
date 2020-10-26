@@ -226,6 +226,7 @@ def prepare_logs(console, args):
 def place_lock(console, build='./build', name='.lock'):
     token_path = os.path.join(build, name)
     if os.path.isfile(token_path):
+
         console.print(
             TAB + '  ⮡ [bold red]:double_exclamation_mark: A lock file already exists: {}'.format(
                 token_path))
