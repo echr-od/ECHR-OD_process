@@ -14,10 +14,12 @@ to check the intermediate files to understand if the results are correct or not 
 </p>
 
 
-![](https://github.com/echr-od/ECHR-OD_process/workflows/Image%20Building/badge.svg?branch=develop)
 ![](https://img.shields.io/endpoint?url=https%3A%2F%2Fgist.githubusercontent.com%2Faquemy%2F0a01112a76f73945a9f27710cf9c7a25%2Fraw%2Fcoverage.json&logo=coveralls)
 [![Codacy Badge](https://api.codacy.com/project/badge/Grade/8a607d6bc2324e0eabb11741e762fbbb)](https://app.codacy.com/gh/echr-od/ECHR-OD_process?utm_source=github.com&utm_medium=referral&utm_content=echr-od/ECHR-OD_process&utm_campaign=Badge_Grade)
 ![](https://img.shields.io/github/license/echr-od/ECHR-OD_process)
+
+![](https://github.com/echr-od/ECHR-OD_process/workflows/Image%20Building/badge.svg?branch=develop)
+![](https://img.shields.io/docker/image-size/aquemy1/echr_build/develop)
 
 ## General information
 
@@ -25,7 +27,7 @@ to check the intermediate files to understand if the results are correct or not 
 - Original paper: [paper](https://arxiv.org/abs/1810.03115), [code](https://github.com/aquemy/ECHR-OD_predictions), 
 [supplementary material](https://github.com/aquemy/ECHR-OD_project_supplementary_material)
 - Creation process: https://github.com/echr-od/ECHR-OD_process
-- Website sources: https://github.com/echr-od/ECHR-OD_website
+- Explorer sources: https://github.com/echr-od/ECHR-OD_explorer
 
 If you are using the project, please consider citing:
 ```
@@ -85,7 +87,7 @@ The workflows provided with the project are:
 - **Database** (`database.yml`): build the database only (no NLP model, no datasets),
 - **Datasets** (`datasets.yml`): build the datasets only (does not generate the database),
 - **NLP Model** (`NLP_model.yml`): build only the NLP model,
-= **Runner** (`runner.yml`): execute a workflow on an external runner.
+- **Runner** (`runner.yml`): execute a workflow on an external runner.
 
 We have the following relations:
 - `Datasets = NLP Model + datasets generation step`
