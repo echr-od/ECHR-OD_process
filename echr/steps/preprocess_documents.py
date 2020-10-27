@@ -279,7 +279,6 @@ def parse_document(doc):
     """
     parsed = {}
     result = []
-    section = {}
 
     decision_body = ""
     appender = Node()  # Top level node
@@ -287,14 +286,11 @@ def parse_document(doc):
         line = p.text.strip()
         if not len(line):
             continue
-        # print(p.style.name, p.text)
         level = tag_to_level.get(p.style.name, 0)
         if level > 0:
             if appender.level == 0 and not len(appender.elements) and level > 1:
                 pass
-                # print('HEADER')
             else:
-                # print('L {} | App level: {}'.format(level, appender.level))
                 if level < appender.level:
                     while (appender.level > level - 1):
                         appender = appender.parent

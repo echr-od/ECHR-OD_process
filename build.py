@@ -1,11 +1,9 @@
 #!/bin/python3
-import subprocess
 import argparse
 import importlib
 from datetime import datetime
 import os
 import signal
-import sys
 from rich.console import Console
 from rich.panel import Panel
 from rich.markdown import Markdown

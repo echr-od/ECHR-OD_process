@@ -65,7 +65,7 @@ def department_name(data, number):
                 return data[n][1]
             else:
                 return 'NULL'
-    except Exception as e:
+    except Exception:
         return 'NULL'
 
 def max_n_gram(data, column):
