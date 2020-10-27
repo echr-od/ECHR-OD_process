@@ -13,6 +13,7 @@ import numpy as np
 from collections import OrderedDict
 from functools import reduce  # forward compatibility for Python 3
 import operator
+import sys
 
 from echr.utils.folders import make_build_folder
 from echr.utils.cli import TAB
@@ -33,13 +34,15 @@ class COL_HINT(str, Enum):
     POSITIONAL = 'positional'
 
 
-def format_structured_json(cases):
+def format_structured_json(cases_list):
     res = []
     representents = {}
     extractedapp = {}
     scl = {}
     decision_body = {}
-    for c in cases:
+    for name in cases_list:
+        with open(name, 'r') as f:
+            c = json.load(f)
         c['representedby'] = [r for r in c['representedby'] if r != 'N/A']
         representents[c['appno']] = {'representedby': c['representedby']}
         extractedapp[c['appno']] = {'appnos': c['extractedappno']}
@@ -291,21 +294,25 @@ def run(console, build, output_prefix='cases', force=False):
 
     print(Markdown("- **Normalize database**"))
     input_folder = os.path.join(build, 'raw', 'preprocessed_documents')
-    cases_files = [f for f in listdir(input_folder)
+    cases_files = [os.path.join(input_folder, f) for f in listdir(input_folder)
                    if isfile(os.path.join(input_folder, f)) and '.json' in f]
-    print(TAB + "> Load cases in memory [green][DONE]")
-    cases = []
-    for f in cases_files:
-        with open(os.path.join(input_folder, f)) as json_file:
-            data = json.load(json_file)
-            cases.append(data)
 
+    print(TAB + "> Prepare unstructured cases [green][DONE]")
     # Unstructured
     with open(os.path.join(build, 'unstructured', 'cases.json'), 'w') as outfile:
-        json.dump(cases, outfile, indent=4)
+        outfile.write('[\n')
+        for i, f in enumerate(cases_files):
+            with open(f) as json_file:
+                data = json.load(json_file)
+                json.dump(data, outfile, indent=4)
+                if i != len(cases_files) - 1:
+                    outfile.write(',\n')
+        outfile.write('\n]')
 
     # Structured
-    flat_cases , representatives, extractedapp, scl, decision_body = format_structured_json(cases)
+    print(TAB + "> Generate flat cases [green][DONE]")
+    flat_cases , representatives, extractedapp, scl, decision_body = format_structured_json(cases_files)
+    print(TAB + "> Flat cases size: {}MiB".format(sys.getsizeof(flat_cases) / 1000))
     schema_hints = {
         'article': {
             'col_type': COL_HINT.HOT_ONE
