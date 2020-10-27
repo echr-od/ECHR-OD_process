@@ -253,6 +253,17 @@ def append_history(workflow, build='./build', name='.build_history'):
         f.write('{}::{}\n'.format(date_time, workflow))
 
 
+def add_build_info(build, name='build_info.yml'):
+    build_info_path = os.path.join(build, name)
+    now = datetime.now()
+    date_time = now.strftime("%Y/%m/%d %H:%M:%S")
+    build_info = {
+        'build_time': date_time
+    }
+    with open(build_info_path, 'a+') as file:
+        yaml.dump(build_info, file)
+
+
 def prepare_build(console, args):
     console.print(Markdown("- **Check the build configuration**"))
     console.print(TAB + '> Number of documents to retrieve:')

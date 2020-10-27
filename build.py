@@ -7,7 +7,7 @@ import signal
 from rich.console import Console
 from rich.panel import Panel
 from rich.markdown import Markdown
-from echr.utils.build import prepare_build, remove_lock, append_history
+from echr.utils.build import prepare_build, remove_lock, append_history, add_build_info
 from echr.utils.cli import strfdelta, TAB
 from echr.utils.logger import getlogger, serialize_console_logs
 
@@ -80,6 +80,8 @@ def main(args):
 
     print(TAB + '> Append build run to build history')
     append_history(args.workflow)
+    print(TAB + '> Add build information to the build folder')
+    add_build_info(args.build)
 
     print(TAB + '> Remove lock file')
     remove_lock(console)
