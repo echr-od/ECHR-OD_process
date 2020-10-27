@@ -1,5 +1,5 @@
 import peewee as pw
-from playhouse.sqlite_ext import *
+from playhouse.sqlite_ext import JSONField
 from echr.data_models.base import BaseModel
 
 

@@ -1,5 +1,4 @@
 FROM python:3.8
-MAINTAINER alexandre.quemy+echr@gmail.com
 
 WORKDIR /tmp/echr_process/
 COPY bin bin/

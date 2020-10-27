@@ -1,13 +1,11 @@
 import argparse
 import json
-import copy
 import os
-import logging
 from os import listdir
 from os.path import isfile, join
 from collections import Counter
 
-from gensim import corpora, models, similarities
+from gensim import corpora, models
 from nlp.data import load_text_file
 
 from echr.utils.folders import make_build_folder
