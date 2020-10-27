@@ -20,7 +20,6 @@ def generate_dataset(cases, keys, keys_list, encoded_outcomes, feature_index, fe
     min_feature = 1000000
     max_feature = 0
     avg_feature = 0
-    prevalence = {}
     outcome_distribution = {}
     conclusion_key = 'conclusion' if name != 'multiclass' else 'mc_conclusion'
     with open(os.path.join(output_path, 'descriptive.txt'), 'w') as f_d, \

@@ -1,18 +1,13 @@
 import argparse
-import copy
 import json
 import logging
 import os
 from os import listdir
 from os.path import isfile, join
-import shutil
-import sys
 from collections import Counter
 
-from gensim import corpora, models, similarities
 from nlp.data import load_text_file
 from nlp.preprocessing import prepareText, frequencies
-from nltk.tokenize import word_tokenize
 
 from echr.utils.folders import make_build_folder
 from echr.utils.logger import getlogger
@@ -180,7 +175,7 @@ def run(console, build, force=False, update=False):
                         doc_grammed.append(None)
                         f.close()
                 progress.update(task, advance=1, error=error, doc=corpus_id[i])
-    except Exception as e:
+    except Exception:
         console.print_exception()
     print(TAB + "> Compute ngrams... [green][DONE]")
 

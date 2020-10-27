@@ -481,8 +481,6 @@ def run(console, build, force=False):
         json.dump(multiclass_cases, outfile, indent=4, sort_keys=True)
     print(TAB + "> Generate case info for multiclass [green][DONE]", )
 
-    build_log_path = os.path.join(build, 'logs')
-
 
 def main(args):
     console = Console(record=True)
