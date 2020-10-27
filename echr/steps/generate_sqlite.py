@@ -3,7 +3,8 @@ from datetime import datetime
 import argparse
 import json
 import os
-
+from os import listdir
+from os.path import isfile
 from echr.utils.logger import getlogger
 from echr.utils.cli import StatusColumn, TAB
 from rich.markdown import Markdown
@@ -42,16 +43,10 @@ def create_tables():
                           Mention, Party, PartyCase, Representative, RepresentativeCase, KPThesaurus, ExternalSource,
                           Issue, DocumentCollectionId, ExtractedApp, SCL, SCLCase])
 
-def populate_database(console, cases_file, update):
-    with Progress(
-            TAB + "> Loading cases in memory... [IN PROGRESS]\n",
-            transient=True,
-            console=console
-    ) as progress:
-        _ = progress.add_task("Loading...")
-        with open(cases_file) as f:
-            cases = json.load(f)
-    print(TAB + "> Loading cases in memory... [green][DONE]")
+def populate_database(console, build, update):
+    input_folder = os.path.join(build, 'raw', 'preprocessed_documents')
+    cases_files = [os.path.join(input_folder, f) for f in listdir(input_folder)
+                   if isfile(os.path.join(input_folder, f)) and '.json' in f]
 
     db.connect()
     if True:
@@ -64,8 +59,10 @@ def populate_database(console, cases_file, update):
                 transient=True,
                 console=console
         ) as progress:
-            task = progress.add_task("Adding...", total=len(cases), error="", doc=cases[0]['itemid'])
-            for case in cases:
+            task = progress.add_task("Adding...", total=len(cases_files), error="", doc=cases_files[0].split('/')[-1])
+            for f in cases_files:
+                with open(f, 'r') as f:
+                    case = json.load(f)
                 entity = Case.get_or_none(Case.itemid == case['itemid'])
                 error = ""
                 if entity is None:
@@ -234,8 +231,7 @@ def run(console, build, cases=None, force=True, update=True):
                 create_tables()
             print(TAB + "> Create tables... [green][DONE]")
 
-    cases_file = os.path.join(build, cases if cases is not None else "unstructured/cases.json")
-    populate_database(console, cases_file, update)
+    populate_database(console, build, update)
 
 
 def main(args):
