@@ -1,6 +1,7 @@
 #!/bin/python3
 import argparse
 import importlib
+import requests
 from datetime import datetime
 import os
 import signal
@@ -86,6 +87,11 @@ def main(args):
     build_log_path = os.path.join(args.build, 'logs')
     serialize_console_logs(console, filename='build', path=build_log_path)
 
+    if args.upgrade_endpoint:
+        try:
+            requests.get(url=args.upgrade_endpoint)
+        except:
+            pass
 
 def parse_args(parser):
     args = parser.parse_args()
@@ -98,6 +104,7 @@ if __name__ == "__main__":
     parser.add_argument('-f', '--force', action='store_true')
     parser.add_argument('-s', '--strict', action='store_true')
     parser.add_argument('--no-tty', action='store_true')
+    parser.add_argument('--upgrade_endpoint',  type=str, default='', action='store_true')
     parser.add_argument('--max_documents', type=int, help='Maximum number of documents to retrieve')
     parser.add_argument('--params', type=str, help='Additional parameters to override workflow parameters')
     parser.add_argument('-w', '--workflow', type=str, default='local', help='Workflow to execute')
