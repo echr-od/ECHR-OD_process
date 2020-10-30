@@ -21,6 +21,8 @@ to check the intermediate files to understand if the results are correct or not 
 ![](https://github.com/echr-od/ECHR-OD_process/workflows/Image%20Building/badge.svg?branch=develop)
 ![](https://img.shields.io/docker/image-size/aquemy1/echr_build/develop)
 
+![](https://img.shields.io/endpoint?url=https%3A%2F%2Fechr-opendata.eu%2Fapi%2Fv1%2Fbuild%2Fstatus)
+
 ## General information
 
 - Official website: [ECHR-OD project](https://echr-opendata.eu)
