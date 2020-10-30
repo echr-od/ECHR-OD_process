@@ -78,9 +78,12 @@ def runner(params_str, build, detach, force, update):
     build_str = ""
     if 'build' in params:
         build_str = "--build {}".format(params['build'])
+    endpoint_str = ""
+    if 'upgrade_endpoint' in params:
+        endpoint_str = "--upgrade_endpoint {}".format(params['upgrade_endpoint'])
     cmd = 'tmux new -A -s echr -d "docker run -ti ' \
           '--mount src={},dst=/tmp/echr_process/,type=bind ' \
-          'echr_build build --workflow {} {}"'.format(REPO_PATH, params['workflow'], build_str)
+          'echr_build build --workflow {} {} {}"'.format(REPO_PATH, params['workflow'], build_str, endpoint_str)
     stdin, stdout, stderr = client.exec_command(cmd)
 
 
