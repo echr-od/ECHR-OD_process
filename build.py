@@ -74,10 +74,6 @@ def main(args):
     print(Panel('[bold yellow] POST BUILD STEP'))
 
     print(Markdown("- **Post build cleaning**"))
-    print(TAB + '> Serialize console logs')
-    build_log_path = os.path.join(args.build, 'logs')
-    serialize_console_logs(console, filename='build', path=build_log_path)
-
     print(TAB + '> Append build run to build history')
     append_history(args.workflow)
     print(TAB + '> Add build information to the build folder')
@@ -85,6 +81,10 @@ def main(args):
 
     print(TAB + '> Remove lock file')
     remove_lock(console)
+
+    print(TAB + '> Serialize console logs')
+    build_log_path = os.path.join(args.build, 'logs')
+    serialize_console_logs(console, filename='build', path=build_log_path)
 
 
 def parse_args(parser):

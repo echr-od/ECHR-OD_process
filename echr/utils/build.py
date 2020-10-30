@@ -249,7 +249,7 @@ def append_history(workflow, build='./build', name='.build_history'):
     history_path = os.path.join(build, name)
     now = datetime.now()
     date_time = now.strftime("%Y/%m/%d %H:%M:%S")
-    with open(history_path, 'w') as f:
+    with open(history_path, 'a+') as f:
         f.write('{}::{}\n'.format(date_time, workflow))
 
 
@@ -260,7 +260,7 @@ def add_build_info(build, name='build_info.yml'):
     build_info = {
         'build_time': date_time
     }
-    with open(build_info_path, 'a+') as file:
+    with open(build_info_path, 'w') as file:
         yaml.dump(build_info, file)
 
 
