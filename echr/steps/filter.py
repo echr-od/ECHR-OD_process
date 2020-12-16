@@ -37,6 +37,7 @@ def format_parties(parties):
     return parties
 
 
+
 def format_conclusion(ccl):
     """Format a conclusion string into a list of elements:
 
@@ -106,64 +107,67 @@ def format_conclusion(ccl):
 
     to_append = []
     for i, e in enumerate(final_ccl):
-        l = re.sub(' +', ' ', e['element'].lower().strip())
-        t = 'other'
-        if l.startswith('violation'):
-            t = 'violation'
-        elif l.startswith('no-violation') or l.startswith('no violation'):
-            t = 'no-violation'
-        final_ccl[i]['type'] = t
-        if t != 'other':
-            art = None
-            if ' and art. ' in l:
-                l = l.replace(' and art. ', '')
-            if ' and of ' in l:
-                l = l.replace(' and of ', '+')
-            if ' and ' in l:
-                l = l.replace(' and ', '+')
-            # TODO: Remove this ugly code...
-            if 'violations of p1-1' in l or 'violation of p1-1' in l:
-                final_ccl[i]['article'] = 'p1'
-            elif 'violations of p1-3' in l or 'violation of p1-2' in l:
-                final_ccl[i]['article'] = 'p1'
-            elif 'violations of p1-3' in l or 'violation of p1-3' in l:
-                final_ccl[i]['article'] = 'p1'
-            elif 'violations of p4-2' in l or 'violation of p4-2' in l:
-                final_ccl[i]['article'] = 'p4'
-            elif 'violations of p4-4' in l or 'violation of p4-4' in l:
-                final_ccl[i]['article'] = 'p4'
-            elif 'violations of p7-4' in l or 'violation of p7-4' in l:
-                final_ccl[i]['article'] = 'p7'
-            elif 'violations of p7-1' in l or 'violation of p7-1' in l:
-                final_ccl[i]['article'] = 'p7'
-            elif 'violations of p7-2' in l or 'violation of p7-2' in l:
-                final_ccl[i]['article'] = 'p7'
-            elif 'violations of p12-1' in l or 'violation of p12-1' in l:
-                final_ccl[i]['article'] = 'p12'
-            elif 'violations of p6-3-c' in l or 'violation of p6-3-c' in l:
-                final_ccl[i]['article'] = 'p6'
-            elif 'violations of p7-5' in l or 'violation of p7-5' in l:
-                final_ccl[i]['article'] = 'p7'
-            elif 'violations of 6-1' in l or 'violation of 6-1' in l:
-                final_ccl[i]['article'] = '6'
-            else:
-                b = l.split()
-
-                for j, a in enumerate(b):
-                    if a.startswith('art'):
-                        if a.lower().startswith('art.') and not a.lower().startswith('art. ') and len(a) > 4:
-                            art = a.lower()[4:]
-                        else:
-                            art = b[j + 1]
-                        break
-                if art is not None:
-                    art = art.split('+')
-                    final_ccl[i]['article'] = art[0].split('-')[0].replace('.', '')
-                    if len(art) > 1:
-                        for m in art[1:]:
-                            item = final_ccl[i]
-                            item['article'] = m.split('-')[0]
-                            to_append.append(item)
+            l = re.sub(' +', ' ', e['element'].lower().strip())
+            t = 'other'
+            if l.startswith('violation'):
+                t = 'violation'
+            elif l.startswith('no-violation') or l.startswith('no violation'):
+                t = 'no-violation'
+            final_ccl[i]['type'] = t
+            if 'protocol' in e['element'].lower():
+                l = e['element'].lower().split('protocol no.')
+                f2 = l[1].split()[0]
+                final_ccl[i]['article'] = f'p{f2}'
+            elif t != 'other':
+                art = None
+                if ' and art. ' in l:
+                    l = l.replace(' and art. ', '')
+                if ' and of ' in l:
+                    l = l.replace(' and of ', '+')
+                if ' and ' in l:
+                    l = l.replace(' and ', '+')
+                # TODO: Remove this ugly code...
+                if 'violations of p1-1' in l or 'violation of p1-1' in l:
+                    final_ccl[i]['article'] = 'p1'
+                elif 'violations of p1-3' in l or 'violation of p1-2' in l:
+                    final_ccl[i]['article'] = 'p1'
+                elif 'violations of p1-3' in l or 'violation of p1-3' in l:
+                    final_ccl[i]['article'] = 'p1'
+                elif 'violations of p4-2' in l or 'violation of p4-2' in l:
+                    final_ccl[i]['article'] = 'p4'
+                elif 'violations of p4-4' in l or 'violation of p4-4' in l:
+                    final_ccl[i]['article'] = 'p4'
+                elif 'violations of p7-4' in l or 'violation of p7-4' in l:
+                    final_ccl[i]['article'] = 'p7'
+                elif 'violations of p7-1' in l or 'violation of p7-1' in l:
+                    final_ccl[i]['article'] = 'p7'
+                elif 'violations of p7-2' in l or 'violation of p7-2' in l:
+                    final_ccl[i]['article'] = 'p7'
+                elif 'violations of p12-1' in l or 'violation of p12-1' in l:
+                    final_ccl[i]['article'] = 'p12'
+                elif 'violations of p6-3-c' in l or 'violation of p6-3-c' in l:
+                    final_ccl[i]['article'] = 'p6'
+                elif 'violations of p7-5' in l or 'violation of p7-5' in l:
+                    final_ccl[i]['article'] = 'p7'
+                elif 'violations of 6-1' in l or 'violation of 6-1' in l:
+                    final_ccl[i]['article'] = '6'
+                else:
+                    b = l.split()
+                    for j, a in enumerate(b):
+                        if a.startswith('art'):
+                            if a.lower().startswith('art.') and not a.lower().startswith('art. ') and len(a) > 4:
+                                art = a.lower()[4:]
+                            else:
+                                art = b[j + 1]
+                            break
+                    if art is not None:
+                        art = art.split('+')
+                        final_ccl[i]['article'] = art[0].split('-')[0].replace('.', '')
+                        if len(art) > 1:
+                            for m in art[1:]:
+                                item = final_ccl[i]
+                                item['article'] = m.split('-')[0]
+                                to_append.append(item)
 
     final_ccl.extend(to_append)
     return final_ccl
