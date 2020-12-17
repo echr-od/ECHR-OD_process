@@ -5,7 +5,7 @@ import json
 import os
 from os import listdir, path
 import re
-
+import copy
 
 from echr.utils.folders import make_build_folder
 from echr.utils.logger import getlogger

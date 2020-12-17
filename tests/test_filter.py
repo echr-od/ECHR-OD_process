@@ -1,8 +1,4 @@
-from mock import patch
-from unittest.mock import MagicMock
 import json
-import os
-from rich.console import Console
 
 from echr.steps.filter import format_conclusion, find_base_articles, split_and_format_article
 from echr.utils.misc import compare_two_lists
