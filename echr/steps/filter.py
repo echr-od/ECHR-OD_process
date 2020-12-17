@@ -38,6 +38,65 @@ def format_parties(parties):
 
 
 
+def split_and_format_article(article):
+    articles = []
+
+    # Article 14 is an exception and should always have another cited article e.g. 14+3
+    # article = article.replace('14+', '14/')
+
+    parts = article.split('+')
+    t = [parts[-1]]
+    for k, e in enumerate(parts[:-1]):
+        if not parts[k + 1].startswith(e):
+            t.append(e)
+    articles = t
+
+    # articles = list(map(lambda x: x.replace('14/', '14+'), articles))
+    return articles
+
+
+def base_article(article):
+    if '-' in article:
+        base = article.split('+')
+        base = [e.split('-')[0] for e in base]
+        base = '+'.join(base)
+
+        art = [base]  # art.split('+')
+        if '+' in art[0]:
+            sart = art[0].split('+')
+            t = [sart[-1]]
+            for k, e in enumerate(sart[:-1]):
+                if not sart[k + 1].startswith(e):
+                    t.append(e)
+            base = '+'.join(t)
+        return base
+    return article
+
+
+def find_base_articles(articles):
+    base_articles = []
+    for a in articles:
+        a = a.split('+')[0]
+        if not 'p' in a:
+            base_articles.append(a.split('-', 1)[0])
+        else:
+            base_articles.append('-'.join(a.split('-')[0:2]))
+    return base_articles
+
+
+def merge_conclusion_elements(elements):
+    final_elements = {}
+    for e in elements:
+        if 'article' in e and 'base_article' in e:
+            key = '{}_{}_{}'.format(e['article'], e['base_article'], e['element'])
+        else:
+            key = e['element']
+        if key not in final_elements:
+            final_elements[key] = e
+        final_elements[key].update(e)
+    return list(final_elements.values())
+
+
 def format_conclusion(ccl):
     """Format a conclusion string into a list of elements:
 
@@ -107,50 +166,41 @@ def format_conclusion(ccl):
 
     to_append = []
     for i, e in enumerate(final_ccl):
-            l = re.sub(' +', ' ', e['element'].lower().strip())
-            t = 'other'
-            if l.startswith('violation'):
-                t = 'violation'
-            elif l.startswith('no-violation') or l.startswith('no violation'):
-                t = 'no-violation'
-            final_ccl[i]['type'] = t
-            if 'protocol' in e['element'].lower():
-                l = e['element'].lower().split('protocol no.')
-                f2 = l[1].split()[0]
-                final_ccl[i]['article'] = f'p{f2}'
-            elif t != 'other':
+        l = e['element'].lower().strip()
+
+        # Determine type
+        t = 'other'
+        if l.startswith('violation'):
+            t = 'violation'
+        elif l.startswith('no-violation') or l.startswith('no violation'):
+            t = 'no-violation'
+        final_ccl[i]['type'] = t
+        if t == 'other':
+            to_append.append(final_ccl[i])
+
+        # Determine articles
+        articles = []
+        if 'protocol' in e['element'].lower():
+            prot = e['element'].lower().split('protocol no.')
+            f1 = prot[0].split()[-2]
+            f2 = prot[1].split()[0]
+            final_ccl[i]['article'] = f'p{f2}-{f1}'
+            articles = split_and_format_article(final_ccl[i]['article'])
+
+        if 'article' not in final_ccl[i] and t != 'other':
+
+            if True:
                 art = None
-                if ' and art. ' in l:
-                    l = l.replace(' and art. ', '')
-                if ' and of ' in l:
-                    l = l.replace(' and of ', '+')
-                if ' and ' in l:
-                    l = l.replace(' and ', '+')
-                # TODO: Remove this ugly code...
-                if 'violations of p1-1' in l or 'violation of p1-1' in l:
-                    final_ccl[i]['article'] = 'p1'
-                elif 'violations of p1-3' in l or 'violation of p1-2' in l:
-                    final_ccl[i]['article'] = 'p1'
-                elif 'violations of p1-3' in l or 'violation of p1-3' in l:
-                    final_ccl[i]['article'] = 'p1'
-                elif 'violations of p4-2' in l or 'violation of p4-2' in l:
-                    final_ccl[i]['article'] = 'p4'
-                elif 'violations of p4-4' in l or 'violation of p4-4' in l:
-                    final_ccl[i]['article'] = 'p4'
-                elif 'violations of p7-4' in l or 'violation of p7-4' in l:
-                    final_ccl[i]['article'] = 'p7'
-                elif 'violations of p7-1' in l or 'violation of p7-1' in l:
-                    final_ccl[i]['article'] = 'p7'
-                elif 'violations of p7-2' in l or 'violation of p7-2' in l:
-                    final_ccl[i]['article'] = 'p7'
-                elif 'violations of p12-1' in l or 'violation of p12-1' in l:
-                    final_ccl[i]['article'] = 'p12'
-                elif 'violations of p6-3-c' in l or 'violation of p6-3-c' in l:
-                    final_ccl[i]['article'] = 'p6'
-                elif 'violations of p7-5' in l or 'violation of p7-5' in l:
-                    final_ccl[i]['article'] = 'p7'
-                elif 'violations of 6-1' in l or 'violation of 6-1' in l:
-                    final_ccl[i]['article'] = '6'
+                find_and_replace = [
+                    (' and art. ', ''),
+                    (' and of ', '+'),
+                    (' and ', '+')
+                ]
+                for p in find_and_replace:
+                    if p[0] in l:
+                        l = l.replace(p[0], p[1])
+                if False:
+                    pass
                 else:
                     b = l.split()
                     for j, a in enumerate(b):
@@ -161,16 +211,34 @@ def format_conclusion(ccl):
                                 art = b[j + 1]
                             break
                     if art is not None:
+                        articles = split_and_format_article(art)
                         art = art.split('+')
-                        final_ccl[i]['article'] = art[0].split('-')[0].replace('.', '')
+                        if '+' in art[0]:
+                            sart = art[0].split('+')
+                            t = [sart[-1]]
+                            for k, e in enumerate(sart[:-1]):
+                                if not sart[k + 1].startswith(e):
+                                    t.append(e)
+                            art = ['+'.join(t)]
+
+                        final_ccl[i]['article'] = art[0].replace('.', '')
                         if len(art) > 1:
                             for m in art[1:]:
                                 item = final_ccl[i]
                                 item['article'] = m.split('-')[0]
-                                to_append.append(item)
+                                # to_append.append(item)
+        base_articles = find_base_articles(articles)
+        for k, art in enumerate(articles):
+            item = copy.copy(final_ccl[i])
+            item['article'] = art
+            item['base_article'] = base_articles[k]
+            to_append.append(item)
 
-    final_ccl.extend(to_append)
+    # final_ccl[i]['base_article'] = base_article(final_ccl[i]['article'])
+    # final_ccl.extend(to_append)
+    final_ccl = merge_conclusion_elements(to_append)
     return final_ccl
+
 
 
 def format_article(article):
