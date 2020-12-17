@@ -39,41 +39,29 @@ def format_parties(parties):
 
 
 def split_and_format_article(article):
-    articles = []
+    """Return the list of articles from a string
 
-    # Article 14 is an exception and should always have another cited article e.g. 14+3
-    # article = article.replace('14+', '14/')
-
+        :param article: str
+        :type article: str
+        :return: list of articles
+        :rtype: [str]
+    """
     parts = article.split('+')
-    t = [parts[-1]]
+    articles = [parts[-1]]
     for k, e in enumerate(parts[:-1]):
         if not parts[k + 1].startswith(e):
-            t.append(e)
-    articles = t
-
-    # articles = list(map(lambda x: x.replace('14/', '14+'), articles))
+            articles.append(e)
     return articles
 
 
-def base_article(article):
-    if '-' in article:
-        base = article.split('+')
-        base = [e.split('-')[0] for e in base]
-        base = '+'.join(base)
-
-        art = [base]  # art.split('+')
-        if '+' in art[0]:
-            sart = art[0].split('+')
-            t = [sart[-1]]
-            for k, e in enumerate(sart[:-1]):
-                if not sart[k + 1].startswith(e):
-                    t.append(e)
-            base = '+'.join(t)
-        return base
-    return article
-
-
 def find_base_articles(articles):
+    """Return the base articles from a list of articles
+
+        :param articles: list of articles
+        :type articles: [str]
+        :return: bases
+        :rtype: [str]
+    """
     base_articles = []
     for a in articles:
         a = a.split('+')[0]
@@ -85,6 +73,13 @@ def find_base_articles(articles):
 
 
 def merge_conclusion_elements(elements):
+    """Merge similar conclusion elements in a single one, more descriptive
+
+        :param elements: conclusion elements
+        :type elements: [dict]
+        :return: conclusion elements
+        :rtype: [dict]
+    """
     final_elements = {}
     for e in elements:
         if 'article' in e and 'base_article' in e:
@@ -199,34 +194,25 @@ def format_conclusion(ccl):
                 for p in find_and_replace:
                     if p[0] in l:
                         l = l.replace(p[0], p[1])
-                if False:
-                    pass
-                else:
-                    b = l.split()
-                    for j, a in enumerate(b):
-                        if a.startswith('art'):
-                            if a.lower().startswith('art.') and not a.lower().startswith('art. ') and len(a) > 4:
-                                art = a.lower()[4:]
-                            else:
-                                art = b[j + 1]
-                            break
-                    if art is not None:
-                        articles = split_and_format_article(art)
-                        art = art.split('+')
-                        if '+' in art[0]:
-                            sart = art[0].split('+')
-                            t = [sart[-1]]
-                            for k, e in enumerate(sart[:-1]):
-                                if not sart[k + 1].startswith(e):
-                                    t.append(e)
-                            art = ['+'.join(t)]
 
-                        final_ccl[i]['article'] = art[0].replace('.', '')
-                        if len(art) > 1:
-                            for m in art[1:]:
-                                item = final_ccl[i]
-                                item['article'] = m.split('-')[0]
-                                # to_append.append(item)
+                b = l.split()
+                for j, a in enumerate(b):
+                    if a.startswith('art'):
+                        if a.lower().startswith('art.') and not a.lower().startswith('art. ') and len(a) > 4:
+                            art = a.lower()[4:]
+                        else:
+                            art = b[j + 1]
+                        break
+                if art is not None:
+                    articles = split_and_format_article(art)
+                    art = art.split('+')
+                    if '+' in art[0]:
+                        sart = art[0].split('+')
+                        t = [sart[-1]]
+                        for k, e in enumerate(sart[:-1]):
+                            if not sart[k + 1].startswith(e):
+                                t.append(e)
+
         base_articles = find_base_articles(articles)
         for k, art in enumerate(articles):
             item = copy.copy(final_ccl[i])
