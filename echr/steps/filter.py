@@ -21,7 +21,8 @@ from rich.progress import (
 log = getlogger()
 
 def format_parties(parties):
-    """Return the list of parties from the case title.
+    """
+        Return the list of parties from the case title.
 
         :param parties: string containing the parties name
         :type parties: str
@@ -39,7 +40,8 @@ def format_parties(parties):
 
 
 def split_and_format_article(article):
-    """Return the list of articles from a string
+    """
+        Return the list of articles from a string
 
         :param article: str
         :type article: str
@@ -55,7 +57,8 @@ def split_and_format_article(article):
 
 
 def find_base_articles(articles):
-    """Return the base articles from a list of articles
+    """
+        Return the base articles from a list of articles
 
         :param articles: list of articles
         :type articles: [str]
@@ -65,7 +68,7 @@ def find_base_articles(articles):
     base_articles = []
     for a in articles:
         a = a.split('+')[0]
-        if not 'p' in a:
+        if not 'p' in a.lower():
             base_articles.append(a.split('-', 1)[0])
         else:
             base_articles.append('-'.join(a.split('-')[0:2]))
@@ -73,7 +76,8 @@ def find_base_articles(articles):
 
 
 def merge_conclusion_elements(elements):
-    """Merge similar conclusion elements in a single one, more descriptive
+    """
+        Merge similar conclusion elements in a single one, more descriptive
 
         :param elements: conclusion elements
         :type elements: [dict]
@@ -93,7 +97,8 @@ def merge_conclusion_elements(elements):
 
 
 def format_conclusion(ccl):
-    """Format a conclusion string into a list of elements:
+    """
+        Format a conclusion string into a list of elements:
 
         :Example:
 
@@ -220,29 +225,27 @@ def format_conclusion(ccl):
             item['base_article'] = base_articles[k]
             to_append.append(item)
 
-    # final_ccl[i]['base_article'] = base_article(final_ccl[i]['article'])
-    # final_ccl.extend(to_append)
     final_ccl = merge_conclusion_elements(to_append)
     return final_ccl
 
 
-
 def format_article(article):
-    """Format the list of articles.
+    """
+        Format the list of articles.
 
         :param article: string containing the list of articles
         :type article: str
         :return: list of articles
         :rtype: [str]
     """
-    articles = article.split(';')
-    articles = [a for sublist in articles for a in sublist.split('+')]
-    articles = [a.split('-')[0].strip() for a in articles]
-    return list(set(articles))
+    articles = article.lower().split(';')
+    return list(set(find_base_articles(
+        [item for sublist in list(map(split_and_format_article, articles)) for item in sublist])))
 
 
 def format_subarticle(article):
-    """Format the list of subarticles.
+    """
+        Format the list of subarticles.
 
         :param article: string containing the list of articles
         :type article: str
@@ -328,7 +331,8 @@ def format_cases(console, cases):
 
 
 def filter_cases(cases):
-    """Filter the list of cases.
+    """
+        Filter the list of cases.
 
         :param cases: list of cases
         :type cases: [dict]
@@ -363,7 +367,8 @@ def filter_cases(cases):
 
 
 def generate_statistics(cases):
-    """Generate statistics about the cases
+    """
+        Generate statistics about the cases
 
         :param cases: list of cases
         :type cases: [dict]
