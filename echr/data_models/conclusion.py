@@ -8,6 +8,7 @@ from echr.data_models.mention import Mention
 class Conclusion(BaseModel):
     id = pw.AutoField()
     article = pw.CharField(null=True)
+    base_article = pw.CharField(null=True)
     element = pw.CharField()
     type = pw.CharField()
 
