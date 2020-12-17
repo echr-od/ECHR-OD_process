@@ -1,0 +1,172 @@
+[
+    {
+        "input": "Violation of Article 1 of Protocol No. 12 - General prohibition of discrimination",
+        "output": [
+            {
+                "element": "Violation of Article 1 of Protocol No. 12 - General prohibition of discrimination",
+                "type": "violation",
+                "article": "p12-1",
+                "base_article": "p12-1"
+            }
+        ]
+    },
+    {
+        "input": "Violation of Article 4 of Protocol No. 4 - Prohibition of collective expulsion of aliens",
+        "output": [
+            {
+                "element": "Violation of Article 4 of Protocol No. 4 - Prohibition of collective expulsion of aliens",
+                "type": "violation",
+                "article": "p4-4",
+                "base_article": "p4-4"
+            }
+        ]
+    },
+    {
+        "input": "Violation of Article 13+P4-4 - Right to an effective remedy",
+        "output": [
+            {
+                "element": "Violation of Article 13+P4-4 - Right to an effective remedy",
+                "type": "violation",
+                "article": "13",
+                "base_article": "13"
+            },
+            {
+                "element": "Violation of Article 13+P4-4 - Right to an effective remedy",
+                "type": "violation",
+                "article": "p4-4",
+                "base_article": "p4-4"
+            }
+        ]
+    },
+    {
+        "input": "Violation of Article 6+6-1 - Right to an effective remedy",
+        "output": [
+            {
+                "element": "Violation of Article 6+6-1 - Right to an effective remedy",
+                "type": "violation",
+                "article": "6-1",
+                "base_article": "6"
+            }
+        ]
+    },
+    {
+        "input": "Violation of Article 5-1+5-3 - Right to an effective remedy",
+        "output": [
+            {
+                "element": "Violation of Article 5-1+5-3 - Right to an effective remedy",
+                "type": "violation",
+                "article": "5-1",
+                "base_article": "5"
+            },
+            {
+                "element": "Violation of Article 5-1+5-3 - Right to an effective remedy",
+                "type": "violation",
+                "article": "5-3",
+                "base_article": "5"
+            }
+        ]
+    },
+    {
+        "input": "Violation of Article 14+5-3 - Right to an effective remedy",
+        "output": [
+            {
+                "element": "Violation of Article 14+5-3 - Right to an effective remedy",
+                "type": "violation",
+                "article": "14",
+                "base_article": "14"
+            },
+            {
+                "element": "Violation of Article 14+5-3 - Right to an effective remedy",
+                "type": "violation",
+                "article": "5-3",
+                "base_article": "5"
+            }
+        ]
+    },
+    {
+        "input": "Violation of Art. 2 (substantive aspect);Violation of Art. 2;Violation of Art. 13+2",
+        "output": [
+            {
+                "article": "2",
+                "base_article": "2",
+                "details": [
+                    "substantive aspect"
+                ],
+                "element": "Violation of Art. 2",
+                "type": "violation"
+            },
+            {
+                "article": "2",
+                "base_article": "2",
+                "element": "Violation of Art. 13+2",
+                "type": "violation"
+            },
+            {
+                "article": "13",
+                "base_article": "13",
+                "element": "Violation of Art. 13+2",
+                "type": "violation"
+            }
+        ]
+    },
+    {
+        "input": "No violation of Article 14+2 - Prohibition of discrimination (Article 14 - Discrimination) (Article 2 - Right to life;Article 2-1 - Effective investigation)",
+        "output": [
+            {
+                "element": "No violation of Article 14+2 - Prohibition of discrimination",
+                "details": ["Article 14 - Discrimination"],
+                "mentions": ["Article 2 - Right to life", "Article 2-1 - Effective investigation"],
+                "type": "no-violation",
+                "article": "2",
+                "base_article": "2"
+            },
+            {
+                "element": "No violation of Article 14+2 - Prohibition of discrimination",
+                "details": ["Article 14 - Discrimination"],
+                "mentions": ["Article 2 - Right to life", "Article 2-1 - Effective investigation"],
+                "type": "no-violation",
+                "article": "14",
+                "base_article": "14"
+                }
+        ]
+    },
+    {
+        "input": "Preliminary objections dismissed (estoppel, non-exhaustion of domestic remedies);Preliminary objection joined to merits and dismissed (lack of jurisdiction);Preliminary objection joined to merits and partially dismissed (victim);Violation of Art. 2 (procedural aspect);Non-pecuniary damage - award",
+        "output": [
+            {
+                "element":"Preliminary objections dismissed",
+                "details":[
+                    "estoppel, non-exhaustion of domestic remedies"
+                ],
+                "type":"other"
+            },
+            {
+                "element":"Preliminary objection joined to merits and dismissed",
+                "details":[
+                    "lack of jurisdiction"
+                ],
+                "type":"other"
+            },
+            {
+                "element":"Preliminary objection joined to merits and partially dismissed",
+                "details":[
+                    "victim"
+                ],
+                "type":"other"
+            },
+            {
+                "element":"Violation of Art. 2",
+                "details":[
+                    "procedural aspect"
+                ],
+                "type":"violation",
+                "article":"2",
+                "base_article":"2"
+            },
+            {
+                "element":"Non-pecuniary damage - award",
+                "type":"other"
+            }
+        ]
+    }
+]
