@@ -254,7 +254,7 @@ def parse_body(body):
             k = i + 1
 
     for r in roles:
-        for i, m in enumerate(members[r[0]:r[1] + 1]):
+        for i, _ in enumerate(members[r[0]:r[1] + 1]):
             members[r[0] + i]['role'] = r[2]
 
     return members
@@ -460,7 +460,7 @@ def run(console, build, force=False, update=False):
     ) as progress:
         task = progress.add_task("Preprocessing...", total=len(files), error="",
                                  doc=files[0].split('/')[-1].split('.')[0])
-        for i, p in enumerate(files):
+        for _, p in enumerate(files):
             error = ""
             id_doc = p.split('/')[-1].split('.')[0]
             filename_parsed = os.path.join(output_folder, '{}_parsed.json'.format(id_doc))

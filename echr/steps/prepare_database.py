@@ -99,9 +99,6 @@ def determine_schema(X):
     for x in X:
         builder.add_object(x)
     schema = builder
-    for x in X:
-        for k in x:
-            pass
     return schema
 
 
@@ -195,9 +192,6 @@ def hot_one_encoder_on_list(df, column):
 def normalize(X, schema_hints=None):
     if schema_hints is None:
         schema_hints = {}
-
-    def get_unique_values(X, columns):
-        return pd.unique(X[columns].values.ravel('K'))
 
     def hot_one_encoder(df, columns):
         return pd.get_dummies(df, prefix_sep="=", columns=columns)
@@ -367,7 +361,7 @@ def run(console, build, output_prefix='cases', force=False):
         # Iterate over all the files in directory
         folders = ['unstructured', 'raw', 'structured']
         for f in folders:
-            for folderName, subfolders, filenames in os.walk(os.path.join(build, f)):
+            for folderName, _, filenames in os.walk(os.path.join(build, f)):
                 for filename in filenames:
                     if not filename.endswith('.zip'):
                         filePath = os.path.join(folderName, filename)
