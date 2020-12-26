@@ -1,10 +1,11 @@
 #!/bin/python3
 import argparse
 import os
-from sh import osf, scp
+from sh import osf
 import paramiko
 import datetime
 import sys
+from shelx import quote
 
 from echr.utils.logger import getlogger
 from echr.utils.cli import TAB
@@ -32,21 +33,21 @@ def runner(params_str, build, detach, force, update):
     client.set_missing_host_key_policy(paramiko.AutoAddPolicy())
     client.connect(params['host'], username=params['user'], password=params['password'])
 
-    stdin, stdout, stderr = client.exec_command("[ -d '{}' ] && echo 'exists'".format(params['folder']), get_pty=True)
+    stdin, stdout, stderr = client.exec_command("[ -d '{}' ] && echo 'exists'".format(quote(params['folder'])), get_pty=True)
     output = stdout.read().decode().strip()
     print(TAB + "> Check if the target folder exists... [green][DONE]")
     if not output:
         cmd = [
             'mkdir -p {}'.format(params['folder']),
         ]
-        stdin, stdout, stderr = client.exec_command(';'.join(cmd))
+        stdin, stdout, stderr = client.exec_command(quote(';'.join(cmd)))
         print(stdout.read().decode().strip())
         print(TAB + "> Create the target folder... [green][DONE]")
     else:
         print(TAB + "> Target folder already exists... [green][DONE]")
         print(stdout.read().decode().strip())
 
-    stdin, stdout, stderr = client.exec_command("[ -d '{}' ] && echo 'exists'".format(REPO_PATH),  get_pty=True)
+    stdin, stdout, stderr = client.exec_command("[ -d '{}' ] && echo 'exists'".format(quote(REPO_PATH)),  get_pty=True)
     output = stdout.read().decode().strip()
     print(TAB + "> Check if the repository is cloned... [green][DONE]")
     if not output:
@@ -54,7 +55,7 @@ def runner(params_str, build, detach, force, update):
             'cd {}'.format(params['folder']),
             'git clone {}'.format(GIT_REPO)
         ]
-        stdin, stdout, stderr = client.exec_command(';'.join(cmd))
+        stdin, stdout, stderr = client.exec_command(quote(';'.join(cmd)))
         print(TAB + "> Clone repository... [green][DONE]")
         print(stdout.read().decode().strip())
     else:
@@ -66,12 +67,12 @@ def runner(params_str, build, detach, force, update):
         'cd {}'.format(REPO_PATH),
         'git fetch origin {}'.format(params.get('branch', DEFAULT_BRANCH)),
     ]
-    stdin, stdout, stderr = client.exec_command(';'.join(cmd))
+    stdin, stdout, stderr = client.exec_command(quote(';'.join(cmd)))
     cmd = [
         'cd {}'.format(REPO_PATH),
         'git rebase origin {}'.format(params.get('branch', DEFAULT_BRANCH))
     ]
-    stdin, stdout, stderr = client.exec_command(';'.join(cmd))
+    stdin, stdout, stderr = client.exec_command(quote(';'.join(cmd)))
     print(TAB + "> Fetch and rebase the repository... [green][DONE]")
 
     print(TAB + "> Run workflow and detach... [green][DONE]")
@@ -84,7 +85,7 @@ def runner(params_str, build, detach, force, update):
     cmd = 'tmux new -A -s echr -d "docker run -ti ' \
           '--mount src={},dst=/tmp/echr_process/,type=bind ' \
           'echr_build build --workflow {} {} {}"'.format(REPO_PATH, params['workflow'], build_str, endpoint_str)
-    stdin, stdout, stderr = client.exec_command(cmd)
+    stdin, stdout, stderr = client.exec_command(quote(cmd))
 
 
 def upload_osf(params_str, build, detach, force, update):
@@ -143,7 +144,7 @@ def upload_scp(params_str, build, detach, force, update):
         client = paramiko.SSHClient()
         client.set_missing_host_key_policy(paramiko.AutoAddPolicy())
         client.connect(params['host'], username=params['user'], password=get_password())
-        client.exec_command("du -a {} &> /tmp/list.txt".format(dst_without_update))
+        client.exec_command("du -a {} &> /tmp/list.txt".format(quote(dst_without_update)))
         sftp = client.open_sftp()
         sftp.get('/tmp/list.txt', '/tmp/list.txt')
         with open('/tmp/list.txt', 'r') as f:
@@ -160,7 +161,7 @@ def upload_scp(params_str, build, detach, force, update):
             client = paramiko.SSHClient()
             client.set_missing_host_key_policy(paramiko.AutoAddPolicy())
             client.connect(params['host'], username=params['user'], password=get_password())
-            client.exec_command('mkdir -p {}'.format(dst))
+            client.exec_command('mkdir -p {}'.format(quote(dst)))
         print(TAB + "> Creating the destination folder [green][DONE]")
 
     start = datetime.datetime.now()
@@ -195,7 +196,7 @@ def upload_scp(params_str, build, detach, force, update):
             for j in range(MAX_RETRY):
                 try:
                     head, _ = os.path.split(dst_file)
-                    client.exec_command('mkdir -p {}'.format(head))
+                    client.exec_command('mkdir -p {}'.format(quote(head)))
                     sftp = client.open_sftp()
                     sftp.put(file, dst_file, upload_status)
                     break
@@ -227,7 +228,7 @@ def upload_scp(params_str, build, detach, force, update):
                         cmd += ' -d "{}"'.format(os.path.join(head, '..', '..'))
                     else:
                         cmd += ' -d "{}"'.format(os.path.join(head, tail.split('.')[0]))
-                    stdin, stdout, stderr = client.exec_command(cmd)
+                    stdin, stdout, stderr = client.exec_command(quote(cmd))
                     while not stdout.channel.exit_status_ready():
                         if stdout.channel.recv_ready():
                             stdoutLines = stdout.readlines()

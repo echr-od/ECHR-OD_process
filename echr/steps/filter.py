@@ -4,7 +4,6 @@ from collections import Counter
 import json
 import os
 from os import listdir, path
-import re
 import copy
 
 from echr.utils.folders import make_build_folder
@@ -96,6 +95,69 @@ def merge_conclusion_elements(elements):
     return list(final_elements.values())
 
 
+def format_conclusion_elements(i, e, final_ccl):
+    to_append = []
+    l = e['element'].lower().strip()
+
+    # Determine type
+    t = 'other'
+    if l.startswith('violation'):
+        t = 'violation'
+    elif l.startswith('no-violation') or l.startswith('no violation'):
+        t = 'no-violation'
+    final_ccl[i]['type'] = t
+    if t == 'other':
+        to_append.append(final_ccl[i])
+
+    # Determine articles
+    articles = []
+    if 'protocol' in e['element'].lower():
+        prot = e['element'].lower().split('protocol no.')
+        f1 = prot[0].split()[-2]
+        f2 = prot[1].split()[0]
+        final_ccl[i]['article'] = f'p{f2}-{f1}'
+        articles = split_and_format_article(final_ccl[i]['article'])
+
+    if 'article' not in final_ccl[i] and t != 'other':
+
+        if True:
+            art = None
+            find_and_replace = [
+                (' and art. ', ''),
+                (' and of ', '+'),
+                (' and ', '+')
+            ]
+            for p in find_and_replace:
+                if p[0] in l:
+                    l = l.replace(p[0], p[1])
+
+            b = l.split()
+            for j, a in enumerate(b):
+                if a.startswith('art'):
+                    if a.lower().startswith('art.') and not a.lower().startswith('art. ') and len(a) > 4:
+                        art = a.lower()[4:]
+                    else:
+                        art = b[j + 1]
+                    break
+            if art is not None:
+                articles = split_and_format_article(art)
+                art = art.split('+')
+                if '+' in art[0]:
+                    sart = art[0].split('+')
+                    t = [sart[-1]]
+                    for k, e in enumerate(sart[:-1]):
+                        if not sart[k + 1].startswith(e):
+                            t.append(e)
+
+    base_articles = find_base_articles(articles)
+    for k, art in enumerate(articles):
+        item = copy.copy(final_ccl[i])
+        item['article'] = art
+        item['base_article'] = base_articles[k]
+        to_append.append(item)
+    return to_append
+
+
 def format_conclusion(ccl):
     """
         Format a conclusion string into a list of elements:
@@ -166,64 +228,7 @@ def format_conclusion(ccl):
 
     to_append = []
     for i, e in enumerate(final_ccl):
-        l = e['element'].lower().strip()
-
-        # Determine type
-        t = 'other'
-        if l.startswith('violation'):
-            t = 'violation'
-        elif l.startswith('no-violation') or l.startswith('no violation'):
-            t = 'no-violation'
-        final_ccl[i]['type'] = t
-        if t == 'other':
-            to_append.append(final_ccl[i])
-
-        # Determine articles
-        articles = []
-        if 'protocol' in e['element'].lower():
-            prot = e['element'].lower().split('protocol no.')
-            f1 = prot[0].split()[-2]
-            f2 = prot[1].split()[0]
-            final_ccl[i]['article'] = f'p{f2}-{f1}'
-            articles = split_and_format_article(final_ccl[i]['article'])
-
-        if 'article' not in final_ccl[i] and t != 'other':
-
-            if True:
-                art = None
-                find_and_replace = [
-                    (' and art. ', ''),
-                    (' and of ', '+'),
-                    (' and ', '+')
-                ]
-                for p in find_and_replace:
-                    if p[0] in l:
-                        l = l.replace(p[0], p[1])
-
-                b = l.split()
-                for j, a in enumerate(b):
-                    if a.startswith('art'):
-                        if a.lower().startswith('art.') and not a.lower().startswith('art. ') and len(a) > 4:
-                            art = a.lower()[4:]
-                        else:
-                            art = b[j + 1]
-                        break
-                if art is not None:
-                    articles = split_and_format_article(art)
-                    art = art.split('+')
-                    if '+' in art[0]:
-                        sart = art[0].split('+')
-                        t = [sart[-1]]
-                        for k, e in enumerate(sart[:-1]):
-                            if not sart[k + 1].startswith(e):
-                                t.append(e)
-
-        base_articles = find_base_articles(articles)
-        for k, art in enumerate(articles):
-            item = copy.copy(final_ccl[i])
-            item['article'] = art
-            item['base_article'] = base_articles[k]
-            to_append.append(item)
+        to_append.extend(format_conclusion_elements(i, e, final_ccl))
 
     final_ccl = merge_conclusion_elements(to_append)
     return final_ccl
