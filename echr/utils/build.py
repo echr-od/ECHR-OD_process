@@ -55,7 +55,7 @@ def parse_workflow(console, steps_names, workflow, workflow_path, actions_path):
             if action_name not in parsed_workflow_steps_names:
                 try:
                     with open(os.path.join(actions_path, '{}.yml'.format(action_name))) as f:
-                        action = yaml.load(f, Loader=yaml.FullLoader)
+                        action = yaml.safe_load(f)
                         parsed_workflow.append(action)
                         parsed_workflow_steps_names.append(action_name)
                 except Exception as e:
@@ -72,7 +72,7 @@ def parse_workflow(console, steps_names, workflow, workflow_path, actions_path):
                 exit(1)
             try:
                 with open(os.path.join(workflow_path, '{}.yml'.format(workflow_name))) as f:
-                    new_workflow = yaml.load(f, Loader=yaml.FullLoader)
+                    new_workflow = yaml.safe_load(f)
                     parsed_workflow += parse_workflow(console, parsed_workflow_steps_names, new_workflow, workflow_path, actions_path)
             except Exception as e:
                 console.print_exception()

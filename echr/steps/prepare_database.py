@@ -17,8 +17,13 @@ import sys
 
 from echr.utils.folders import make_build_folder
 from echr.utils.cli import TAB
+from echr.utils.logger import getlogger
 from rich.markdown import Markdown
 from rich.console import Console
+
+log = getlogger()
+
+__console = Console(record=True)
 
 DELIMITER = '.'
 
@@ -163,7 +168,7 @@ def flatten_dataset(X, flat_type_mapping, schema_hints=None):
                                         print('# Casting \'{}\' to {}'.format(k, t))
                                         break
                                     except:
-                                        continue
+                                        log.error('Could not cast \'{}\' to {}'.format(k, t))
                                 else:
                                     print('# Error: Could not find any way to sort {}'.format(k))
                                     raise Exception('Could not find any way to sort {}'.format(k))
