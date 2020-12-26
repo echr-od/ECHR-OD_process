@@ -28,4 +28,7 @@ class ConclusionCase(BaseModel):
     case = pw.ForeignKeyField(Case, backref='conclusions')
 
     class Meta:
+        '''
+            Metaclass to assign the primary key
+        '''
         primary_key = pw.CompositeKey('conclusion', 'case')

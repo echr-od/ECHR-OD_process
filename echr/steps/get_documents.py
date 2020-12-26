@@ -28,7 +28,8 @@ MAX_RETRY = 5
 
 
 def get_documents(console, id_list, folder, update):
-    """Get documents according to the specified list
+    """
+        Get documents according to the specified list
 
         :param id_list: list of document id
         :type id_list: [str]

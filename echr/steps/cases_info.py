@@ -3,6 +3,7 @@ import argparse
 import requests
 import json
 import os
+import time
 import urllib3
 from concurrent.futures import ThreadPoolExecutor
 
@@ -133,7 +134,7 @@ def get_case_info(console, base_url, max_documents, path):
                     for block in r.iter_content(1024):
                         f.write(block)
                     break
-                except Exception as e:
+                except:
                     try:  # Delete the incorrect file if it exists
                         os.remove(file_path)
                     except OSError:
@@ -143,7 +144,6 @@ def get_case_info(console, base_url, max_documents, path):
                         i + 1, MAX_RETRY, start, start + length))
                     error = '\n| ({}/{}) Failed to fetch information {} to {}'.format(
                         i + 1, MAX_RETRY, start, start + length)
-                    import time
                     time.sleep(0.001)
                 if error:
                     progress.update(task, advance=0, error=error)

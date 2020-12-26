@@ -14,4 +14,7 @@ class DecisionBodyCase(BaseModel):
     case = pw.ForeignKeyField(Case, backref='decisionbody')
 
     class Meta:
+        '''
+            Metaclass to assign the primary key
+        '''
         primary_key = pw.CompositeKey('member', 'case')
