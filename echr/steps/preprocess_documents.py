@@ -525,12 +525,12 @@ def update_docx(docname):
     # Remove temporary folder and files
     try:
         shutil.rmtree(TMP)
-    except:
+    except OSError:
         pass
 
     try:
         os.remove('./_proxy.docx')
-    except:
+    except OSError:
         pass
 
     # Extract the document

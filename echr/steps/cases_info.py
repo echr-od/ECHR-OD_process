@@ -134,7 +134,7 @@ def get_case_info(console, base_url, max_documents, path):
                 except Exception as e:
                     try:  # Delete the incorrect file if it exists
                         os.remove(file_path)
-                    except:
+                    except OSError:
                         pass
                     __console.print_exception()
                     log.error('({}/{}) Failed to fetch information {} to {}'.format(

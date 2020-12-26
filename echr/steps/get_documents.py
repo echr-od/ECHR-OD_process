@@ -63,7 +63,7 @@ def get_documents(console, id_list, folder, update):
                 except Exception as e:
                     try:  # Delete the incorrect file if it exists
                         os.remove(filename)
-                    except:
+                    except OSError:
                         pass
                     log.debug(e)
                     error = '\n| ({}/{}) Failed to fetch document {}'.format(
