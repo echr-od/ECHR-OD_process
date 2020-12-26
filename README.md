@@ -67,18 +67,18 @@ However, semantic versioning helps the maintainers and contributors with the dev
 Recreating the database requires ```docker```.
 
 To build the environment image:
-```
+```sh
 docker build -f Dockerfile -t echr_build .
 ```
 As long as dependencies are not changed, there is no need to rebuild the image.
 
 Once the image is built, the container help can be displayed with:
-```
+```sh
 docker run -ti --mount src=$(pwd),dst=/tmp/echr_process/,type=bind echr_build -h
 ```
 
 In particular, to build the database:
-```
+```sh
 docker run -ti --mount src=$(pwd),dst=/tmp/echr_process/,type=bind echr_build build
 ```
 
@@ -134,16 +134,14 @@ There are two log files:
 ## Tests & Coverage
 
 To run the tests:
-```
+```sh
 docker run -ti --mount src=$(pwd),dst=/tmp/echr_process/,type=bind echr_build test
 ```
 
 ## Versions
 
 -   version 2.0.0: [Changelogs](https://github.com/echr-od/ECHR-OD_process/blob/master/changelog/2.0.0.md)
-
 -   version 1.0.2: [Changelogs](https://github.com/echr-od/ECHR-OD_process/blob/master/changelog/1.0.2.md)
-
 -   version 1.0.1: [Changelogs](https://github.com/echr-od/ECHR-OD_process/blob/master/changelog/1.0.1.md)
 
 ## Contributors
