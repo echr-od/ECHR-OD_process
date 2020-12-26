@@ -12,4 +12,7 @@ class SCLCase(BaseModel):
     case = pw.ForeignKeyField(Case, backref='scl')
 
     class Meta:
+        '''
+            Metaclass to assign the primary key
+        '''
         primary_key = pw.CompositeKey('scl', 'case')

@@ -55,7 +55,7 @@ def parse_workflow(console, steps_names, workflow, workflow_path, actions_path):
             if action_name not in parsed_workflow_steps_names:
                 try:
                     with open(os.path.join(actions_path, '{}.yml'.format(action_name))) as f:
-                        action = yaml.load(f, Loader=yaml.FullLoader)
+                        action = yaml.safe_load(f)
                         parsed_workflow.append(action)
                         parsed_workflow_steps_names.append(action_name)
                 except Exception as e:
@@ -72,7 +72,7 @@ def parse_workflow(console, steps_names, workflow, workflow_path, actions_path):
                 exit(1)
             try:
                 with open(os.path.join(workflow_path, '{}.yml'.format(workflow_name))) as f:
-                    new_workflow = yaml.load(f, Loader=yaml.FullLoader)
+                    new_workflow = yaml.safe_load(f)
                     parsed_workflow += parse_workflow(console, parsed_workflow_steps_names, new_workflow, workflow_path, actions_path)
             except Exception as e:
                 console.print_exception()
@@ -102,7 +102,7 @@ def load_workflow(console, args):
         else:
             try:
                 with open(os.path.join(WORKFLOW_PATH, '{}.yml'.format(workflow))) as f:
-                    workflow_steps = yaml.load(f, Loader=yaml.FullLoader)
+                    workflow_steps = yaml.safe_load(f)
             except Exception as e:
                 console.print_exception()
                 log.error(e)
@@ -242,7 +242,7 @@ def remove_lock(console, build='./build', name='.lock'):
             os.remove(token_path)
             console.print(TAB + '  ⮡ [green]:heavy_check_mark: Successfully removed the lock')
         except:
-            pass
+            console.print(TAB + '  ⮡ [red]:double_exclamation_mark: Could not remove the lock')
 
 
 def append_history(workflow, build='./build', name='.build_history'):

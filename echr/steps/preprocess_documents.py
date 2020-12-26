@@ -191,7 +191,8 @@ internal_section_reference = {
 
 
 def tag_elements(parsed):
-    """Tag the elements in the parsed document.
+    """
+        Tag the elements in the parsed document.
 
         Tag the elements in the parsed documents
         according to some predifined sections.
@@ -201,7 +202,6 @@ def tag_elements(parsed):
         :return: parsed document with internal section references
         :rtype: dict
     """
-
     for i, section in enumerate(parsed['elements']):
         for section_reference, values in internal_section_reference.items():
             if any(section['content'].strip().upper().startswith(v.upper()) for v in values):
@@ -214,7 +214,8 @@ def tag_elements(parsed):
 
 
 def format_title(line):
-    """Format title
+    """
+        Format title
 
         :param line: line to format as title
         :type line: str
@@ -229,7 +230,8 @@ def format_title(line):
 
 
 def parse_body(body):
-    """Extract body members
+    """
+        Extract body members
 
         :param body: line to extract the body members from
         :type body: str
@@ -252,17 +254,20 @@ def parse_body(body):
             k = i + 1
 
     for r in roles:
-        for i, m in enumerate(members[r[0]:r[1] + 1]):
+        for i, _ in enumerate(members[r[0]:r[1] + 1]):
             members[r[0] + i]['role'] = r[2]
 
     return members
 
 
 class Node:
-    """Represent a rooted tree
     """
-
+        Represent a rooted tree
+    """
     def __init__(self, parent=None, level=0, content=None):
+        """
+            Initialize a node with content and parent.
+        """
         self.parent = parent
         self.level = level
         self.content = content
@@ -270,7 +275,8 @@ class Node:
 
 
 def parse_document(doc):
-    """Parse a document object to a tree
+    """
+        Parse a document object to a tree
 
         :param doc: document object
         :type doc: Document
@@ -278,7 +284,6 @@ def parse_document(doc):
         :rtype: Node
     """
     parsed = {}
-    result = []
 
     decision_body = ""
     appender = Node()  # Top level node
@@ -309,7 +314,8 @@ def parse_document(doc):
         root = root.parent
 
     def print_tree(root):
-        """Utilitary function to print tree
+        """
+            Utilitary function to print tree
 
             :param root: root of the tree
             :type root: Node
@@ -323,7 +329,8 @@ def parse_document(doc):
                 print_tree(e)
 
     def tree_to_json(root, res):
-        """Recursively convert a tree into json
+        """
+            Recursively convert a tree into json
 
             :param root: root of the tree
             :type root: Node
@@ -355,7 +362,8 @@ PARSER = {
 
 
 def format_paragraph(p):
-    """Format paragraph
+    """
+        Format paragraph
 
         :param line: line to format as title
         :type line: str
@@ -369,7 +377,8 @@ def format_paragraph(p):
         return p
 
 
-def json_to_text_(doc, text_only=True, except_section=[]):
+def json_to_text_(doc, text_only=True, except_section=None):
+    except_section = [] if except_section is None else except_section
     res = []
     if not len(doc['elements']):
         res.append(format_paragraph(doc['content']))
@@ -380,8 +389,9 @@ def json_to_text_(doc, text_only=True, except_section=[]):
     return res
 
 
-def json_to_text(doc, text_only=True, except_section=[]):
-    """Format json to text
+def json_to_text(doc, text_only=True, except_section=None):
+    """
+        Format json to text
 
         :param doc: parsed document
         :type doc: dict
@@ -392,11 +402,13 @@ def json_to_text(doc, text_only=True, except_section=[]):
         :return: textual representation of the document
         :rtype: str
     """
+    except_section = [] if except_section is None else except_section
     return '\n'.join(json_to_text_(doc, text_only, except_section))
 
 
 def select_parser(doc):
-    """Select the parser to be used for a given document
+    """
+        Select the parser to be used for a given document
 
         :param doc: document
         :type doc: Document
@@ -450,7 +462,7 @@ def run(console, build, force=False, update=False):
     ) as progress:
         task = progress.add_task("Preprocessing...", total=len(files), error="",
                                  doc=files[0].split('/')[-1].split('.')[0])
-        for i, p in enumerate(files):
+        for _, p in enumerate(files):
             error = ""
             id_doc = p.split('/')[-1].split('.')[0]
             filename_parsed = os.path.join(output_folder, '{}_parsed.json'.format(id_doc))
@@ -511,7 +523,8 @@ def main(args):
 
 
 def update_docx(docname):
-    """Update a docx such that it can be read by docx library.
+    """
+        Update a docx such that it can be read by docx library.
 
         MSWord documents are a zip folder containing several XML files.
         As docx library cannot read 'smartTag', it is required to remove them.
@@ -525,12 +538,12 @@ def update_docx(docname):
     # Remove temporary folder and files
     try:
         shutil.rmtree(TMP)
-    except:
+    except OSError:
         pass
 
     try:
         os.remove('./_proxy.docx')
-    except:
+    except OSError:
         pass
 
     # Extract the document

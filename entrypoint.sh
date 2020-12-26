@@ -38,7 +38,6 @@ function handle_input {
     if [[ "$#" -eq 0 ]] ; then
         display_help
     else
-        coverage_output_path="./coverage_data/coverage.xml"
         if [[ "$1" = 'bash' || "$1" = '/bin/bash' ]] ; then
             /bin/bash
         elif [[ "$1" = "build" ]] ; then
