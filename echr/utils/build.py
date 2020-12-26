@@ -102,7 +102,7 @@ def load_workflow(console, args):
         else:
             try:
                 with open(os.path.join(WORKFLOW_PATH, '{}.yml'.format(workflow))) as f:
-                    workflow_steps = yaml.load(f, Loader=yaml.FullLoader)
+                    workflow_steps = yaml.safe_load(f)
             except Exception as e:
                 console.print_exception()
                 log.error(e)
@@ -242,7 +242,7 @@ def remove_lock(console, build='./build', name='.lock'):
             os.remove(token_path)
             console.print(TAB + '  ⮡ [green]:heavy_check_mark: Successfully removed the lock')
         except:
-            pass
+            console.print(TAB + '  ⮡ [red]:double_exclamation_mark: Could not remove the lock')
 
 
 def append_history(workflow, build='./build', name='.build_history'):

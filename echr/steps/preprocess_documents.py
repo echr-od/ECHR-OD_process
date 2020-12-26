@@ -284,7 +284,6 @@ def parse_document(doc):
         :rtype: Node
     """
     parsed = {}
-    result = []
 
     decision_body = ""
     appender = Node()  # Top level node

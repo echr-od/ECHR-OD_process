@@ -50,6 +50,7 @@ def match_city(indexes, token):
 def department_name(data, number):
     '''
     Small trick not to look into the whole file.
+    
     To be changed if the underlying datafile changes!
     '''
     try:

@@ -6,7 +6,7 @@ from os.path import isfile, join
 import shutil
 
 from echr.utils.folders import make_build_folder
-from echr.utils.cli import StatusColumn, TAB
+from echr.utils.cli import TAB
 from rich.markdown import Markdown
 from rich.console import Console
 
