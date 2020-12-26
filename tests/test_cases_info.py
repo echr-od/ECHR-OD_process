@@ -9,7 +9,8 @@ from echr.steps.cases_info import determine_max_documents, get_case_info
 class TestDetermineMaxDocuments:
 
     @patch('requests.get')
-    def test_ok(self, get):
+    @staticmethod
+    def test_ok(get):
         get.return_value = MagicMock(ok=True,
                                      content=json.dumps({"resultcount": 169351,"results":[]}))
 
@@ -18,7 +19,8 @@ class TestDetermineMaxDocuments:
         assert n == 169351
 
     @patch('requests.get')
-    def test_nok(self, get):
+    @staticmethod
+    def test_nok(get):
         get.return_value = MagicMock(ok=False,
                                      content=json.dumps({"resultcount": 169351,"results":[]}))
 
@@ -27,7 +29,8 @@ class TestDetermineMaxDocuments:
         assert n == 100
 
     @patch('requests.get')
-    def test_ok_no_count(self, get):
+    @staticmethod
+    def test_ok_no_count(get):
         get.return_value = MagicMock(ok=True,
                                      content=json.dumps({"results":[]}))
 
@@ -36,7 +39,8 @@ class TestDetermineMaxDocuments:
         assert n == 100
 
     @patch('requests.get')
-    def test_ok_count_not_int(self, get):
+    @staticmethod
+    def test_ok_count_not_int(get):
         get.return_value = MagicMock(ok=True,
                                      content=json.dumps({"resultcount": "should_not_happen", "results": []}))
 
@@ -47,12 +51,14 @@ class TestDetermineMaxDocuments:
 
 class TestGetCasesInfo:
 
-    def test_negative_document_number(self):
+    @staticmethod
+    def test_negative_document_number():
         rc = get_case_info(Console(), base_url="", max_documents=-1, path='/tmp')
         assert rc == 2
 
     @patch('requests.get')
-    def test_ok(self, get):
+    @staticmethod
+    def test_ok(get):
         content = json.dumps({"content": "test"})
         get.return_value = MagicMock(ok=True,
                                      content=content)
@@ -62,7 +68,8 @@ class TestGetCasesInfo:
         assert os.path.isfile('/tmp/0.json')
 
     @patch('requests.get')
-    def test_ok_large_number(self, get):
+    @staticmethod
+    def test_ok_large_number(get):
         content = json.dumps({"content": "test"})
         get.return_value = MagicMock(ok=True,
                                      content=json.dumps(content))
@@ -74,7 +81,8 @@ class TestGetCasesInfo:
         assert not os.path.isfile('/tmp/1000.json')
 
     @patch('requests.get')
-    def test_nok(self, get):
+    @staticmethod
+    def test_nok(get):
         get.return_value = MagicMock(ok=False,
                                      content=json.dumps({"resultcount": "120", "results": []}))
 

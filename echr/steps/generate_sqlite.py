@@ -6,7 +6,7 @@ import os
 from os import listdir
 from os.path import isfile
 from echr.utils.logger import getlogger
-from echr.utils.cli import StatusColumn, TAB
+from echr.utils.cli import TAB
 from rich.markdown import Markdown
 from rich.console import Console
 from rich.progress import (

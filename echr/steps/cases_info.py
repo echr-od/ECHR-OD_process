@@ -3,6 +3,7 @@ import argparse
 import requests
 import json
 import os
+import time
 import urllib3
 from concurrent.futures import ThreadPoolExecutor
 
@@ -78,7 +79,8 @@ LENGTH = 500  # maximum number of items per request
 
 
 def determine_max_documents(base_url, default_value):
-    """Automatically determine the number of available documents in HUDOC
+    """
+        Automatically determine the number of available documents in HUDOC
 
         :param default_value: fallback value
         :type default_value: [int]
@@ -103,7 +105,8 @@ def determine_max_documents(base_url, default_value):
 
 
 def get_case_info(console, base_url, max_documents, path):
-    """Get case information from HUDOC
+    """
+        Get case information from HUDOC
 
         :param base_url: base url to query for documents
         :type base_url: string
@@ -131,17 +134,16 @@ def get_case_info(console, base_url, max_documents, path):
                     for block in r.iter_content(1024):
                         f.write(block)
                     break
-                except Exception as e:
+                except:
                     try:  # Delete the incorrect file if it exists
                         os.remove(file_path)
-                    except:
+                    except OSError:
                         pass
                     __console.print_exception()
                     log.error('({}/{}) Failed to fetch information {} to {}'.format(
                         i + 1, MAX_RETRY, start, start + length))
                     error = '\n| ({}/{}) Failed to fetch information {} to {}'.format(
                         i + 1, MAX_RETRY, start, start + length)
-                    import time
                     time.sleep(0.001)
                 if error:
                     progress.update(task, advance=0, error=error)
@@ -176,7 +178,8 @@ def get_case_info(console, base_url, max_documents, path):
         return 0
 
 def run(console, build, max_documents=-1, force=False):
-    """Get case information from HUDOC
+    """
+        Get case information from HUDOC
 
         :param build: build path
         :type string
