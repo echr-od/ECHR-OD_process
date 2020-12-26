@@ -164,6 +164,7 @@ def upload_scp(params_str, build, detach, force, update):
         ) as progress:
             _ = progress.add_task("Creating...")
             client = get_client(params)
+            client.connect(params['host'], username=params['user'], password=get_password())
             cmd = 'mkdir -p {}'.format(quote(dst))
             client.exec_command(cmd)
         print(TAB + "> Creating the destination folder [green][DONE]")

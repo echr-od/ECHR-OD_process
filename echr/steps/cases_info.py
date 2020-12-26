@@ -78,7 +78,8 @@ LENGTH = 500  # maximum number of items per request
 
 
 def determine_max_documents(base_url, default_value):
-    """Automatically determine the number of available documents in HUDOC
+    """
+        Automatically determine the number of available documents in HUDOC
 
         :param default_value: fallback value
         :type default_value: [int]
@@ -103,7 +104,8 @@ def determine_max_documents(base_url, default_value):
 
 
 def get_case_info(console, base_url, max_documents, path):
-    """Get case information from HUDOC
+    """
+        Get case information from HUDOC
 
         :param base_url: base url to query for documents
         :type base_url: string
@@ -176,7 +178,8 @@ def get_case_info(console, base_url, max_documents, path):
         return 0
 
 def run(console, build, max_documents=-1, force=False):
-    """Get case information from HUDOC
+    """
+        Get case information from HUDOC
 
         :param build: build path
         :type string
