@@ -91,7 +91,7 @@ def cleanTokens(tokens):
     stopset = set(nltk.corpus.stopwords.words('english'))
     punctuation = [',', "\"", ")", "(", "\\", "\\\"),", "."]
     clean = [token.lower() for token in tokens if token.lower() not in stopset and token.lower() not in punctuation]
-    for i, t in enumerate(clean):
+    for i, _ in enumerate(clean):
         for p in punctuation:
             clean[i] = clean[i].replace(p, '')
     clean = [unidecode(token) for token in clean]
@@ -176,7 +176,7 @@ def correctTheFrequencies(frequencies):
 
 def filterByFrequency(frequencies, minlimits):
     """
-        Remove the n-grams with a number of occurrences lower than 
+        Remove the n-grams with a number of occurrences lower than
         a certain amount
 
         :param frequencies: Map of n-grams occurrences
@@ -206,7 +206,7 @@ def concatenateToken(tokens):
         :rtype: String
     """
     res = []
-    for i, ngrams in tokens.items():
+    for _, ngrams in tokens.items():
         for token, f in ngrams.items():
             res += [token] * f
     return res
@@ -229,7 +229,6 @@ def prepareText(text, lemmatization=True):
     if lemmatization:
         lemmatizer = WordNetLemmatizer()
         tokens = [(lemmatizer.lemmatize(i, j), j) for i, j in tokens]
-    
     return tokens
 
 def frequencies(tokens, n=3, minlimits=None):

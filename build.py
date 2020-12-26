@@ -91,7 +91,7 @@ def main(args):
         try:
             requests.get(url=args.upgrade_endpoint)
         except:
-            pass
+            print('[yellow] Could not reach the upgrade endpoint')
 
 def parse_args(parser):
     args = parser.parse_args()

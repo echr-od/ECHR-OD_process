@@ -12,4 +12,7 @@ class RepresentativeCase(BaseModel):
     case = pw.ForeignKeyField(Case, backref='representedby')
 
     class Meta:
+        '''
+            Metaclass to assign the primary key
+        '''
         primary_key = pw.CompositeKey('representative', 'case')
