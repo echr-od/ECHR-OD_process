@@ -17,7 +17,9 @@ from rich.progress import (
     BarColumn,
     TimeRemainingColumn,
 )
+
 log = getlogger()
+
 
 def format_parties(parties):
     """
@@ -35,7 +37,6 @@ def format_parties(parties):
     parties = parties.split(' v. ')
     parties = [p.strip() for p in parties]
     return parties
-
 
 
 def split_and_format_article(article):
@@ -67,7 +68,7 @@ def find_base_articles(articles):
     base_articles = []
     for a in articles:
         a = a.split('+')[0]
-        if not 'p' in a.lower():
+        if 'p' not in a.lower():
             base_articles.append(a.split('-', 1)[0])
         else:
             base_articles.append('-'.join(a.split('-')[0:2]))
@@ -95,16 +96,21 @@ def merge_conclusion_elements(elements):
     return list(final_elements.values())
 
 
-def format_conclusion_elements(i, e, final_ccl):
-    to_append = []
-    l = e['element'].lower().strip()
-
-    # Determine type
+def get_element_type(l):
     t = 'other'
     if l.startswith('violation'):
         t = 'violation'
     elif l.startswith('no-violation') or l.startswith('no violation'):
         t = 'no-violation'
+    return t
+
+
+def format_conclusion_elements(i, e, final_ccl):
+    to_append = []
+    l = e['element'].lower().strip()
+
+    # Determine type
+    t = get_element_type(l)
     final_ccl[i]['type'] = t
     if t == 'other':
         to_append.append(final_ccl[i])
@@ -119,35 +125,33 @@ def format_conclusion_elements(i, e, final_ccl):
         articles = split_and_format_article(final_ccl[i]['article'])
 
     if 'article' not in final_ccl[i] and t != 'other':
+        art = None
+        find_and_replace = [
+            (' and art. ', ''),
+            (' and of ', '+'),
+            (' and ', '+')
+        ]
+        for p in find_and_replace:
+            if p[0] in l:
+                l = l.replace(p[0], p[1])
 
-        if True:
-            art = None
-            find_and_replace = [
-                (' and art. ', ''),
-                (' and of ', '+'),
-                (' and ', '+')
-            ]
-            for p in find_and_replace:
-                if p[0] in l:
-                    l = l.replace(p[0], p[1])
-
-            b = l.split()
-            for j, a in enumerate(b):
-                if a.startswith('art'):
-                    if a.lower().startswith('art.') and not a.lower().startswith('art. ') and len(a) > 4:
-                        art = a.lower()[4:]
-                    else:
-                        art = b[j + 1]
-                    break
-            if art is not None:
-                articles = split_and_format_article(art)
-                art = art.split('+')
-                if '+' in art[0]:
-                    sart = art[0].split('+')
-                    t = [sart[-1]]
-                    for k, e in enumerate(sart[:-1]):
-                        if not sart[k + 1].startswith(e):
-                            t.append(e)
+        b = l.split()
+        for j, a in enumerate(b):
+            if a.startswith('art'):
+                if a.lower().startswith('art.') and not a.lower().startswith('art. ') and len(a) > 4:
+                    art = a.lower()[4:]
+                else:
+                    art = b[j + 1]
+                break
+        if art is not None:
+            articles = split_and_format_article(art)
+            art = art.split('+')
+            if '+' in art[0]:
+                sart = art[0].split('+')
+                t = [sart[-1]]
+                for k, e in enumerate(sart[:-1]):
+                    if not sart[k + 1].startswith(e):
+                        t.append(e)
 
     base_articles = find_base_articles(articles)
     for k, art in enumerate(articles):
@@ -307,7 +311,8 @@ def format_cases(console, cases):
             cases[i]["documentcollectionid"] = cases[i]["documentcollectionid"].split(';') if len(
                 cases[i]['documentcollectionid']) > 0 else []
             cases[i]["issue"] = cases[i]["issue"].split(';') if len(cases[i]['issue']) > 0 else []
-            cases[i]["representedby"] = cases[i]["representedby"].split(';') if len(cases[i]['representedby']) > 0 else []
+            cases[i]["representedby"] = cases[i]["representedby"].split(';') if len(
+                cases[i]['representedby']) > 0 else []
             cases[i]["extractedappno"] = cases[i]["extractedappno"].split(';')
 
             cases[i]['externalsources'] = [e.strip() for e in cases[i]['externalsources']]
@@ -351,7 +356,7 @@ def filter_cases(cases):
         exit(1)
     print(TAB + '> Remove non-english cases')
     cases = [i for i in cases if i["languageisocode"] == "ENG"]
-    print(TAB + '  ⮡ Remaining: {} ({:.4f}%)'.format(len(cases), 100  * float(len(cases)) / total))
+    print(TAB + '  ⮡ Remaining: {} ({:.4f}%)'.format(len(cases), 100 * float(len(cases)) / total))
     print(TAB + '> Keep only cases with a judgment document:')
     cases = [i for i in cases if i["doctype"] == "HEJUD"]
     print(TAB + '  ⮡ Remaining: {} ({:.4f}%)'.format(len(cases), 100 * float(len(cases)) / total))
@@ -399,7 +404,7 @@ def generate_statistics(cases):
     table = Table()
     table.add_column("Attribute", style="cyan", no_wrap=True)
     table.add_column("Cardinal", justify="right", style="magenta")
-    table.add_column("Density",  justify="right", style="green")
+    table.add_column("Density", justify="right", style="green")
 
     keys = cases[0].keys()
     except_k = []
@@ -498,10 +503,12 @@ def run(console, build, force=False):
             console=console
     ) as progress:
         progress_array = []
+
         def to_str(a):
             if len(a) == 1:
                 return '[[green]{}[white]]'.format(a[0])
             return '[{}{}]'.format(''.join(['[green]{}[white], '.format(e) for e in a[:-1]]), a[-1])
+
         task = progress.add_task("Generate datasets cases", total=len(outcomes), progress_array="[]")
         for k in outcomes.keys():
             progress_array.append(k)
@@ -511,7 +518,7 @@ def run(console, build, force=False):
             for c in cases_per_articles[k]:
                 multilabel_index.add(c['itemid'])
             progress.update(task, advance=1, progress_array=to_str(progress_array))
-    print(TAB + "> Generate case info for specific article [green][DONE]",)
+    print(TAB + "> Generate case info for specific article [green][DONE]", )
     multilabel_cases_unique = []
     for c in multilabel_cases:
         if c['itemid'] in multilabel_index:
@@ -541,9 +548,10 @@ def run(console, build, force=False):
                 else:
 
                     log.info('Article {} in {} datasets: {}. Skip for multiclass.'.format(c['itemid'],
-                                                                                       len(set(nb_datasets)),
-                                                                                       ','.join(list(set(nb_datasets))))
-                          )
+                                                                                          len(set(nb_datasets)),
+                                                                                          ','.join(
+                                                                                              list(set(nb_datasets))))
+                             )
 
     with open(path.join(output_folder, 'raw_cases_info_multiclass.json'), 'w') as outfile:
         json.dump(multiclass_cases, outfile, indent=4, sort_keys=True)
@@ -567,4 +575,3 @@ if __name__ == "__main__":
     args = parse_args(parser)
 
     main(args)
-
