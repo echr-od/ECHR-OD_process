@@ -200,7 +200,6 @@ def normalize(X, schema_hints=None):
         return pd.unique(X[columns].values.ravel('K'))
 
     def hot_one_encoder(df, columns):
-        v = get_unique_values(df, columns)
         return pd.get_dummies(df, prefix_sep="=", columns=columns)
 
     schema = determine_schema(X)
@@ -251,40 +250,6 @@ def normalize(X, schema_hints=None):
     df = pd.concat([df] + encoded, axis=1)
     return df, schema, flat_schema, flat_type_mapping, flat_domain_mapping
 
-
-def test():
-    X = [
-        {'a': [2, 3, 5], 'b': {'field': 'value', 'nested_array': ['f', 'o', 'o']}, 'c': 1.02, 't': [1, 2, 3]},
-        {'a': [3, 2], 'b': {'field': 'value'}, 'c': 12, 't': [2, 3, 5]},
-        {'a': ['mix', 'a', 3], 'b': {'field': 'another value'}, 'd': [{'b': 'bar'}]},
-    ]
-
-    schema_hints = {
-        'a': {
-            'col_type': COL_HINT.POSITIONAL,
-            'sort': True
-        },
-        'c': {
-            'col_type': COL_HINT.HOT_ONE
-        },
-        't': {
-            'col_type': COL_HINT.HOT_ONE
-        }
-    }
-
-    '''
-    DEFAULT OUTPUT: -> Arrays are treated as positional (possibility to sort)
-    a.0 | a.1 | a.2 | b.field | b.nested_array.0 | b.nested_array.1 | b.nested_array.2 |    c | d.0.b | 
-      2     3     5     value                  f                  0                  0   1.02
-      6     7              
-      7     5     
-
-    OPTIONAL OUTPUT: -> Array are treated as sets with hot-one-encoder
-    a.2 | a.3 | a.5 | a.6 | a.7 | b.field | b.nested_array.0 | b.nested_array.1 | b.nested_array.2 | c | d.0.b | 
-
-    + panda describe on any level + basic stats (boundary, domain)
-
-    '''
 
 def run(console, build, output_prefix='cases', force=False):
     __console = console

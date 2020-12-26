@@ -36,7 +36,7 @@ to check the intermediate files to understand if the results are correct or not 
 -   Explorer sources: https://github.com/echr-od/ECHR-OD_explorer
 
 If you are using the project, please consider citing:
-```
+```bibtex
 @article{ECHRDB,
   title        = {On Integrating and Classifying Legal Text Documents},
   author       = {Quemy, A. and Wrembel, R.},
@@ -52,9 +52,8 @@ There are two distinct type of versions:
 1.  Semantic versioning (e.g. 2.0.1) that indicates the version of the process. It relates only to the code and 
 the type of data available.
     
-    -   major revision indicates a change in the type of version available
-        
-    -   minor and patches related concern bugfix and improvements
+    - major revision indicates a change in the type of version available
+    - minor and patches related concern bugfix and improvements  
     
 2.  Date of release (e.g. 2020-11-01), that indicates a when a build has been generated.
 
