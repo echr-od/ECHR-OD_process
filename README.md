@@ -53,6 +53,7 @@ There are two distinct type of versions:
 the type of data available.
     
     - major revision indicates a change in the type of version available
+      
     - minor and patches related concern bugfix and improvements  
     
 2.  Date of release (e.g. 2020-11-01), that indicates a when a build has been generated.
