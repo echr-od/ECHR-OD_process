@@ -18,7 +18,7 @@ setup(
     url='https://github.com/aquemy/ECHR-OD_process',  # Optional
     author='Alexandre Quemy',
     author_email='aquemy@pl.ibm.com',  # Optional
-    classifiers=[ 
+    classifiers=[
         'Development Status :: 4 - Beta',
         'Environment :: Console',
         'Intended Audience :: Science/Research',
@@ -28,7 +28,7 @@ setup(
     ],
     keywords='classification justice prediction',
     install_requires=requirements,
-    project_urls={ 
+    project_urls={
         'Bug Reports': 'https://github.com/aquemy/ECHR-OD_process/issues',
         'Say Thanks!': 'https://saythanks.io/to/aquemy',
         'Source': 'https://github.com/aquemy/ECHR-OD_process',
