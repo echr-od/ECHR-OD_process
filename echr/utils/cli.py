@@ -9,7 +9,7 @@ class StatusColumn(ProgressColumn):
         self.statuses = statuses
         self.progress_style = progress_style
 
-    def render(self, task: "Task"):
+    def render(self, task):
         if task.fields.get('rc') is not None:
             task.completed = task.total  # Trigger the end of the task
         label = self.statuses.get(task.fields.get('rc'))

@@ -40,7 +40,7 @@ def runner(params_str, build, detach, force, update):
 
     client = get_client(params)
 
-    stdin, stdout, stderr = client.exec_command("[ -d '{}' ] && echo 'exists'".format(quote(params['folder'])), get_pty=True)
+    _, stdout, stderr = client.exec_command("[ -d '{}' ] && echo 'exists'".format(quote(params['folder'])), get_pty=True)
     output = stdout.read().decode().strip()
     print(TAB + "> Check if the target folder exists... [green][DONE]")
     if not output:
@@ -117,7 +117,7 @@ def upload_osf(params_str, build, detach, force, update):
         transient=True,
     ) as progress:
         task = progress.add_task("Uploading...", total=len(files), error="", file=files[0])
-        for i, file in enumerate(files):
+        for file in files:
             error = ""
             dst_file = file.replace(build, dst + '/')
             if not update or dst_file not in osf_files:
@@ -229,7 +229,7 @@ def upload_scp(params_str, build, detach, force, update):
                         cmd += ' -d "{}"'.format(os.path.join(head, '..', '..'))
                     else:
                         cmd += ' -d "{}"'.format(os.path.join(head, tail.split('.')[0]))
-                    stdin, stdout, stderr = client.exec_command(quote(cmd))
+                    _, stdout, stderr = client.exec_command(quote(cmd))
                     while not stdout.channel.exit_status_ready():
                         if stdout.channel.recv_ready():
                             stdoutLines = stdout.readlines()

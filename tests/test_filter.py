@@ -6,7 +6,8 @@ from echr.utils.misc import compare_two_lists
 
 class TestFormatConclusion:
 
-    def test_split_and_format_article(self):
+    @staticmethod
+    def test_split_and_format_article():
         article_examples = [
             {'input': '3', 'output': ['3']},
             {'input': '5-1+6+7+p1-3', 'output': ['5-1', '6', '7', 'p1-3']},
@@ -19,7 +20,8 @@ class TestFormatConclusion:
             print(res, e['output'])
             assert (sorted(res) == sorted(e['output']))
 
-    def test_find_base_articles(self):
+    @staticmethod
+    def test_find_base_articles():
         base_article_examples = [
             {'input': ['3'], 'output': ['3']},
             {'input': ['5', '6', '7', 'p1-3'], 'output': ['5', '6', '7', 'p1-3']},
@@ -32,8 +34,8 @@ class TestFormatConclusion:
             res = find_base_articles(articles=e['input'])
             assert (sorted(res) == sorted(e['output']))
 
-
-    def test_merge_conclusion_elements(self):
+    @staticmethod
+    def test_merge_conclusion_elements():
         merge_conclusion_elements_examples = [
             {'input': [
                 {
@@ -68,8 +70,8 @@ class TestFormatConclusion:
             res = merge_conclusion_elements(e['input'])
             assert (sorted(res) == sorted(e['output']))
 
-
-    def test_format_conclusion(self):
+    @staticmethod
+    def test_format_conclusion():
         with open('tests/data/sample_format_conclusion.json') as json_file:
             conclusions_examples = json.load(json_file)
 
@@ -77,9 +79,11 @@ class TestFormatConclusion:
             res = format_conclusion(e['input'])
             assert (compare_two_lists(res, e['output']))
 
+
 class TestFormatParties:
 
-    def test_format_parties(self):
+    @staticmethod
+    def test_format_parties():
         parties_examples = [
             {'input': 'CASE OF STAFEYEV v. RUSSIA', 'output': ['STAFEYEV', 'RUSSIA']},
             {'input': 'CASE OF SCHUMMER v. GERMANY(No. 1)', 'output': ['SCHUMMER', 'GERMANY']}
@@ -92,7 +96,8 @@ class TestFormatParties:
 
 class TestFormatArticle:
 
-    def test_format_article(self):
+    @staticmethod
+    def test_format_article():
         format_article_examples = [
             {'input': '5;5-1;7;7-1', 'output': ['5', '7']},
             {'input': "1;7;7-1;14+7;14;30", 'output': ['1', '7', '14', '30']},
@@ -102,8 +107,8 @@ class TestFormatArticle:
             res = format_article(e['input'])
             assert (sorted(res) == sorted(e['output']))
 
-
-    def test_format_subarticle(self):
+    @staticmethod
+    def test_format_subarticle():
         format_subarticle_examples = [
             {'input': '3', 'output': ['3']},
             {'input': '1;7;7-1;14+7;14;30', 'output': ['1', '14', '30', '7', '7-1']},
