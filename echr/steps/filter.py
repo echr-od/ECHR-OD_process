@@ -393,10 +393,10 @@ def generate_statistics(cases):
                 # We do not take into account mention and details
                 s.extend([a['element'] for a in c[k]])
             else:
-                if type(c[k]) == list:
+                if isinstance(c[k], list):
                     if len(c[k]):
                         s.extend(c[k])
-                elif type(c[k]) == str:  # string
+                elif isinstance(c[k], str):  # string
                     if len(c[k].strip()):
                         s.append(c[k])
         return s
