@@ -7,7 +7,7 @@ def config(path='config.yml'):
     if __config is None:
         try:
             with open(path) as f:
-                __config = yaml.load(f, Loader=yaml.FullLoader)
+                __config = yaml.safe_load(f)
                 return __config
         except Exception as e:
             print('Could not log configuration file:')
