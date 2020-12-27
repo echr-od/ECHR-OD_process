@@ -476,7 +476,7 @@ def run(console, build, force=False):
 
     outcomes = {}
     cases_per_articles = {}
-    for i, c in enumerate(filtered_cases):
+    for c in filtered_cases:
         ccl = c['conclusion']
         for e in ccl:
             if e['type'] in ['violation', 'no-violation']:

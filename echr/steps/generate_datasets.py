@@ -109,7 +109,7 @@ def generate_dataset(cases, keys, keys_list, encoded_outcomes, feature_index, fe
         }
     }
 
-    for cl, el in statistics[name]['prevalence'].items():
+    for cl, _ in statistics[name]['prevalence'].items():
         statistics[name]['prevalence'][cl]['class_normalized'] = 1. * statistics[name]['prevalence'][cl][
             'violation'] / (statistics[name]['prevalence'][cl]['violation'] + statistics[name]['prevalence'][cl][
             'no-violation'])
@@ -234,7 +234,7 @@ def run(console, build, articles=[], processed_folder='all', force=True):
         # Determine output
     encoded_outcomes = {}
     count = 1
-    for i, o in outcomes.items():
+    for i, _ in outcomes.items():
         encoded_outcomes[i] = count
         count += 1
 

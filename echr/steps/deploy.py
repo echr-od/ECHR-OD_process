@@ -74,12 +74,12 @@ def runner(params_str, build, detach, force, update):
         'cd {}'.format(REPO_PATH),
         'git fetch origin {}'.format(params.get('branch', DEFAULT_BRANCH)),
     ]
-    stdin, stdout, stderr = client.exec_command(quote(';'.join(cmd)))
+    client.exec_command(quote(';'.join(cmd)))
     cmd = [
         'cd {}'.format(REPO_PATH),
         'git rebase origin {}'.format(params.get('branch', DEFAULT_BRANCH))
     ]
-    stdin, stdout, stderr = client.exec_command(quote(';'.join(cmd)))
+    client.exec_command(quote(';'.join(cmd)))
     print(TAB + "> Fetch and rebase the repository... [green][DONE]")
 
     print(TAB + "> Run workflow and detach... [green][DONE]")
@@ -92,7 +92,7 @@ def runner(params_str, build, detach, force, update):
     cmd = 'tmux new -A -s echr -d "docker run -ti ' \
           '--mount src={},dst=/tmp/echr_process/,type=bind ' \
           'echr_build build --workflow {} {} {}"'.format(REPO_PATH, params['workflow'], build_str, endpoint_str)
-    stdin, stdout, stderr = client.exec_command(quote(cmd))
+    client.exec_command(quote(cmd))
 
 
 def upload_osf(params_str, build, detach, force, update):
@@ -248,7 +248,7 @@ def upload_scp(params_str, build, detach, force, update):
 
 def get_list_of_files(build):
     files_list = []
-    for path, subdirs, files in os.walk(build):
+    for path, _, files in os.walk(build):
         for name in files:
             files_list.append(os.path.join(path, name))
     return files_list
