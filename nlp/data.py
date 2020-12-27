@@ -47,11 +47,11 @@ def match_city(indexes, token):
 
 
 def department_name(data, number):
-    '''
+    """
     Small trick not to look into the whole file.
-    
+
     To be changed if the underlying datafile changes!
-    '''
+    """
     try:
         if number in ['2a', '2A']:
             return data[19]

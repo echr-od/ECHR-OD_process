@@ -218,7 +218,7 @@ def upload_scp(params_str, build, detach, force, update):
     ) as progress:
         task = progress.add_task("Decompress...", total=len(files), error="", file=files[0])
         client = get_client(params)
-        for i, file in enumerate(files):
+        for file in files:
             error = ""
             dst_file = file.replace(build, dst + '/')
             for j in range(MAX_RETRY):
