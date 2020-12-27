@@ -40,21 +40,21 @@ def runner(params_str, build, detach, force, update):
 
     client = get_client(params)
 
-    _, stdout, stderr = client.exec_command("[ -d '{}' ] && echo 'exists'".format(quote(params['folder'])), get_pty=True)
+    _, stdout, _ = client.exec_command("[ -d '{}' ] && echo 'exists'".format(quote(params['folder'])), get_pty=True)
     output = stdout.read().decode().strip()
     print(TAB + "> Check if the target folder exists... [green][DONE]")
     if not output:
         cmd = [
             'mkdir -p {}'.format(params['folder']),
         ]
-        stdin, stdout, stderr = client.exec_command(quote(';'.join(cmd)))
+        _, stdout, _ = client.exec_command(quote(';'.join(cmd)))
         print(stdout.read().decode().strip())
         print(TAB + "> Create the target folder... [green][DONE]")
     else:
         print(TAB + "> Target folder already exists... [green][DONE]")
         print(stdout.read().decode().strip())
 
-    stdin, stdout, stderr = client.exec_command("[ -d '{}' ] && echo 'exists'".format(quote(REPO_PATH)),  get_pty=True)
+    _, stdout, _ = client.exec_command("[ -d '{}' ] && echo 'exists'".format(quote(REPO_PATH)),  get_pty=True)
     output = stdout.read().decode().strip()
     print(TAB + "> Check if the repository is cloned... [green][DONE]")
     if not output:
@@ -62,7 +62,7 @@ def runner(params_str, build, detach, force, update):
             'cd {}'.format(params['folder']),
             'git clone {}'.format(GIT_REPO)
         ]
-        stdin, stdout, stderr = client.exec_command(quote(';'.join(cmd)))
+        _, stdout, _ = client.exec_command(quote(';'.join(cmd)))
         print(TAB + "> Clone repository... [green][DONE]")
         print(stdout.read().decode().strip())
     else:
@@ -192,7 +192,7 @@ def upload_scp(params_str, build, detach, force, update):
 
     files = [os.path.join(build, e) for e in ['all.zip', 'datasets.zip']]
     client = get_client(params)
-    for i, file in enumerate(files):
+    for file in files:
         error = ""
         dst_file = file.replace(build, dst + '/')
         if not update or dst_file not in server_files:
@@ -229,7 +229,7 @@ def upload_scp(params_str, build, detach, force, update):
                         cmd += ' -d "{}"'.format(os.path.join(head, '..', '..'))
                     else:
                         cmd += ' -d "{}"'.format(os.path.join(head, tail.split('.')[0]))
-                    _, stdout, stderr = client.exec_command(quote(cmd))
+                    _, stdout, _ = client.exec_command(quote(cmd))
                     while not stdout.channel.exit_status_ready():
                         if stdout.channel.recv_ready():
                             stdoutLines = stdout.readlines()

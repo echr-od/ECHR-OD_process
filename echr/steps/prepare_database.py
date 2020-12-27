@@ -153,7 +153,7 @@ def flatten_dataset(X, flat_type_mapping, schema_hints=None):
                     if type_ == 'array':
                         item_types = flat_type_mapping.get(k + '.items')
                         a = get_by_path(c_x, k.split('.'))
-                        if type(item_types) == list:
+                        if isinstance(item_types,  list):
                             try:
                                 a = sorted(a)
                             except:
@@ -176,7 +176,7 @@ def flatten_dataset(X, flat_type_mapping, schema_hints=None):
 
 
 def hot_one_encoder_on_list(df, column):
-    v = [x if type(x) == list else [] for x in df[column].values]
+    v = [x if isinstance(x, list) else [] for x in df[column].values]
     l = [len(x) for x in v]
     f, u = pd.factorize(np.concatenate(v))
     n, m = len(v), u.size

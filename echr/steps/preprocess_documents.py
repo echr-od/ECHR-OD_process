@@ -377,7 +377,8 @@ def format_paragraph(p):
         return p
 
 
-def json_to_text_(doc, text_only=True, except_section=[]):
+def json_to_text_(doc, text_only=True, except_section=None):
+    except_section = [] if except_section is None else except_section
     res = []
     if not len(doc['elements']):
         res.append(format_paragraph(doc['content']))
@@ -388,7 +389,7 @@ def json_to_text_(doc, text_only=True, except_section=[]):
     return res
 
 
-def json_to_text(doc, text_only=True, except_section=[]):
+def json_to_text(doc, text_only=True, except_section=None):
     """
         Format json to text
 
@@ -401,6 +402,7 @@ def json_to_text(doc, text_only=True, except_section=[]):
         :return: textual representation of the document
         :rtype: str
     """
+    except_section = [] if except_section is None else except_section
     return '\n'.join(json_to_text_(doc, text_only, except_section))
 
 

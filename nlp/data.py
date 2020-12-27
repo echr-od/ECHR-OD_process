@@ -22,7 +22,6 @@ def load_CSV(path, columns=None):
 
 def data_transformations(data, columns_to_index):
     indexes = []
-     
     for i in range(len(columns_to_index)):
         indexes.append(set())
 
