@@ -19,10 +19,10 @@ log = getlogger()
 
 MAX_RETRY = 3
 
-def get_client(params):
+def get_client(host, user, password):
     client = paramiko.SSHClient()
     client.set_missing_host_key_policy(paramiko.AutoAddPolicy())
-    client.connect(params['host'], username=params['user'], password=get_password())
+    client.connect(host, username=user, password=password)
     client.set_missing_host_key_policy(paramiko.AutoAddPolicy())
     return client
 
@@ -38,7 +38,7 @@ def runner(params_str, build, detach, force, update):
     DEFAULT_BRANCH = 'develop'
     REPO_PATH = os.path.join(params['folder'], GIT_REPO.split('/')[-1].split('.')[0])
 
-    client = get_client(params)
+    client = get_client(params['host'], username=params['user'], password=params['password'])
 
     _, stdout, _ = client.exec_command("[ -d '{}' ] && echo 'exists'".format(quote(params['folder'])), get_pty=True)
     output = stdout.read().decode().strip()
@@ -148,7 +148,7 @@ def upload_scp(params_str, build, detach, force, update):
     ) as progress:
         _ = progress.add_task("Retrieving...")
 
-        client = get_client(params)
+        client = get_client(params['host'], username=params['user'], password=get_password())
         client.exec_command("du -a {} &> /tmp/list.txt".format(quote(dst_without_update)))
         sftp = client.open_sftp()
         sftp.get('/tmp/list.txt', '/tmp/list.txt')
@@ -163,8 +163,7 @@ def upload_scp(params_str, build, detach, force, update):
             transient=True,
         ) as progress:
             _ = progress.add_task("Creating...")
-            client = get_client(params)
-            client.connect(params['host'], username=params['user'], password=get_password())
+            client = get_client(params['host'], username=params['user'], password=get_password())
             cmd = 'mkdir -p {}'.format(quote(dst))
             client.exec_command(cmd)
         print(TAB + "> Creating the destination folder [green][DONE]")
@@ -191,7 +190,7 @@ def upload_scp(params_str, build, detach, force, update):
         sys.stdout.write('\r')
 
     files = [os.path.join(build, e) for e in ['all.zip', 'datasets.zip']]
-    client = get_client(params)
+    client = get_client(params['host'], username=params['user'], password=get_password())
     for file in files:
         error = ""
         dst_file = file.replace(build, dst + '/')
@@ -217,7 +216,7 @@ def upload_scp(params_str, build, detach, force, update):
         transient=True,
     ) as progress:
         task = progress.add_task("Decompress...", total=len(files), error="", file=files[0])
-        client = get_client(params)
+        client = get_client(params['host'], username=params['user'], password=get_password())
         for file in files:
             error = ""
             dst_file = file.replace(build, dst + '/')
