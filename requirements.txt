@@ -20,4 +20,4 @@ paramiko
 peewee
 pytest
 pytest-cov
-shelx
+shlex
