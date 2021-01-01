@@ -19,7 +19,7 @@ log = getlogger()
 
 MAX_RETRY = 3
 
-def get_client(host, user, password):
+def get_client(host, username, password):
     client = paramiko.SSHClient()
     client.set_missing_host_key_policy(paramiko.AutoAddPolicy())
     client.connect(host, username=user, password=password)
