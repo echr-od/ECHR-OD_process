@@ -22,7 +22,7 @@ MAX_RETRY = 3
 def get_client(host, username, password):
     client = paramiko.SSHClient()
     client.set_missing_host_key_policy(paramiko.AutoAddPolicy())
-    client.connect(host, username=user, password=password)
+    client.connect(host, username=username, password=password)
     client.set_missing_host_key_policy(paramiko.AutoAddPolicy())
     return client
 
