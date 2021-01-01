@@ -5,7 +5,7 @@ from sh import osf
 import paramiko
 import datetime
 import sys
-from shelx import quote
+from shlex import quote
 
 from echr.utils.logger import getlogger
 from echr.utils.cli import TAB
