@@ -5,7 +5,6 @@ from sh import osf
 import paramiko
 import datetime
 import sys
-from shlex import quote
 
 from echr.utils.logger import getlogger
 from echr.utils.cli import TAB
@@ -40,21 +39,21 @@ def runner(params_str, build, detach, force, update):
 
     client = get_client(params['host'], username=params['user'], password=params['password'])
 
-    _, stdout, _ = client.exec_command("[ -d '{}' ] && echo 'exists'".format(quote(params['folder'])), get_pty=True)
+    _, stdout, _ = client.exec_command("[ -d '{}' ] && echo 'exists'".format((params['folder'])), get_pty=True)
     output = stdout.read().decode().strip()
     print(TAB + "> Check if the target folder exists... [green][DONE]")
     if not output:
         cmd = [
             'mkdir -p {}'.format(params['folder']),
         ]
-        _, stdout, _ = client.exec_command(quote(';'.join(cmd)))
+        _, stdout, _ = client.exec_command((';'.join(cmd)))
         print(stdout.read().decode().strip())
         print(TAB + "> Create the target folder... [green][DONE]")
     else:
         print(TAB + "> Target folder already exists... [green][DONE]")
         print(stdout.read().decode().strip())
 
-    _, stdout, _ = client.exec_command("[ -d '{}' ] && echo 'exists'".format(quote(REPO_PATH)),  get_pty=True)
+    _, stdout, _ = client.exec_command("[ -d '{}' ] && echo 'exists'".format((REPO_PATH)),  get_pty=True)
     output = stdout.read().decode().strip()
     print(TAB + "> Check if the repository is cloned... [green][DONE]")
     if not output:
@@ -62,7 +61,7 @@ def runner(params_str, build, detach, force, update):
             'cd {}'.format(params['folder']),
             'git clone {}'.format(GIT_REPO)
         ]
-        _, stdout, _ = client.exec_command(quote(';'.join(cmd)))
+        _, stdout, _ = client.exec_command((';'.join(cmd)))
         print(TAB + "> Clone repository... [green][DONE]")
         print(stdout.read().decode().strip())
     else:
@@ -74,12 +73,14 @@ def runner(params_str, build, detach, force, update):
         'cd {}'.format(REPO_PATH),
         'git fetch origin {}'.format(params.get('branch', DEFAULT_BRANCH)),
     ]
-    client.exec_command(quote(';'.join(cmd)))
+    _, stdout, _ = client.exec_command((';'.join(cmd)))
+    output = stdout.read().decode().strip()
+    print(output)
     cmd = [
         'cd {}'.format(REPO_PATH),
         'git rebase origin {}'.format(params.get('branch', DEFAULT_BRANCH))
     ]
-    client.exec_command(quote(';'.join(cmd)))
+    client.exec_command((';'.join(cmd)))
     print(TAB + "> Fetch and rebase the repository... [green][DONE]")
 
     print(TAB + "> Run workflow and detach... [green][DONE]")
@@ -92,7 +93,7 @@ def runner(params_str, build, detach, force, update):
     cmd = 'tmux new -A -s echr -d "docker run -ti ' \
           '--mount src={},dst=/tmp/echr_process/,type=bind ' \
           'echr_build build --workflow {} {} {}"'.format(REPO_PATH, params['workflow'], build_str, endpoint_str)
-    client.exec_command(quote(cmd))
+    client.exec_command((cmd))
 
 
 def upload_osf(params_str, build, detach, force, update):
@@ -149,7 +150,7 @@ def upload_scp(params_str, build, detach, force, update):
         _ = progress.add_task("Retrieving...")
 
         client = get_client(params['host'], username=params['user'], password=get_password())
-        client.exec_command("du -a {} &> /tmp/list.txt".format(quote(dst_without_update)))
+        client.exec_command("du -a {} &> /tmp/list.txt".format((dst_without_update)))
         sftp = client.open_sftp()
         sftp.get('/tmp/list.txt', '/tmp/list.txt')
         with open('/tmp/list.txt', 'r') as f:
@@ -164,7 +165,7 @@ def upload_scp(params_str, build, detach, force, update):
         ) as progress:
             _ = progress.add_task("Creating...")
             client = get_client(params['host'], username=params['user'], password=get_password())
-            cmd = 'mkdir -p {}'.format(quote(dst))
+            cmd = 'mkdir -p {}'.format((dst))
             client.exec_command(cmd)
         print(TAB + "> Creating the destination folder [green][DONE]")
 
@@ -198,7 +199,7 @@ def upload_scp(params_str, build, detach, force, update):
             for j in range(MAX_RETRY):
                 try:
                     head, _ = os.path.split(dst_file)
-                    client.exec_command('mkdir -p {}'.format(quote(head)))
+                    client.exec_command('mkdir -p {}'.format((head)))
                     sftp = client.open_sftp()
                     sftp.put(file, dst_file, upload_status)
                     break
@@ -228,7 +229,7 @@ def upload_scp(params_str, build, detach, force, update):
                         cmd += ' -d "{}"'.format(os.path.join(head, '..', '..'))
                     else:
                         cmd += ' -d "{}"'.format(os.path.join(head, tail.split('.')[0]))
-                    _, stdout, _ = client.exec_command(quote(cmd))
+                    _, stdout, _ = client.exec_command((cmd))
                     while not stdout.channel.exit_status_ready():
                         if stdout.channel.recv_ready():
                             stdoutLines = stdout.readlines()
@@ -256,7 +257,6 @@ def run(console, method, build, params, detach=False, force=False, update=False)
     __console = console
     global print
     print = __console.print
-
     METHODS.get(method)(params, build, detach, force, update)
 
 def main(args):
