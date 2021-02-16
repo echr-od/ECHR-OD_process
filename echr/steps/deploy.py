@@ -9,6 +9,7 @@ import sys
 from echr.utils.logger import getlogger
 from echr.utils.cli import TAB
 from rich.console import Console
+from rich.markdown import Markdown
 from rich.progress import (
     Progress,
     BarColumn,
@@ -29,10 +30,33 @@ def get_client(host, username, password):
 def get_password():
     return os.environ.get('ECHR_PASSWORD')
 
+def parse_server_parameters(params_str):
+    try:
+        params = {e.split('=')[0]: e.split('=')[1] for e in params_str.split()}
+        keys = ['user', 'password', 'host', 'folder', 'build', 'workflow']
+        in_params = [k in params for k in keys]
+        if not all(in_params):
+            missing = [keys[i] for i, e in enumerate(in_params) if not e]
+            return False, missing
+        return True, params
+    except:
+        return False, []
 
 def runner(params_str, build, detach, force, update):
-    params = {e.split('=')[0]: e.split('=')[1] for e in params_str.split()}
+    print(Markdown("- **Step configuration**"))
+    ok, params = parse_server_parameters(params_str)
+    print(TAB + "> Check server parameters...")
+    if not ok:
+        if params:
+            print(TAB + '  ⮡ [red]:double_exclamation_mark: The following parameters are missing: {}'.format(
+                ', '.join(params)))
+            return 2
+        else:
+            print(TAB + '  ⮡ [red]:double_exclamation_mark: Something went wrong')
+            return 11
+    print(TAB + '  ⮡ [green]:heavy_check_mark: All expected parameters are present')
 
+    print(Markdown("- **Prepare runner**"))
     GIT_REPO = "https://github.com/echr-od/ECHR-OD_process.git"
     DEFAULT_BRANCH = 'develop'
     REPO_PATH = os.path.join(params['folder'], GIT_REPO.split('/')[-1].split('.')[0])
@@ -83,6 +107,7 @@ def runner(params_str, build, detach, force, update):
     client.exec_command((';'.join(cmd)))
     print(TAB + "> Fetch and rebase the repository... [green][DONE]")
 
+    print(Markdown("- **Execute on runner**"))
     print(TAB + "> Run workflow and detach... [green][DONE]")
     build_str = ""
     if 'build' in params:
@@ -269,7 +294,6 @@ def parse_args(parser):
     if args.method not in METHODS.keys():
         print("Invalid method of deployment. Should be among: {}".format(', '.join(METHODS.keys())))
         exit(2)
-    # Check path
     return args
 
 METHODS = {
