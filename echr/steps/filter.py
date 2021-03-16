@@ -5,6 +5,7 @@ import json
 import os
 from os import listdir, path
 import copy
+import re
 
 from echr.utils.folders import make_build_folder
 from echr.utils.logger import getlogger
@@ -48,11 +49,16 @@ def split_and_format_article(article):
         :return: list of articles
         :rtype: [str]
     """
+    def remove_incorrect_prefixes(art):
+        if re.match(re.compile("^[^0-9]"), art):
+            return art[1:]
+        return art
+
     parts = article.split('+')
-    articles = [parts[-1]]
+    articles = [remove_incorrect_prefixes(parts[-1])]
     for k, e in enumerate(parts[:-1]):
         if not parts[k + 1].startswith(e):
-            articles.append(e)
+            articles.append(remove_incorrect_prefixes(e))
     return articles
 
 
