@@ -20,3 +20,4 @@ paramiko
 peewee
 pytest
 pytest-cov
+regex
