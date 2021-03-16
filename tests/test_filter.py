@@ -13,6 +13,7 @@ class TestFormatConclusion:
             {'input': '5-1+6+7+p1-3', 'output': ['5-1', '6', '7', 'p1-3']},
             {'input': '5-1+5-3', 'output': ['5-1', '5-3']},
             {'input': '14+5-3', 'output': ['14', '5-3']},
+            {'input': '.2-a-c+.p3-1+p41', 'output': ['2-a-c', 'p3-1', 'p41']}
         ]
 
         for e in article_examples:
