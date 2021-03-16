@@ -50,7 +50,7 @@ def split_and_format_article(article):
         :rtype: [str]
     """
     def remove_incorrect_prefixes(art):
-        if re.match(re.compile("^[^0-9]"), art):
+        if re.match(re.compile("^\W"), art):
             return art[1:]
         return art
 
