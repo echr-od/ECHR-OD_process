@@ -274,6 +274,19 @@ class Node:
         self.elements = []
 
 
+def para_to_text(p):
+    """
+        Parse a document object to a tree
+
+        :param p: paragraph object
+        :type p: Paragraph
+        :return: text
+        :rtype: str
+    """
+    rs = p._element.xpath('.//w:t')
+    return u"".join([r.text for r in rs])
+
+
 def parse_document(doc):
     """
         Parse a document object to a tree
@@ -288,7 +301,7 @@ def parse_document(doc):
     decision_body = ""
     appender = Node()  # Top level node
     for p in doc.paragraphs:
-        line = p.text.strip()
+        line = para_to_text(p).strip()
         if not len(line):
             continue
         level = tag_to_level.get(p.style.name, 0)
