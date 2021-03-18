@@ -1,5 +1,3 @@
-import json
-import re
 from docx import Document
 
 from echr.steps.preprocess_documents import para_to_text
