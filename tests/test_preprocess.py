@@ -1,11 +1,13 @@
 from docx import Document
+import pytest
 
 from echr.steps.preprocess_documents import para_to_text
 
 class TestPreprocessWord:
 
     @staticmethod
-    def test_para_to_text():
+    @pytest.fixture
+    def prepare():
         file = 'tests/data/judgments/001-83979.docx'
         expected_file = 'tests/data/judgments/001-83979_without_smarttags.docx'
         doc = Document(file)
@@ -24,15 +26,12 @@ class TestPreprocessWord:
         broken_list_paragraphs = [p for p in broken_list_paragraphs if p]
         fixed_list_paragraphs = [p for p in fixed_list_paragraphs if p]
         expected_list_paragraphs = [p for p in expected_list_paragraphs if p]
-        assert len(fixed_list_paragraphs) == len(expected_list_paragraphs)
-        for i, p in enumerate(fixed_list_paragraphs):
-            assert p == expected_list_paragraphs[i]
+        return {'broken': broken_list_paragraphs, 'fixed': fixed_list_paragraphs, 'expected': expected_list_paragraphs}
 
-        broken_different_from_expected = any(
-            [p != expected_list_paragraphs[i] for i, p in enumerate(broken_list_paragraphs)])
-        broken_different_from_fixed = any([p != fixed_list_paragraphs[i] for i, p in enumerate(broken_list_paragraphs)])
-        fixed_equals_expected = all([p == fixed_list_paragraphs[i] for i, p in enumerate(expected_list_paragraphs)])
+    @staticmethod
+    def test_len_of_paragraphs(prepare):
+        assert len(prepare['fixed']) == len(prepare['expected'])
 
-        assert broken_different_from_expected
-        assert broken_different_from_fixed
-        assert fixed_equals_expected
+    @staticmethod
+    def test_fixed_equals_expected(prepare):
+        assert all([p == prepare['fixed'][i] for i, p in enumerate(prepare['expected'])])
