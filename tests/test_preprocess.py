@@ -35,3 +35,12 @@ class TestPreprocessWord:
     @staticmethod
     def test_fixed_equals_expected(prepare):
         assert all([p == prepare['fixed'][i] for i, p in enumerate(prepare['expected'])])
+
+    @staticmethod
+    def test_broken_different_from_fixed(prepare):
+        assert any([p != prepare['fixed'][i] for i, p in enumerate(prepare['broken'])])
+
+    @staticmethod
+    def test_broken_different_from_expected(prepare):
+        assert any([p != prepare['expected'][i] for i, p in enumerate(prepare['broken'])])
+
