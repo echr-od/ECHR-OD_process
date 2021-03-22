@@ -40,7 +40,7 @@ to check the intermediate files to understand if the results are correct or not 
 -   **Mailing list:** https://groups.google.com/g/echr-od    
   Receive the important announcements about the project (max. couple of emails per year)
 
--   **Discussion:**  [![](https://img.shields.io/badge/Matrix-%23echr--od%3Amatrix.org-blue?logo=matrix)](https://matrix.to/#/#echr-od:matrix.org?via=matrix.org)  
+-   **Discussion:**  [![](https://img.shields.io/badge/Matrix-%23echr--opendata%3Amatrix.org-blue?logo=matrix)](https://matrix.to/#/#echr-opendata:matrix.org?via=matrix.org)  
   Get help and/or discuss about the project. Matrix is a decentralized, secured and open-source real-time communication system.
 
 ### Citing
