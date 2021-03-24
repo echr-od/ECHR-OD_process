@@ -22,6 +22,7 @@ __console = Console(record=True)
 from echr.data_models.base import db
 from echr.data_models.case import Case
 from echr.data_models.article import Article
+from echr.data_models.attachment import Table, Attachment
 from echr.data_models.conclusion import Conclusion, ConclusionCase, ConclusionDetail, ConclusionMention
 from echr.data_models.detail import Detail
 from echr.data_models.mention import Mention
@@ -41,7 +42,7 @@ def create_tables():
         db.create_tables([Case, Article, Conclusion, ConclusionCase, DecisionBodyMember, DecisionBodyCase,
                           ConclusionDetail, Detail, ConclusionMention,
                           Mention, Party, PartyCase, Representative, RepresentativeCase, KPThesaurus, ExternalSource,
-                          Issue, DocumentCollectionId, ExtractedApp, SCL, SCLCase])
+                          Issue, DocumentCollectionId, ExtractedApp, SCL, SCLCase, Attachment, Table])
 
 def populate_database(console, build, update):
     input_folder = os.path.join(build, 'raw', 'preprocessed_documents')
@@ -106,9 +107,18 @@ def populate_database(console, build, update):
                                 del case['scl']
                             case['judgment'] = case['content']['{}.docx'.format(case['itemid'])]
                             del case['originatingbody']
+
+                            attachments = case.get('attachments', {})
+                            if 'attachments' in case:
+                                del case['attachments']
+
                             i = dict_to_model(Case, case, ignore_unknown=True)
                             i.save(force_insert=True)
 
+                            for doc, att in attachments.items():
+                                for tag, content in att.items():
+                                    if tag.startswith('table'):
+                                        Table.get_or_create(tag=tag, case=i, content=content)
 
                             for scl in scls:
                                 r = SCL.get_or_create(name=scl.title())
