@@ -5,7 +5,6 @@ from os import listdir
 from os.path import isfile, join
 import re
 import shutil
-from docx import Document
 from docx.api import Document
 from docx.oxml.table import CT_Tbl
 from docx.oxml.text.paragraph import CT_P
