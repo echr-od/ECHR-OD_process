@@ -1,7 +1,7 @@
 from docx import Document
 import pytest
 
-from echr.steps.preprocess_documents import para_to_text
+from echr.steps.preprocess_documents import para_to_text, json_table_to_text
 
 class TestPreprocessWord:
 
@@ -44,3 +44,29 @@ class TestPreprocessWord:
     def test_broken_different_from_expected(prepare):
         assert any([p != prepare['expected'][i] for i, p in enumerate(prepare['broken'])])
 
+
+class TestProcessTableAttachment:
+    @staticmethod
+    def test_json_table_to_text_emtpy():
+        table = []
+        expected = ""
+        res = json_table_to_text(table)
+        assert res == expected
+
+    @staticmethod
+    def test_json_table_to_text_text_only():
+        table = [
+            {'header1': 'val1', 'header2': 'val2'},
+            {'header1': 'val3', 'header2': 'val4'}]
+        expected = "header1 header2\nval1 val2\nval3 val4\n"
+        res = json_table_to_text(table)
+        assert res == expected
+
+    @staticmethod
+    def test_json_table_to_text_int_and_float():
+        table = [
+            {'header1': 'val1', 'header2': 10},
+            {'header1': 12., 'header2': 'val4'}]
+        expected = "header1 header2\nval1 10\n12.0 val4\n"
+        res = json_table_to_text(table)
+        assert res == expected

@@ -5,7 +5,11 @@ from os import listdir
 from os.path import isfile, join
 import re
 import shutil
-from docx import Document
+from docx.api import Document
+from docx.oxml.table import CT_Tbl
+from docx.oxml.text.paragraph import CT_P
+from docx.table import Table as DocTable
+from docx.text.paragraph import Paragraph
 import zipfile
 
 from echr.utils.folders import make_build_folder
@@ -264,7 +268,7 @@ class Node:
     """
         Represent a rooted tree
     """
-    def __init__(self, parent=None, level=0, content=None):
+    def __init__(self, parent=None, level=0, content=None, node_type=None):
         """
             Initialize a node with content and parent.
         """
@@ -272,6 +276,7 @@ class Node:
         self.level = level
         self.content = content
         self.elements = []
+        self.node_type = node_type
 
 
 def para_to_text(p):
@@ -286,6 +291,29 @@ def para_to_text(p):
     rs = p._element.xpath('.//w:t')
     return u"".join([r.text for r in rs])
 
+def sanitize_cells(cell_content):
+    s = cell_content.replace('\n', ' ').strip()
+    return s
+
+def word_table_to_json(table):
+    """
+        Extract content from a MS Word table to JSON
+
+        :param table: table object
+        :type table: Table
+        :return: list of row oriented elements
+        :rtype: list
+    """
+    keys = None
+    data = []
+    for i, row in enumerate(table.rows):
+        text = (sanitize_cells(cell.text) for cell in row.cells)
+        if i == 0:
+            keys = tuple(text)
+            continue
+        row_data = dict(zip(keys, text))
+        data.append(row_data)
+    return data
 
 def parse_document(doc):
     """
@@ -296,31 +324,45 @@ def parse_document(doc):
         :return: tree
         :rtype: Node
     """
-    parsed = {}
+    def format_table_tag(table_index):
+        return 'table-{}'.format(table_index)
 
+    attachments = {}
     decision_body = ""
     appender = Node()  # Top level node
-    for p in doc.paragraphs:
-        line = para_to_text(p).strip()
-        if not len(line):
-            continue
+    table_index = 0
+    for e in doc.element.body:
+        node_type = None
+        if isinstance(e, CT_Tbl):
+            table = DocTable(e, doc)
+            table_tag = format_table_tag(table_index)
+            table_index += 1
+            attachments[table_tag] = word_table_to_json(table)
+            line_content = table_tag  # Use the tag as content for the current tree node
+            node_type = 'table'
+        elif isinstance(e, CT_P):
+            p = Paragraph(e, doc)
+            line_content = p.text.strip() # para_to_text(p)
+            if not len(line_content):
+                continue
+
         level = tag_to_level.get(p.style.name, 0)
         if level > 0:
             if appender.level == 0 and not len(appender.elements) and level > 1:
                 pass
             else:
                 if level < appender.level:
-                    while (appender.level > level - 1):
+                    while appender.level > level - 1:
                         appender = appender.parent
                 elif level == appender.level:
                     appender = appender.parent
-                node = Node(parent=appender, level=level, content=p.text)
+                node = Node(parent=appender, level=level, content=line_content, node_type=node_type)
                 appender.elements.append(node)
                 appender = node
 
         if level < 0:
             if level == -1:
-                decision_body += p.text
+                decision_body += line_content
 
     root = appender
     while (root.level != 0):
@@ -356,6 +398,8 @@ def parse_document(doc):
             'content': root.content,
             'elements': []
         }
+        if root.node_type:
+            node['type'] = root.node_type
         for e in root.elements:
             node['elements'].append(tree_to_json(e, node))
         return node
@@ -365,7 +409,7 @@ def parse_document(doc):
     parsed['decision_body'] = parse_body(decision_body) if decision_body else []
     parsed = tag_elements(parsed)
 
-    return parsed
+    return parsed, attachments
 
 
 PARSER = {
@@ -390,19 +434,44 @@ def format_paragraph(p):
         return p
 
 
-def json_to_text_(doc, text_only=True, except_section=None):
+def json_table_to_text(table):
+    """
+        Transform JSON table to text
+
+        :param table: table to transform into text
+        :type table: list
+        :return: content of the table in plain text
+        :rtype: str
+    """
+    if not len(table):
+        return ""
+    header = table[0]
+    text = ' '.join(header.keys()) + '\n'
+    for l in table:
+        text += ' '.join(map(str, l.values())) + '\n'
+    return text
+
+
+def json_to_text_(doc, text_only=True, except_section=None, attachments=None):
     except_section = [] if except_section is None else except_section
     res = []
     if not len(doc['elements']):
-        res.append(format_paragraph(doc['content']))
+        node_type = doc.get('type')
+        attachment = None
+        if attachments:
+            attachment = attachments.get(doc['content'])
+        if node_type == 'table' and attachment:
+            res.append(json_table_to_text(attachment))
+        else:
+            res.append(format_paragraph(doc['content']))
     # text_only: remove the titles
     for e in doc['elements']:
         if not 'section_name' in e or e['section_name'] not in except_section:
-            res.extend(json_to_text_(e, text_only=text_only, except_section=except_section))
+            res.extend(json_to_text_(e, text_only=text_only, except_section=except_section, attachments=attachments))
     return res
 
 
-def json_to_text(doc, text_only=True, except_section=None):
+def json_to_text(doc, text_only=True, except_section=None, attachments=None):
     """
         Format json to text
 
@@ -416,7 +485,7 @@ def json_to_text(doc, text_only=True, except_section=None):
         :rtype: str
     """
     except_section = [] if except_section is None else except_section
-    return '\n'.join(json_to_text_(doc, text_only, except_section))
+    return '\n'.join(json_to_text_(doc, text_only, except_section, attachments))
 
 
 def select_parser(doc):
@@ -486,14 +555,20 @@ def run(console, build, force=False, update=False):
                     parser = select_parser(doc)
                     stats['parser_type'][parser] += 1
                     if parser == 'NEW':
-                        parsed = parse_document(doc)
+                        parsed, attachments = parse_document(doc)
                         parsed.update(cases[cases_index[id_doc]])
                         with open(os.path.join(output_folder, '{}_text_without_conclusion.txt'.format(id_doc)),
                                   'w') as toutfile:
-                            toutfile.write(json_to_text(parsed, True, ['conclusion', 'law']))
+                            toutfile.write(json_to_text(parsed,
+                                                        text_only=True,
+                                                        except_section=['conclusion', 'law'],
+                                                        attachments=attachments))
                         parsed['documents'] = ['{}.docx'.format(id_doc)]
                         parsed['content'] = {
                             '{}.docx'.format(id_doc): parsed['elements']
+                        }
+                        parsed['attachments'] = {
+                            '{}.docx'.format(id_doc): attachments
                         }
                         del parsed['elements']
                         with open(filename_parsed, 'w') as outfile:
@@ -511,7 +586,7 @@ def run(console, build, force=False, update=False):
                 error = '\n| Skip document because it is already processed'
                 correctly_parsed += 1
             progress.update(task, advance=1, error=error, doc=id_doc)
-    if (correctly_parsed == len(files)):
+    if correctly_parsed == len(files):
         print(TAB + "> Preprocess documents... [green][DONE]")
     else:
         print(TAB + "> Preprocess documents... [yellow][WARNING]")
@@ -520,7 +595,7 @@ def run(console, build, force=False, update=False):
     print(
         TAB + '> Correctly parsed: {}/{} ({:.4f}%)'.format(correctly_parsed, len(files), (100. * correctly_parsed) / len(files)))
 
-    if (correctly_parsed != len(files)):
+    if correctly_parsed != len(files):
         print(TAB + '> List of failed documents:')
         table = Table()
         table.add_column("Case ID", style="cyan", no_wrap=True)
@@ -528,11 +603,6 @@ def run(console, build, force=False, update=False):
         for e in failed:
             table.add_row(e[0], str(e[1]))
         print(table)
-
-def main(args):
-    console = Console(record=True)
-    run(console, args.build, args.force, args.u)
-
 
 
 def update_docx(docname):
@@ -588,6 +658,11 @@ def update_docx(docname):
     os.rename('./proxy.zip', output_file)
 
     return output_file
+
+
+def main(args):
+    console = Console(record=True)
+    run(console, args.build, args.force, args.u)
 
 
 def parse_args(parser):

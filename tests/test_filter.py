@@ -134,3 +134,4 @@ class TestGenerateStatistics:
         expected = {'attributes': {'conclusion': {'cardinal': 4, 'density': 4/3}}}
         res = generate_statistics(case)
         assert res == expected
+
