@@ -1,7 +1,8 @@
 import pytest
 from copy import deepcopy
 
-from echr.steps.filter import *
+from echr.steps.filter import split_and_format_article, format_cases, format_subarticle, format_article, format_parties,\
+    format_conclusion, filter_cases, generate_statistics, merge_conclusion_elements, find_base_articles
 from echr.utils.misc import compare_two_lists
 from tests.data.sample_format_conclusion import merge_ccl, format_ccl, raw_cases_input, columns
 from rich.console import Console
@@ -94,6 +95,7 @@ class TestFilterCases:
 
 prepare_cases = format_cases(Console(), deepcopy(raw_cases_input))
 
+
 class TestFormatCases:
     @staticmethod
     @pytest.mark.parametrize("case", prepare_cases)
@@ -131,7 +133,6 @@ class TestGenerateStatistics:
     @staticmethod
     def test_conclusions_statistics():
         case = [{'conclusion': merge_ccl[0][1]}, {'conclusion': merge_ccl[1][1]}, {'conclusion': merge_ccl[2][1]}]
-        expected = {'attributes': {'conclusion': {'cardinal': 4, 'density': 4/3}}}
+        expected = {'attributes': {'conclusion': {'cardinal': 4, 'density': 4 / 3}}}
         res = generate_statistics(case)
         assert res == expected
-
