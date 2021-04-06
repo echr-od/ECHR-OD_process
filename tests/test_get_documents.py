@@ -40,7 +40,7 @@ class TestGetDocuments:
     def test_docks_with_update(builtins_open):
         with patch('requests.get') as get, patch(builtins_open, mock_open()) as mck_open, \
                 patch('os.path.isfile') as isfile:
-            isfile.return_value = False  # TODO: should be True, but there is a bug in code line 48 in get_documents
+            isfile.return_value = True
             get.return_value.ok = True
             get.return_value.iter_content.return_value = []
             id_list = [("101", 0), ("202", 1), ("303", 1)]
@@ -53,7 +53,6 @@ class TestGetDocuments:
             mck_open.assert_has_calls(open_args, any_order=True)
 
     @staticmethod
-    @pytest.mark.xfail
     def test_empty_id_list(builtins_open):
         with patch.object(Progress, "add_task", return_value=None), patch(builtins_open, mock_open()) as mck_open:
             id_list = []
