@@ -45,7 +45,7 @@ def get_documents(console, id_list, folder, update):
         else:
             filename = "%s.pdf" % (doc_id[0].strip())
         filename = os.path.join(folder, filename)
-        if not update or not os.path.isfile(filename):
+        if update or not os.path.isfile(filename):
             if doc_id[1]:
                 url = BASE_URL + "docx/?library=ECHR&filename=please_give_me_the_document.docx&id=" + doc_id[0].strip()
             else:
@@ -75,22 +75,24 @@ def get_documents(console, id_list, folder, update):
         else:
             error = "\n| Skip as document exists already"
         progress.update(task, advance=1, error=error, doc=doc_id[0])
+    if id_list:
+        with Progress(
+            TAB + "> Downloading... [IN PROGRESS]\n",
+            BarColumn(30),
+            TimeRemainingColumn(),
+            "| Fetching document of case [blue]{task.fields[doc]} [white]({task.completed}/{task.total})"
+            "{task.fields[error]}",
+                transient=True,
+                console=console
+        ) as progress:
+            task = progress.add_task("Downloading...", total=len(id_list), error="", doc=id_list[0][0])
+            f = lambda x: get_documents_step(x, progress, task)
+            with ThreadPoolExecutor(16) as executor:
+                executor.map(f, id_list)
 
-    with Progress(
-        TAB + "> Downloading... [IN PROGRESS]\n",
-        BarColumn(30),
-        TimeRemainingColumn(),
-        "| Fetching document of case [blue]{task.fields[doc]} [white]({task.completed}/{task.total})"
-        "{task.fields[error]}",
-            transient=True,
-            console=console
-    ) as progress:
-        task = progress.add_task("Downloading...", total=len(id_list), error="", doc=id_list[0][0])
-        f = lambda x: get_documents_step(x, progress, task)
-        with ThreadPoolExecutor(16) as executor:
-            executor.map(f, id_list)
-
-    print(TAB + "> Downloading... [green][DONE]\n",)
+        print(TAB + "> Downloading... [green][DONE]\n",)
+    else:
+        print(TAB + "> No documents to download")
 
 def run(console, build, force=False, update=False):
     __console = console
