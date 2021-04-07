@@ -1,5 +1,5 @@
 from mock import patch
-from unittest.mock import MagicMock, mock_open, call
+from unittest.mock import mock_open, call
 from rich.console import Console
 from rich.progress import Progress
 import sys
