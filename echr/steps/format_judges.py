@@ -3,9 +3,7 @@ import argparse
 from collections import Counter
 import json
 import os
-from os import listdir, path
-import copy
-import re
+from os import path
 from docx import Document
 
 from echr.utils.folders import make_build_folder
@@ -13,12 +11,7 @@ from echr.utils.logger import getlogger
 from echr.utils.cli import TAB
 from rich.markdown import Markdown
 from rich.console import Console
-from rich.table import Table
-from rich.progress import (
-    Progress,
-    BarColumn,
-    TimeRemainingColumn,
-)
+
 
 log = getlogger()
 
