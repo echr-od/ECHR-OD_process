@@ -1,0 +1,3 @@
+title: 'Format Judges'
+description: 'Extract and format judges name and information'
+run: echr.steps.format_judges

@@ -1,4 +1,7 @@
 steps:
+  - run: 'format_judges'
+    type: 'action'
+
   - run: 'case_info'
     type: 'action'
 
