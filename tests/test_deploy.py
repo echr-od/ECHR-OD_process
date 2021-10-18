@@ -36,10 +36,10 @@ class TestRunner:
 
     @staticmethod
     def test_running_missing_params():
-        rc = runner(params_str="user=foo password=bar", build="example", detach=False, force=False, update=False)
+        rc = runner(params_str="user=foo password=bar", build="example", title='test', detach=False, force=False, update=False)
         assert rc == 2
 
     @staticmethod
     def test_running_exception_params():
-        rc = runner(params_str=None, build="example", detach=False, force=False, update=False)
+        rc = runner(params_str=None, build="example", title='test', detach=False, force=False, update=False)
         assert rc == 11
