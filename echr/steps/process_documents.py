@@ -24,7 +24,7 @@ log = getlogger()
 
 __console = Console(record=True)
 
-def run(console, build, limit_tokens, processed_folder='all', force=False, update=False):
+def run(console, build, title, limit_tokens, processed_folder='all', force=False, update=False):
     __console = console
     global print
     print = __console.print
