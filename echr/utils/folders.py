@@ -7,6 +7,7 @@ LOG_FOLDER = './logs'
 LOG_PATH = os.path.join(LOG_FOLDER, 'build.log')
 log = getlogger(logfile_path=LOG_PATH)
 
+
 def make_build_folder(console, full_path, force=False, strict=False):
     create_folder = False
     if os.path.isdir(full_path):

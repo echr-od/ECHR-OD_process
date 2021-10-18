@@ -245,7 +245,7 @@ def normalize(X, schema_hints=None):
     return df, schema, flat_schema, flat_type_mapping, flat_domain_mapping
 
 
-def run(console, build, output_prefix='cases', force=False):
+def run(console, build, title, output_prefix='cases', force=False):
     __console = console
     global print
     print = __console.print
@@ -371,6 +371,7 @@ def main(args):
     console = Console(record=True)
     run(console,
         build=args.build,
+        title=args.title,
         force=args.f)
 
 
@@ -384,6 +385,7 @@ def parse_args(parser):
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description='Normalize any databse of arbitrarily nested documents.')
     parser.add_argument('--build', type=str, default="./build/echr_database/")
+    parser.add_argument('--title', type=str)
     parser.add_argument('--schema_hints', type=str)
     parser.add_argument('--output_prefix', type=str)
     parser.add_argument('-f', action='store_true')

@@ -49,14 +49,14 @@ def extract_judge_list(docx_file):
                     continue
                 if '(P' in full_name:
                     full_name = full_name.split(' (')[0]
-                judges_per_country[country][name_index.upper()] = {
+                judges_per_country[country][name_index.upper().replace('-', ' ')] = {
                     'start': start_year,
                     'end': end_year,
                     'full_name': full_name
                 }
     return judges_per_country
 
-def run(console, build, force=False):
+def run(console, build, title, force=False):
     __console = console
     global print
     print = __console.print
@@ -78,7 +78,7 @@ def run(console, build, force=False):
 
 def main(args):
     console = Console(record=True)
-    run(console, args.build, args.force)
+    run(console, args.build, args.title, args.force)
 
 
 def parse_args(parser):
@@ -89,6 +89,7 @@ def parse_args(parser):
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description='Extract the list of judges')
     parser.add_argument('--build', type=str, default="./build/echr_database/")
+    parser.add_argument('--title', type=str)
     parser.add_argument('-f', action='store_true')
     args = parse_args(parser)
 

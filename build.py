@@ -46,7 +46,7 @@ def main(args):
         else:
             print(Panel('[bold yellow] {}'.format(title)))
         step_start_time = datetime.now()
-        step.run(console=console, build=build, **args)
+        step.run(console=console, build=build, title=title, **args)
         step_stop_time = datetime.now()
         if chrono:
             step_delta = step_stop_time - step_start_time

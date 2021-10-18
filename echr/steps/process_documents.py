@@ -145,7 +145,7 @@ def run(console, build, limit_tokens, processed_folder='all', force=False, updat
 
 def main(args):
     console = Console(record=True)
-    run(console, args.build, args.limit_tokens, force=args.f, update=args.u)
+    run(console, args.build, args.title, args.limit_tokens, force=args.f, update=args.u)
 
 
 def parse_args(parser):
@@ -158,6 +158,7 @@ def parse_args(parser):
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description='Turn a collection of documents into a BoW and TF-IDF representation.')
     parser.add_argument('--build', type=str, default="./build/echr_database/")
+    parser.add_argument('--title', type=str)
     parser.add_argument('--processed_folder', type=str, default="all")
     parser.add_argument('--limit_tokens', type=int, default=10000)
     parser.add_argument('-f', action='store_true')
