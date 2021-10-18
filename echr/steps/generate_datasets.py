@@ -135,7 +135,7 @@ def generate_dataset(cases, keys, keys_list, encoded_outcomes, feature_index, fe
         f.close()
 
 
-def run(console, build, articles=[], processed_folder='all', force=True):
+def run(console, build, title, articles=[], processed_folder='all', force=True):
     __console = console
     global print
     print = __console.print
@@ -262,6 +262,7 @@ def main(args):
     console = Console(record=True)
     run(console,
         build=args.build,
+        title=args.title,
         articles=args.articles,
         processed_folder=args.processed_folder,
         force=args.f)
@@ -276,6 +277,7 @@ def parse_args(parser):
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description='Generate final dataset files')
     parser.add_argument('--build', type=str, default="./build/echr_database/")
+    parser.add_argument('--title', type=str)
     parser.add_argument('--processed_folder', type=str, default="all")
     parser.add_argument('--name', type=str, default='multilabel')
     parser.add_argument('--articles', action='append', default=[])

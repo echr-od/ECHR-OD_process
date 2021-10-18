@@ -177,7 +177,7 @@ def get_case_info(console, base_url, max_documents, path):
         print(TAB + '> Downloading... [green][DONE]')
         return 0
 
-def run(console, build, max_documents=-1, force=False):
+def run(console, build, title, max_documents=-1, force=False):
     """
         Get case information from HUDOC
 
@@ -221,7 +221,7 @@ def run(console, build, max_documents=-1, force=False):
 
 def main(args):
     console = Console(record=True)
-    run(console, args.build, args.max_documents, args.f)
+    run(console, args.build, args.title, args.max_documents, args.f)
 
 
 def parse_args(parser):
@@ -231,6 +231,7 @@ def parse_args(parser):
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description='Retrieve ECHR cases information')
     parser.add_argument('--build', type=str, default="./build/echr_database/")
+    parser.add_argument('--title', type=str)
     parser.add_argument('--max_documents', type=int, default=-1)
     parser.add_argument('-f', action='store_true')
     args = parse_args(parser)

@@ -5,15 +5,18 @@ from os import listdir
 from os.path import isfile, join
 import re
 import shutil
+from pathlib import Path
+import pandas as pd
 from docx.api import Document
 from docx.oxml.table import CT_Tbl
 from docx.oxml.text.paragraph import CT_P
 from docx.table import Table as DocTable
 from docx.text.paragraph import Paragraph
 import zipfile
+from unidecode import unidecode
 
 from echr.utils.folders import make_build_folder
-from echr.utils.logger import getlogger
+from echr.utils.logger import getlogger, get_log_folder
 from echr.utils.cli import TAB
 from rich.markdown import Markdown
 from rich.console import Console
@@ -193,6 +196,16 @@ internal_section_reference = {
     'schedule': ["SCHEDULE"]
 }
 
+JUDGES_PER_COUNTRY = None
+
+
+def load_judges_info(build):
+    global JUDGES_PER_COUNTRY
+    if JUDGES_PER_COUNTRY is None:
+        with open(Path(build) / 'raw/judges_per_country.json') as json_file:
+            JUDGES_PER_COUNTRY = json.load(json_file)
+    return JUDGES_PER_COUNTRY
+
 
 def tag_elements(parsed):
     """
@@ -233,7 +246,7 @@ def format_title(line):
         return line
 
 
-def parse_body(body):
+def parse_body(body, build):
     """
         Extract body members
 
@@ -243,9 +256,22 @@ def parse_body(body):
         :rtype: [dict]
     """
     members = []
-    body = body.replace('\nand ', '\n')
-    body = body.replace('\t', '')
-    body = body.split('\n')
+    not_mapped = []
+    body = sanitize_decision_body_line(body)
+    for token in body.split('\n'):
+        judge, info = map_judge(token, build)
+        if judge:
+            members.append({
+                'name': judge,
+                'info': info,
+                'role': 'judge'
+            })
+        else:
+            not_mapped.append(token)
+    return members, not_mapped
+
+
+
     body = [b for b in body if len(b)]
 
     roles = []
@@ -291,9 +317,11 @@ def para_to_text(p):
     rs = p._element.xpath('.//w:t')
     return u"".join([r.text for r in rs])
 
+
 def sanitize_cells(cell_content):
     s = cell_content.replace('\n', ' ').strip()
     return s
+
 
 def word_table_to_json(table):
     """
@@ -315,7 +343,26 @@ def word_table_to_json(table):
         data.append(row_data)
     return data
 
-def parse_document(doc):
+
+def sanitize_decision_body_line(line):
+    to_remove = ['President', ' Registrar', 'judges', ',']
+    for w in to_remove:
+        line = line.replace(w, '')
+    line = line.strip()
+    return line
+
+
+def map_judge(line, build):
+    judges_per_country = load_judges_info(build)
+    for _, v in judges_per_country.items():
+        for name, judge in v.items():
+            matching_name = name.upper().split()[0]
+            if unidecode(matching_name) in unidecode(line.upper().replace('-', ' ')):
+                return name, judge
+    return None, None
+
+
+def parse_document(doc, doc_id, build):
     """
         Parse a document object to a tree
 
@@ -406,10 +453,17 @@ def parse_document(doc):
 
     parsed = {'elements': []}
     parsed['elements'] = tree_to_json(root, parsed)['elements']
-    parsed['decision_body'] = parse_body(decision_body) if decision_body else []
+    decision_body_not_parsed = []
+    parsed['_decision_body'] = decision_body
+    decision_body, not_parsed = parse_body(decision_body, build) if decision_body else ([], [])
+    for t in not_parsed:
+        decision_body_not_parsed.append(
+            {'doc_id': doc_id, 'token': t}
+        )
+    parsed['decision_body'] = decision_body
     parsed = tag_elements(parsed)
 
-    return parsed, attachments
+    return parsed, attachments, decision_body_not_parsed
 
 
 PARSER = {
@@ -502,7 +556,7 @@ def select_parser(doc):
     else:
         return PARSER['new']
 
-def run(console, build, force=False, update=False):
+def run(console, build, title, force=False, update=False):
     __console = console
     global print
     print = __console.print
@@ -531,8 +585,8 @@ def run(console, build, force=False, update=False):
     failed = []
     files = [os.path.join(input_folder, f) for f in listdir(input_folder) if isfile(join(input_folder, f)) if
              '.docx' in f]
+    decision_body_not_parsed = []
     print(Markdown('- **Preprocess documents**'))
-
     with Progress(
             TAB + "> Preprocess documents... [IN PROGRESS]\n",
             BarColumn(30),
@@ -555,7 +609,8 @@ def run(console, build, force=False, update=False):
                     parser = select_parser(doc)
                     stats['parser_type'][parser] += 1
                     if parser == 'NEW':
-                        parsed, attachments = parse_document(doc)
+                        parsed, attachments, db_not_parsed = parse_document(doc, id_doc, build)
+                        decision_body_not_parsed.extend(db_not_parsed)
                         parsed.update(cases[cases_index[id_doc]])
                         with open(os.path.join(output_folder, '{}_text_without_conclusion.txt'.format(id_doc)),
                                   'w') as toutfile:
@@ -603,6 +658,11 @@ def run(console, build, force=False, update=False):
         for e in failed:
             table.add_row(e[0], str(e[1]))
         print(table)
+
+    print(TAB + "> Save incorrectly parsed decision body members... [green][DONE]")
+    decision_body_not_parsed = pd.DataFrame(decision_body_not_parsed)
+    with open(Path(build) / get_log_folder() / f'{title}_decision_body.html', 'w') as f:
+        decision_body_not_parsed.to_html(f)
 
 
 def update_docx(docname):
@@ -662,7 +722,7 @@ def update_docx(docname):
 
 def main(args):
     console = Console(record=True)
-    run(console, args.build, args.force, args.u)
+    run(console, args.build, args.title, args.force, args.u)
 
 
 def parse_args(parser):
@@ -675,6 +735,7 @@ def parse_args(parser):
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description='Filter and format ECHR cases information')
     parser.add_argument('--build', type=str, default="./build/echr_database/")
+    parser.add_argument('--title', type=str)
     parser.add_argument('-f', action='store_true')
     parser.add_argument('-u', action='store_true')
     args = parse_args(parser)

@@ -94,7 +94,7 @@ def get_documents(console, id_list, folder, update):
     else:
         print(TAB + "> No documents to download")
 
-def run(console, build, force=False, update=False):
+def run(console, build, title, force=False, update=False):
     __console = console
     global print
     print = __console.print
@@ -120,7 +120,7 @@ def run(console, build, force=False, update=False):
 
 def main(args):
     console = Console(record=True)
-    run(console, args.build, args.force, args.u)
+    run(console, args.build, args.title, args.force, args.u)
 
 
 def parse_args(parser):
@@ -132,6 +132,7 @@ def parse_args(parser):
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description='Filter and format ECHR cases information')
     parser.add_argument('--build', type=str, default="./build/echr_database/")
+    parser.add_argument('--title', type=str)
     parser.add_argument('-f', action='store_true')
     parser.add_argument('-u', action='store_true')
     args = parse_args(parser)
