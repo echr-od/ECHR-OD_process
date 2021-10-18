@@ -26,6 +26,7 @@ from echr.data_models.attachment import Table, Attachment
 from echr.data_models.conclusion import Conclusion, ConclusionCase, ConclusionDetail, ConclusionMention
 from echr.data_models.detail import Detail
 from echr.data_models.mention import Mention
+from echr.data_models.judge import Judge
 from echr.data_models.party import Party, PartyCase
 from echr.data_models.kpthesaurus import KPThesaurus
 from echr.data_models.representative import Representative, RepresentativeCase
@@ -40,7 +41,7 @@ from echr.data_models.externalsource import ExternalSource
 def create_tables():
     with db:
         db.create_tables([Case, Article, Conclusion, ConclusionCase, DecisionBodyMember, DecisionBodyCase,
-                          ConclusionDetail, Detail, ConclusionMention,
+                          ConclusionDetail, Detail, ConclusionMention, Judge,
                           Mention, Party, PartyCase, Representative, RepresentativeCase, KPThesaurus, ExternalSource,
                           Issue, DocumentCollectionId, ExtractedApp, SCL, SCLCase, Attachment, Table])
 
@@ -144,6 +145,8 @@ def populate_database(console, build, update):
                                 RepresentativeCase.get_or_create(representative=r[0], case=i)
 
                             for member in decisionbody:
+                                if member['role'] == 'judge':
+                                    Judge.get_or_create(name=member['name'], **member.get('info'))
                                 bodymember = DecisionBodyMember.get_or_create(name=member['name'], role=member.get('role', '').title())
                                 DecisionBodyCase.get_or_create(member=bodymember[0], case=i)
 
@@ -207,7 +210,7 @@ def populate_database(console, build, update):
     db.close()
 
 
-def run(console, build, cases=None, force=True, update=True):
+def run(console, build, title, cases=None, force=True, update=True):
     __console = console
     global print
     print = __console.print
@@ -248,6 +251,7 @@ def main(args):
     console = Console(record=True)
     run(console,
         build=args.build,
+        title=args.title,
         cases=args.cases,
         force=args.f,
         update=args.u)
@@ -262,6 +266,7 @@ def parse_args(parser):
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description='Generate final dataset files')
     parser.add_argument('--build', type=str, default="./build/echr_database/")
+    parser.add_argument('--title', type=str)
     parser.add_argument('--cases', type=str, default="unstructured/cases.json")
     parser.add_argument('-f', action='store_true')
     parser.add_argument('-u', action='store_true')

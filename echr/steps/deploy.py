@@ -42,7 +42,7 @@ def parse_server_parameters(params_str):
     except:
         return False, []
 
-def runner(params_str, build, detach, force, update):
+def runner(params_str, build, title, detach, force, update):
     print(Markdown("- **Step configuration**"))
     ok, params = parse_server_parameters(params_str)
     print(TAB + "> Check server parameters...")
@@ -286,7 +286,7 @@ def run(console, method, build, params, detach=False, force=False, update=False)
 
 def main(args):
     console = Console(record=True)
-    run(console, args.method, args.build, args.params, args.force, args.update)
+    run(console, args.method, args.build, args.title, args.params, args.force, args.update)
 
 
 def parse_args(parser):
@@ -305,6 +305,7 @@ METHODS = {
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description='Deploy the dataset')
     parser.add_argument('--build', type=str, default="./build/echr_database/")
+    parser.add_argument('--title', type=str)
     parser.add_argument('--method', type=str, help='Method of deployment among: {}'.format(
         ', '.join(METHODS.keys())))
     parser.add_argument('--params', type=str, help='Parameters for the method')

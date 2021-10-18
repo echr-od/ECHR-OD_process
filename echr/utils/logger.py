@@ -4,9 +4,15 @@ from rich.logging import RichHandler
 
 from echr.utils.config import config
 
+
 def setup_console(console):
     global print
     print = console.print
+
+
+def get_log_folder():
+    return config().get('logging', {}).get('log_folder')
+
 
 def getlogger(logfile_path=None):
     if logfile_path is None:
@@ -24,6 +30,7 @@ def getlogger(logfile_path=None):
     log.addHandler(fh)
     #log.addHandler(rh)
     return log
+
 
 def serialize_console_logs(console, filename, path, clear=False):
     console.save_text(os.path.join(path, '{}.txt'.format(filename)), clear=False)
