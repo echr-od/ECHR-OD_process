@@ -1,6 +1,5 @@
 #!/usr/bin/python
 import argparse
-from collections import Counter
 import json
 import os
 from os import path
@@ -11,7 +10,6 @@ from echr.utils.logger import getlogger
 from echr.utils.cli import TAB
 from rich.markdown import Markdown
 from rich.console import Console
-
 
 log = getlogger()
 
@@ -62,7 +60,6 @@ def run(console, build, title, force=False):
     print = __console.print
 
     print(Markdown("- **Step configuration**"))
-    input_folder = os.path.join(build, 'raw', )
     output_folder = path.join(build, 'raw',)
     print(TAB + '> Step folder: {}'.format(path.join(build, 'judges')))
     make_build_folder(console, output_folder, force, strict=False)

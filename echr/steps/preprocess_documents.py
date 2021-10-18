@@ -271,25 +271,6 @@ def parse_body(body, build):
     return members, not_mapped
 
 
-
-    body = [b for b in body if len(b)]
-
-    roles = []
-    k = 0
-    for i, t in enumerate(body):
-        a = [j for j in t.split(',') if len(j)]
-        members.append({'name': a[0]})
-        if len(a) > 1:
-            roles.append((k, i, a[1].lower().strip()))
-            k = i + 1
-
-    for r in roles:
-        for i, _ in enumerate(members[r[0]:r[1] + 1]):
-            members[r[0] + i]['role'] = r[2]
-
-    return members
-
-
 class Node:
     """
         Represent a rooted tree
