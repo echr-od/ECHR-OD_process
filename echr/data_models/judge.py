@@ -1,7 +1,5 @@
 import peewee as pw
 from echr.data_models.base import BaseModel
-from playhouse.sqlite_ext import JSONField
-from echr.data_models.case import Case
 
 
 class Judge(BaseModel):
