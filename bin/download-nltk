@@ -2,6 +2,7 @@
 
 import nltk
 
+nltk.download('omw-1.4')
 nltk.download('maxent_ne_chunker')
 nltk.download('words')
 nltk.download('treebank')
