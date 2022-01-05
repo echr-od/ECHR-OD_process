@@ -337,7 +337,7 @@ def map_judge(line, build):
     judges_per_country = load_judges_info(build)
     for _, v in judges_per_country.items():
         for name, judge in v.items():
-            matching_name = name.upper().split()[0]
+            matching_name = name.upper()
             if unidecode(matching_name) in unidecode(line.upper().replace('-', ' ')):
                 return name, judge
     return None, None
@@ -387,12 +387,13 @@ def parse_document(doc, doc_id, build):
                 node = Node(parent=appender, level=level, content=line_content, node_type=node_type)
                 appender.elements.append(node)
                 appender = node
-
         if level < 0:
             if level == -1:
                 decision_body += line_content
-
+                if not decision_body.endswith('\n'):
+                    decision_body += '\n'
     root = appender
+
     while (root.level != 0):
         root = root.parent
 
@@ -708,7 +709,6 @@ def main(args):
 
 def parse_args(parser):
     args = parser.parse_args()
-
     # Check path
     return args
 
