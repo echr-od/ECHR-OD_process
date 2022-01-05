@@ -3,6 +3,7 @@ import pytest
 
 from echr.steps.preprocess_documents import para_to_text, json_table_to_text, parse_document
 
+
 class TestPreprocessWord:
 
     @staticmethod
@@ -73,23 +74,112 @@ class TestProcessTableAttachment:
 
 
 class TestParseDecisionBody:
-
-    def prepare():
+    @staticmethod
+    @pytest.fixture
+    def prep():
         doc_ids = ['001-175180', '001-176769', '001-177299']
-        files = ['tests/data/judgments/{doc_id}.docx'.format(doc_id = i) for i in doc_ids]
+        files = ['tests/data/judgments/{doc_id}.docx'.format(doc_id=i) for i in doc_ids]
         docs = [Document(file) for file in files]
         build = './build/echr_database/'
-        inputs = [[docs[i], doc_ids[i], build] for i in range(len(doc_ids))]
-        outputs = [[{'name': 'SAJÓ', 'info': {'end': '2017', 'full_name': 'András SAJÓ', 'start': '2008'}, 'role': 'judge'}, {'name': 'KARAKAŞ', 'info': {'end': '2019', 'full_name': 'Işıl KARAKAŞ', 'start': '2008'}, 'role': 'judge'}, {'name': 'NUSSBERGER', 'info': {'end': '2019', 'full_name': 'Angelika NUSSBERGER', 'start': '2011'}, 'role': 'judge'}, {'name': 'HAJIYEV', 'info': {'end': '2016', 'full_name': 'Khanlar HAJIYEV', 'start': '2003'}, 'role': 'judge'}, {'name': 'LÓPEZ GUERRA', 'info': {'end': '2018', 'full_name': 'Luis LÓPEZ GUERRA', 'start': '2008'}, 'role': 'judge'}, {'name': 'LAZAROVA TRAJKOVSKA', 'info': {'end': '2017', 'full_name': 'Mirjana LAZAROVA TRAJKOVSKA', 'start': '2008'}, 'role': 'judge'}, {'name': 'VUČINIĆ', 'info': {'end': '2018', 'full_name': 'Nebojša VUČINIĆ', 'start': '2008'}, 'role': 'judge'}, {'name': 'DE GAETANO', 'info': {'end': '2019', 'full_name': 'Vincent A. DE GAETANO', 'start': '2010'}, 'role': 'judge'}, {'name': 'POTOCKI', 'info': {'end': '2020', 'full_name': 'André POTOCKI', 'start': '2011'}, 'role': 'judge'}, {'name': 'MAHONEY', 'info': {'end': '2016', 'full_name': 'Paul MAHONEY', 'start': '2012'}, 'role': 'judge'}, {'name': 'VEHABOVIĆ', 'info': {'end': None, 'full_name': 'Faris VEHABOVIĆ', 'start': '2012'}, 'role': 'judge'}, {'name': 'KŪRIS', 'info': {'end': '2004', 'full_name': 'Pranas KŪRIS', 'start': '1994'}, 'role': 'judge'}, {'name': 'MOTOC', 'info': {'end': None, 'full_name': 'Iulia Antoanella MOTOC', 'start': '2014'}, 'role': 'judge'}, {'name': 'KJØLBRO', 'info': {'end': None, 'full_name': 'Jon Fridrik KJØLBRO', 'start': '2014'}, 'role': 'judge'}, {'name': 'MITS', 'info': {'end': None, 'full_name': 'Mārtiņš MITS', 'start': '2015'}, 'role': 'judge'}, {'name': 'MOUROU VIKSTRÖM', 'info': {'end': None, 'full_name': 'Stéphanie MOUROU-VIKSTRÖM', 'start': '2015'}, 'role': 'judge'}, {'name': 'KUCSKO STADLMAYER', 'info': {'end': None, 'full_name': 'Gabriele KUCSKO-STADLMAYER', 'start': '2015'}, 'role': 'judge'}],
-                   [{'name': 'RAIMONDI', 'info': {'end': '2019', 'full_name': 'Guido RAIMONDI', 'start': '2010'}, 'role': 'judge'}, {'name': 'NUSSBERGER', 'info': {'end': '2019', 'full_name': 'Angelika NUSSBERGER', 'start': '2011'}, 'role': 'judge'}, {'name': 'LAZAROVA TRAJKOVSKA', 'info': {'end': '2017', 'full_name': 'Mirjana LAZAROVA TRAJKOVSKA', 'start': '2008'}, 'role': 'judge'}, {'name': 'LÓPEZ GUERRA', 'info': {'end': '2018', 'full_name': 'Luis LÓPEZ GUERRA', 'start': '2008'}, 'role': 'judge'}, {'name': 'SAJÓ', 'info': {'end': '2017', 'full_name': 'András SAJÓ', 'start': '2008'}, 'role': 'judge'}, {'name': 'KARAKAŞ', 'info': {'end': '2019', 'full_name': 'Işıl KARAKAŞ', 'start': '2008'}, 'role': 'judge'}, {'name': 'PARDALOS', 'info': {'end': '2018', 'full_name': 'Kristina PARDALOS', 'start': '2009'}, 'role': 'judge'}, {'name': 'POTOCKI', 'info': {'end': '2020', 'full_name': 'André POTOCKI', 'start': '2011'}, 'role': 'judge'}, {'name': 'GRIŢCO', 'info': {'end': None, 'full_name': 'Valeriu GRIŢCO', 'start': '2012'}, 'role': 'judge'}, {'name': 'VEHABOVIĆ', 'info': {'end': None, 'full_name': 'Faris VEHABOVIĆ', 'start': '2012'}, 'role': 'judge'}, {'name': 'TURKOVIĆ', 'info': {'end': None, 'full_name': 'Ksenija TURKOVIĆ', 'start': '2013'}, 'role': 'judge'}, {'name': 'LUBARDA', 'info': {'end': None, 'full_name': 'Branko LUBARDA', 'start': '2015'}, 'role': 'judge'}, {'name': 'GROZEV', 'info': {'end': None, 'full_name': 'Yonko GROZEV', 'start': '2015'}, 'role': 'judge'}, {'name': 'O’LEARY', 'info': {'end': None, 'full_name': 'Síofra O’LEARY', 'start': '2015'}, 'role': 'judge'}, {'name': 'RANZONI', 'info': {'end': None, 'full_name': 'Carlo RANZONI (Swiss)', 'start': '2015'}, 'role': 'judge'}, {'name': 'MOUROU VIKSTRÖM', 'info': {'end': None, 'full_name': 'Stéphanie MOUROU-VIKSTRÖM', 'start': '2015'}, 'role': 'judge'}, {'name': 'KOSKELO', 'info': {'end': None, 'full_name': 'Pauliine KOSKELO', 'start': '2016'}, 'role': 'judge'}],
-                   [{'name': 'RAIMONDI', 'info': {'end': '2019', 'full_name': 'Guido RAIMONDI', 'start': '2010'}, 'role': 'judge'}, {'name': 'SICILIANOS', 'info': {'end': '2021', 'full_name': 'Linos-Alexandre SICILIANOS', 'start': '2011'}, 'role': 'judge'}, {'name': 'SPANO', 'info': {'end': None, 'full_name': 'Robert SPANO', 'start': '2013'}, 'role': 'judge'}, {'name': 'LAZAROVA TRAJKOVSKA', 'info': {'end': '2017', 'full_name': 'Mirjana LAZAROVA TRAJKOVSKA', 'start': '2008'}, 'role': 'judge'}, {'name': 'HAJIYEV', 'info': {'end': '2016', 'full_name': 'Khanlar HAJIYEV', 'start': '2003'}, 'role': 'judge'}, {'name': 'LÓPEZ GUERRA', 'info': {'end': '2018', 'full_name': 'Luis LÓPEZ GUERRA', 'start': '2008'}, 'role': 'judge'}, {'name': 'SAJÓ', 'info': {'end': '2017', 'full_name': 'András SAJÓ', 'start': '2008'}, 'role': 'judge'}, {'name': 'KARAKAŞ', 'info': {'end': '2019', 'full_name': 'Işıl KARAKAŞ', 'start': '2008'}, 'role': 'judge'}, {'name': 'MØSE', 'info': {'end': '2018', 'full_name': 'Erik MØSE', 'start': '2011'}, 'role': 'judge'}, {'name': 'PEJCHAL', 'info': {'end': None, 'full_name': 'Aleš PEJCHAL', 'start': '2012'}, 'role': 'judge'}, {'name': 'WOJTYCZEK', 'info': {'end': None, 'full_name': 'Krzysztof WOJTYCZEK', 'start': '2012'}, 'role': 'judge'}, {'name': 'KŪRIS', 'info': {'end': '2004', 'full_name': 'Pranas KŪRIS', 'start': '1994'}, 'role': 'judge'}, {'name': 'MITS', 'info': {'end': None, 'full_name': 'Mārtiņš MITS', 'start': '2015'}, 'role': 'judge'}, {'name': 'RAVARANI', 'info': {'end': None, 'full_name': 'Georges RAVARANI', 'start': '2015'}, 'role': 'judge'}, {'name': 'PASTOR VILANOVA', 'info': {'end': None, 'full_name': 'Pere PASTOR VILANOVA', 'start': '2015'}, 'role': 'judge'}, {'name': 'POLÁČKOVÁ', 'info': {'end': None, 'full_name': 'Alena POLÁČKOVÁ', 'start': '2016'}, 'role': 'judge'}, {'name': 'SERGHIDES', 'info': {'end': None, 'full_name': 'Georgios SERGHIDES', 'start': '2016'}, 'role': 'judge'}]
-                   ]
-        return [(inputs[i], outputs[i]) for i in range(len(doc_ids))]
+        # inputs = [[docs[i], doc_ids[i], build] for i in range(len(doc_ids))]
+        outputs = [
+            [{'name': 'SAJÓ', 'info': {'end': '2017', 'full_name': 'András SAJÓ', 'start': '2008'}, 'role': 'judge'},
+             {'name': 'KARAKAŞ', 'info': {'end': '2019', 'full_name': 'Işıl KARAKAŞ', 'start': '2008'},
+              'role': 'judge'},
+             {'name': 'NUSSBERGER', 'info': {'end': '2019', 'full_name': 'Angelika NUSSBERGER', 'start': '2011'},
+              'role': 'judge'},
+             {'name': 'HAJIYEV', 'info': {'end': '2016', 'full_name': 'Khanlar HAJIYEV', 'start': '2003'},
+              'role': 'judge'},
+             {'name': 'LÓPEZ GUERRA', 'info': {'end': '2018', 'full_name': 'Luis LÓPEZ GUERRA', 'start': '2008'},
+              'role': 'judge'}, {'name': 'LAZAROVA TRAJKOVSKA',
+                                 'info': {'end': '2017', 'full_name': 'Mirjana LAZAROVA TRAJKOVSKA', 'start': '2008'},
+                                 'role': 'judge'},
+             {'name': 'VUČINIĆ', 'info': {'end': '2018', 'full_name': 'Nebojša VUČINIĆ', 'start': '2008'},
+              'role': 'judge'},
+             {'name': 'DE GAETANO', 'info': {'end': '2019', 'full_name': 'Vincent A. DE GAETANO', 'start': '2010'},
+              'role': 'judge'},
+             {'name': 'POTOCKI', 'info': {'end': '2020', 'full_name': 'André POTOCKI', 'start': '2011'},
+              'role': 'judge'},
+             {'name': 'MAHONEY', 'info': {'end': '2016', 'full_name': 'Paul MAHONEY', 'start': '2012'},
+              'role': 'judge'},
+             {'name': 'VEHABOVIĆ', 'info': {'end': None, 'full_name': 'Faris VEHABOVIĆ', 'start': '2012'},
+              'role': 'judge'},
+             {'name': 'KŪRIS', 'info': {'end': '2004', 'full_name': 'Pranas KŪRIS', 'start': '1994'}, 'role': 'judge'},
+             {'name': 'MOTOC', 'info': {'end': None, 'full_name': 'Iulia Antoanella MOTOC', 'start': '2014'},
+              'role': 'judge'},
+             {'name': 'KJØLBRO', 'info': {'end': None, 'full_name': 'Jon Fridrik KJØLBRO', 'start': '2014'},
+              'role': 'judge'},
+             {'name': 'MITS', 'info': {'end': None, 'full_name': 'Mārtiņš MITS', 'start': '2015'}, 'role': 'judge'},
+             {'name': 'MOUROU VIKSTRÖM',
+              'info': {'end': None, 'full_name': 'Stéphanie MOUROU-VIKSTRÖM', 'start': '2015'}, 'role': 'judge'},
+             {'name': 'KUCSKO STADLMAYER',
+              'info': {'end': None, 'full_name': 'Gabriele KUCSKO-STADLMAYER', 'start': '2015'}, 'role': 'judge'}],
+            [{'name': 'RAIMONDI', 'info': {'end': '2019', 'full_name': 'Guido RAIMONDI', 'start': '2010'},
+              'role': 'judge'},
+             {'name': 'NUSSBERGER', 'info': {'end': '2019', 'full_name': 'Angelika NUSSBERGER', 'start': '2011'},
+              'role': 'judge'}, {'name': 'LAZAROVA TRAJKOVSKA',
+                                 'info': {'end': '2017', 'full_name': 'Mirjana LAZAROVA TRAJKOVSKA', 'start': '2008'},
+                                 'role': 'judge'},
+             {'name': 'LÓPEZ GUERRA', 'info': {'end': '2018', 'full_name': 'Luis LÓPEZ GUERRA', 'start': '2008'},
+              'role': 'judge'},
+             {'name': 'SAJÓ', 'info': {'end': '2017', 'full_name': 'András SAJÓ', 'start': '2008'}, 'role': 'judge'},
+             {'name': 'KARAKAŞ', 'info': {'end': '2019', 'full_name': 'Işıl KARAKAŞ', 'start': '2008'},
+              'role': 'judge'},
+             {'name': 'PARDALOS', 'info': {'end': '2018', 'full_name': 'Kristina PARDALOS', 'start': '2009'},
+              'role': 'judge'},
+             {'name': 'POTOCKI', 'info': {'end': '2020', 'full_name': 'André POTOCKI', 'start': '2011'},
+              'role': 'judge'},
+             {'name': 'GRIŢCO', 'info': {'end': None, 'full_name': 'Valeriu GRIŢCO', 'start': '2012'}, 'role': 'judge'},
+             {'name': 'VEHABOVIĆ', 'info': {'end': None, 'full_name': 'Faris VEHABOVIĆ', 'start': '2012'},
+              'role': 'judge'},
+             {'name': 'TURKOVIĆ', 'info': {'end': None, 'full_name': 'Ksenija TURKOVIĆ', 'start': '2013'},
+              'role': 'judge'},
+             {'name': 'LUBARDA', 'info': {'end': None, 'full_name': 'Branko LUBARDA', 'start': '2015'},
+              'role': 'judge'},
+             {'name': 'GROZEV', 'info': {'end': None, 'full_name': 'Yonko GROZEV', 'start': '2015'}, 'role': 'judge'},
+             {'name': 'O’LEARY', 'info': {'end': None, 'full_name': 'Síofra O’LEARY', 'start': '2015'},
+              'role': 'judge'},
+             {'name': 'RANZONI', 'info': {'end': None, 'full_name': 'Carlo RANZONI (Swiss)', 'start': '2015'},
+              'role': 'judge'}, {'name': 'MOUROU VIKSTRÖM',
+                                 'info': {'end': None, 'full_name': 'Stéphanie MOUROU-VIKSTRÖM', 'start': '2015'},
+                                 'role': 'judge'},
+             {'name': 'KOSKELO', 'info': {'end': None, 'full_name': 'Pauliine KOSKELO', 'start': '2016'},
+              'role': 'judge'}],
+            [{'name': 'RAIMONDI', 'info': {'end': '2019', 'full_name': 'Guido RAIMONDI', 'start': '2010'},
+              'role': 'judge'},
+             {'name': 'SICILIANOS', 'info': {'end': '2021', 'full_name': 'Linos-Alexandre SICILIANOS', 'start': '2011'},
+              'role': 'judge'},
+             {'name': 'SPANO', 'info': {'end': None, 'full_name': 'Robert SPANO', 'start': '2013'}, 'role': 'judge'},
+             {'name': 'LAZAROVA TRAJKOVSKA',
+              'info': {'end': '2017', 'full_name': 'Mirjana LAZAROVA TRAJKOVSKA', 'start': '2008'}, 'role': 'judge'},
+             {'name': 'HAJIYEV', 'info': {'end': '2016', 'full_name': 'Khanlar HAJIYEV', 'start': '2003'},
+              'role': 'judge'},
+             {'name': 'LÓPEZ GUERRA', 'info': {'end': '2018', 'full_name': 'Luis LÓPEZ GUERRA', 'start': '2008'},
+              'role': 'judge'},
+             {'name': 'SAJÓ', 'info': {'end': '2017', 'full_name': 'András SAJÓ', 'start': '2008'}, 'role': 'judge'},
+             {'name': 'KARAKAŞ', 'info': {'end': '2019', 'full_name': 'Işıl KARAKAŞ', 'start': '2008'},
+              'role': 'judge'},
+             {'name': 'MØSE', 'info': {'end': '2018', 'full_name': 'Erik MØSE', 'start': '2011'}, 'role': 'judge'},
+             {'name': 'PEJCHAL', 'info': {'end': None, 'full_name': 'Aleš PEJCHAL', 'start': '2012'}, 'role': 'judge'},
+             {'name': 'WOJTYCZEK', 'info': {'end': None, 'full_name': 'Krzysztof WOJTYCZEK', 'start': '2012'},
+              'role': 'judge'},
+             {'name': 'KŪRIS', 'info': {'end': '2004', 'full_name': 'Pranas KŪRIS', 'start': '1994'}, 'role': 'judge'},
+             {'name': 'MITS', 'info': {'end': None, 'full_name': 'Mārtiņš MITS', 'start': '2015'}, 'role': 'judge'},
+             {'name': 'RAVARANI', 'info': {'end': None, 'full_name': 'Georges RAVARANI', 'start': '2015'},
+              'role': 'judge'},
+             {'name': 'PASTOR VILANOVA', 'info': {'end': None, 'full_name': 'Pere PASTOR VILANOVA', 'start': '2015'},
+              'role': 'judge'},
+             {'name': 'POLÁČKOVÁ', 'info': {'end': None, 'full_name': 'Alena POLÁČKOVÁ', 'start': '2016'},
+              'role': 'judge'},
+             {'name': 'SERGHIDES', 'info': {'end': None, 'full_name': 'Georgios SERGHIDES', 'start': '2016'},
+              'role': 'judge'}]
+            ]
+
+        return {'docs': docs, 'doc_ids': doc_ids, 'build': build, 'output': outputs}
 
     @staticmethod
-    @pytest.mark.parametrize("input,output", prepare())
-    def test_parse_document(input, output):
-        parsed, attachments, decision_body_not_parsed = parse_document(input[0], input[1], input[2])
-        res = parsed['decision_body']
-        assert res == output
-
+    def test_parse_document(prep):
+        for i in range(len(prep['doc_ids'])):
+            parsed, _, _ = parse_document(prep['docs'][i], prep['doc_ids'][i], prep['build'])
+            res = parsed['decision_body']
+            assert res == prep['output'][i]
