@@ -1,7 +1,9 @@
+from mock import patch
 from docx import Document
 import pytest
+import json
 
-from echr.steps.preprocess_documents import para_to_text, json_table_to_text, parse_document
+from echr.steps.preprocess_documents import para_to_text, json_table_to_text, parse_document, load_judges_info
 
 
 class TestPreprocessWord:
@@ -173,12 +175,16 @@ class TestParseDecisionBody:
               'role': 'judge'},
              {'name': 'SERGHIDES', 'info': {'end': None, 'full_name': 'Georgios SERGHIDES', 'start': '2016'},
               'role': 'judge'}]
-            ]
+        ]
 
         return {'docs': docs, 'doc_ids': doc_ids, 'build': build, 'output': outputs}
 
     @staticmethod
     def test_parse_document(prep):
+        with patch('echr.steps.preprocess_documents.load_judges_info') as judge, open(
+                'tests/data/judges_per_country.json', 'r') as f:
+            judge.return_value = json.load(f)
+
         for i in range(len(prep['doc_ids'])):
             parsed, _, _ = parse_document(prep['docs'][i], prep['doc_ids'][i], prep['build'])
             res = parsed['decision_body']
