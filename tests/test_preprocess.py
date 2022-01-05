@@ -3,7 +3,7 @@ from docx import Document
 import pytest
 import json
 
-from echr.steps.preprocess_documents import para_to_text, json_table_to_text, parse_document, load_judges_info
+from echr.steps.preprocess_documents import para_to_text, json_table_to_text, parse_document
 
 
 class TestPreprocessWord:
@@ -185,7 +185,7 @@ class TestParseDecisionBody:
                 'tests/data/judges_per_country.json', 'r') as f:
             judge.return_value = json.load(f)
 
-        for i in range(len(prep['doc_ids'])):
-            parsed, _, _ = parse_document(prep['docs'][i], prep['doc_ids'][i], prep['build'])
-            res = parsed['decision_body']
-            assert res == prep['output'][i]
+            for i in range(len(prep['doc_ids'])):
+                parsed, _, _ = parse_document(prep['docs'][i], prep['doc_ids'][i], prep['build'])
+                res = parsed['decision_body']
+                assert res == prep['output'][i]
