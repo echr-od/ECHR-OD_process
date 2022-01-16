@@ -136,7 +136,20 @@ def generate_dataset(cases, keys, keys_list, encoded_outcomes, feature_index, fe
         f.close()
 
 
-def run(console, build, title, doc_ids, articles=[], processed_folder='all', force=True):
+def get_files(doc_ids, input_folder_bow, input_folder):
+    if doc_ids:
+        files = []
+        for f in listdir(input_folder_bow):
+            if isfile(join(input_folder_bow, f)) and '_bow.txt' in f and f.split('_')[0] in doc_ids:
+                files.append(os.path.join(input_folder, f))
+    else:
+        files = [os.path.join(input_folder, f) for f in listdir(input_folder_bow) if isfile(join(input_folder_bow, f))
+                 if '_bow.txt' in f]
+
+    return files
+
+
+def run(console, build, title, doc_ids=None, articles=[], processed_folder='all', force=True):
     __console = console
     global print
     print = __console.print
@@ -153,15 +166,7 @@ def run(console, build, title, doc_ids, articles=[], processed_folder='all', for
 
     # Get the list of cases s.t. we have a BoW and TF-IDF representation
 
-    if doc_ids != '':
-        files = []
-        for f in listdir(input_folder_bow):
-            if isfile(join(input_folder_bow, f)) and '_bow.txt' in f and f.split('_')[0] in doc_ids:
-                files.append(os.path.join(input_folder, f))
-    else:
-        files = [os.path.join(input_folder, f) for f in listdir(input_folder_bow) if isfile(join(input_folder_bow, f))
-                 if
-                 '_bow.txt' in f]
+    files = get_files(doc_ids, input_folder_bow, input_folder)
 
     id_list = [f.split('/')[-1].split('_')[0] for f in files]
 
@@ -290,7 +295,7 @@ if __name__ == "__main__":
     parser = argparse.ArgumentParser(description='Generate final dataset files')
     parser.add_argument('--build', type=str, default="./build/echr_database/")
     parser.add_argument('--title', type=str)
-    parser.add_argument('--doc_ids', type=str, default='')
+    parser.add_argument('--doc_ids', type=str, default=None, nargs='+')
     parser.add_argument('--processed_folder', type=str, default="all")
     parser.add_argument('--name', type=str, default='multilabel')
     parser.add_argument('--articles', action='append', default=[])
