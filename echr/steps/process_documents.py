@@ -24,7 +24,8 @@ log = getlogger()
 
 __console = Console(record=True)
 
-def run(console, build, title, limit_tokens, processed_folder='all', force=False, update=False):
+
+def run(console, build, title, doc_ids, limit_tokens, processed_folder='all', force=False, update=False):
     __console = console
     global print
     print = __console.print
@@ -55,9 +56,17 @@ def run(console, build, title, limit_tokens, processed_folder='all', force=False
         cases_index = {c['itemid']: i for i, c in enumerate(cases)}
         f.close()
 
-    files = [os.path.join(input_folder, f) for f in listdir(input_folder) \
-             if isfile(join(input_folder, f)) if '_normalized.txt' in f \
-             and f.split('/')[-1].split('_normalized.txt')[0] in cases_index.keys()]
+    if doc_ids != '':
+        files = []
+        for f in listdir(input_folder):
+            if isfile(join(input_folder, f)) and '_normalized.txt' in f and f.split('/')[-1].split('_normalized.txt')[
+                0] in cases_index.keys() and f.split('_')[0] in doc_ids:
+                files.append(os.path.join(input_folder, f))
+    else:
+        files = [os.path.join(input_folder, f) for f in listdir(input_folder) \
+                 if isfile(join(input_folder, f)) if '_normalized.txt' in f \
+                 and f.split('/')[-1].split('_normalized.txt')[0] in cases_index.keys()]
+
     raw_corpus = []
     corpus_id = []
     print(Markdown('- **Create dictionary**'))
@@ -90,7 +99,6 @@ def run(console, build, title, limit_tokens, processed_folder='all', force=False
     # Load the raw dictionary
     f = f.most_common(int(limit_tokens))
     words = [w[0] for w in f]
-
 
     # dictionary = corpora.Dictionary([all_grams])
     print(TAB + '> Create dictionary')
@@ -145,7 +153,7 @@ def run(console, build, title, limit_tokens, processed_folder='all', force=False
 
 def main(args):
     console = Console(record=True)
-    run(console, args.build, args.title, args.limit_tokens, force=args.f, update=args.u)
+    run(console, args.build, args.title, args.doc_ids, args.limit_tokens, force=args.f, update=args.u)
 
 
 def parse_args(parser):
@@ -159,6 +167,7 @@ if __name__ == "__main__":
     parser = argparse.ArgumentParser(description='Turn a collection of documents into a BoW and TF-IDF representation.')
     parser.add_argument('--build', type=str, default="./build/echr_database/")
     parser.add_argument('--title', type=str)
+    parser.add_argument('--doc_ids', type=str, default='')
     parser.add_argument('--processed_folder', type=str, default="all")
     parser.add_argument('--limit_tokens', type=int, default=10000)
     parser.add_argument('-f', action='store_true')

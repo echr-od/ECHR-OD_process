@@ -74,7 +74,8 @@ def generate_dataset(cases, keys, keys_list, encoded_outcomes, feature_index, fe
                     f_db.write(' '.join(map(str, bow)) + ' \n')
                     f_b.write(' '.join(map(str, bow)) + ' \n')
                     nb_features += len(bow)
-                with open(os.path.join(processed_folder, 'tfidf', '{}_tfidf.txt'.format(c['itemid'])), 'r') as tfidf_doc:
+                with open(os.path.join(processed_folder, 'tfidf', '{}_tfidf.txt'.format(c['itemid'])),
+                          'r') as tfidf_doc:
                     tfidf = tfidf_doc.read()
                     tfidf = tfidf.split()
                     tfidf = ['{}:{}'.format(offset + int(b.split(':')[0]), b.split(':')[1]) for b in tfidf]
@@ -135,7 +136,7 @@ def generate_dataset(cases, keys, keys_list, encoded_outcomes, feature_index, fe
         f.close()
 
 
-def run(console, build, title, articles=[], processed_folder='all', force=True):
+def run(console, build, title, doc_ids, articles=[], processed_folder='all', force=True):
     __console = console
     global print
     print = __console.print
@@ -151,8 +152,17 @@ def run(console, build, title, articles=[], processed_folder='all', force=True):
     make_build_folder(console, output_folder, force, strict=False)
 
     # Get the list of cases s.t. we have a BoW and TF-IDF representation
-    files = [os.path.join(input_folder, f) for f in listdir(input_folder_bow) if isfile(join(input_folder_bow, f)) if
-             '_bow.txt' in f]
+
+    if doc_ids != '':
+        files = []
+        for f in listdir(input_folder_bow):
+            if isfile(join(input_folder_bow, f)) and '_bow.txt' in f and f.split('_')[0] in doc_ids:
+                files.append(os.path.join(input_folder, f))
+    else:
+        files = [os.path.join(input_folder, f) for f in listdir(input_folder_bow) if isfile(join(input_folder_bow, f))
+                 if
+                 '_bow.txt' in f]
+
     id_list = [f.split('/')[-1].split('_')[0] for f in files]
 
     # Read the case info
@@ -263,9 +273,11 @@ def main(args):
     run(console,
         build=args.build,
         title=args.title,
+        doc_ids=args.doc_ids,
         articles=args.articles,
         processed_folder=args.processed_folder,
         force=args.f)
+
 
 def parse_args(parser):
     args = parser.parse_args()
@@ -278,6 +290,7 @@ if __name__ == "__main__":
     parser = argparse.ArgumentParser(description='Generate final dataset files')
     parser.add_argument('--build', type=str, default="./build/echr_database/")
     parser.add_argument('--title', type=str)
+    parser.add_argument('--doc_ids', type=str, default='')
     parser.add_argument('--processed_folder', type=str, default="all")
     parser.add_argument('--name', type=str, default='multilabel')
     parser.add_argument('--articles', action='append', default=[])

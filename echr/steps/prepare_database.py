@@ -245,7 +245,7 @@ def normalize(X, schema_hints=None):
     return df, schema, flat_schema, flat_type_mapping, flat_domain_mapping
 
 
-def run(console, build, title, output_prefix='cases', force=False):
+def run(console, build, title, doc_ids, output_prefix='cases', force=False):
     __console = console
     global print
     print = __console.print
@@ -258,8 +258,15 @@ def run(console, build, title, output_prefix='cases', force=False):
 
     print(Markdown("- **Normalize database**"))
     input_folder = os.path.join(build, 'raw', 'preprocessed_documents')
-    cases_files = [os.path.join(input_folder, f) for f in listdir(input_folder)
-                   if isfile(os.path.join(input_folder, f)) and '.json' in f]
+
+    if doc_ids != '':
+        cases_files = []
+        for f in listdir(input_folder):
+            if isfile(os.path.join(input_folder, f)) and '.json' in f and f.split('_')[0] in doc_ids:
+                cases_files.append(os.path.join(input_folder, f))
+    else:
+        cases_files = [os.path.join(input_folder, f) for f in listdir(input_folder)
+                       if isfile(os.path.join(input_folder, f)) and '.json' in f]
 
     print(TAB + "> Prepare unstructured cases [green][DONE]")
     # Unstructured
@@ -372,6 +379,7 @@ def main(args):
     run(console,
         build=args.build,
         title=args.title,
+        doc_ids=args.doc_ids,
         force=args.f)
 
 
@@ -386,6 +394,7 @@ if __name__ == "__main__":
     parser = argparse.ArgumentParser(description='Normalize any databse of arbitrarily nested documents.')
     parser.add_argument('--build', type=str, default="./build/echr_database/")
     parser.add_argument('--title', type=str)
+    parser.add_argument('--doc_ids', type=str, default='')
     parser.add_argument('--schema_hints', type=str)
     parser.add_argument('--output_prefix', type=str)
     parser.add_argument('-f', action='store_true')

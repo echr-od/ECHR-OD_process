@@ -538,7 +538,7 @@ def select_parser(doc):
     else:
         return PARSER['new']
 
-def run(console, build, title, force=False, update=False):
+def run(console, build, title, doc_ids, force=False, update=False):
     __console = console
     global print
     print = __console.print
@@ -550,6 +550,7 @@ def run(console, build, title, force=False, update=False):
     print(TAB + '> Step folder: {}'.format(output_folder))
     make_build_folder(console, output_folder, force, strict=False)
 
+
     stats = {
         'parser_type': {
             'OLD': 0,
@@ -560,13 +561,26 @@ def run(console, build, title, force=False, update=False):
     with open(input_file, 'r') as f:
         content = f.read()
         cases = json.loads(content)
-        cases_index = {c['itemid']: i for i, c in enumerate(cases)}
+        if doc_ids != '':
+            cases_index = {c['itemid']: i for i, c in enumerate(cases) if c['itemid'] in doc_ids}
+        else:
+            cases_index = {c['itemid']: i for i, c in enumerate(cases)}
         f.close()
 
     correctly_parsed = 0
     failed = []
-    files = [os.path.join(input_folder, f) for f in listdir(input_folder) if isfile(join(input_folder, f)) if
-             '.docx' in f]
+
+    if doc_ids != '':
+        files = []
+        for f in listdir(input_folder):
+            if isfile(join(input_folder, f)) and '.docx' in f and f.split('.')[0] in doc_ids:
+                files.append(os.path.join(input_folder, f))
+    else:
+        files = [os.path.join(input_folder, f) for f in listdir(input_folder) if isfile(join(input_folder, f)) if
+                 '.docx' in f]
+    #if doc_ids != '':
+    #   files = [os.path.join(input_folder, f) for f in listdir(input_folder) if isfile(join(input_folder, f)) if
+    #             '.docx' in f if f.split('.')[0] in doc_ids]
     decision_body_not_parsed = []
     print(Markdown('- **Preprocess documents**'))
     with Progress(
@@ -704,7 +718,7 @@ def update_docx(docname):
 
 def main(args):
     console = Console(record=True)
-    run(console, args.build, args.title, args.force, args.u)
+    run(console, args.build, args.title, args.doc_ids, args.force, args.u)
 
 
 def parse_args(parser):
@@ -717,6 +731,7 @@ if __name__ == "__main__":
     parser = argparse.ArgumentParser(description='Filter and format ECHR cases information')
     parser.add_argument('--build', type=str, default="./build/echr_database/")
     parser.add_argument('--title', type=str)
+    parser.add_argument('--doc_ids', type=str, default='')
     parser.add_argument('-f', action='store_true')
     parser.add_argument('-u', action='store_true')
     args = parse_args(parser)

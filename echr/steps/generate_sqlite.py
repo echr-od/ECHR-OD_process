@@ -45,10 +45,17 @@ def create_tables():
                           Mention, Party, PartyCase, Representative, RepresentativeCase, KPThesaurus, ExternalSource,
                           Issue, DocumentCollectionId, ExtractedApp, SCL, SCLCase, Attachment, Table])
 
-def populate_database(console, build, update):
+def populate_database(console, build, update, doc_ids):
     input_folder = os.path.join(build, 'raw', 'preprocessed_documents')
-    cases_files = [os.path.join(input_folder, f) for f in listdir(input_folder)
-                   if isfile(os.path.join(input_folder, f)) and '.json' in f]
+
+    if doc_ids != '':
+        cases_files = []
+        for f in listdir(input_folder):
+            if isfile(os.path.join(input_folder, f)) and '.json' in f and f.split('_')[0] in doc_ids:
+                cases_files.append(os.path.join(input_folder, f))
+    else:
+        cases_files = [os.path.join(input_folder, f) for f in listdir(input_folder)
+                       if isfile(os.path.join(input_folder, f)) and '.json' in f]
 
     db.connect()
     if True:
@@ -210,7 +217,7 @@ def populate_database(console, build, update):
     db.close()
 
 
-def run(console, build, title, cases=None, force=True, update=True):
+def run(console, build, title, doc_ids, cases=None, force=True, update=True):
     __console = console
     global print
     print = __console.print
@@ -244,7 +251,7 @@ def run(console, build, title, cases=None, force=True, update=True):
                 create_tables()
             print(TAB + "> Create tables... [green][DONE]")
 
-    populate_database(console, build, update)
+    populate_database(console, build, update, doc_ids)
 
 
 def main(args):
@@ -252,6 +259,7 @@ def main(args):
     run(console,
         build=args.build,
         title=args.title,
+        doc_ids=args.doc_ids,
         cases=args.cases,
         force=args.f,
         update=args.u)
@@ -267,6 +275,7 @@ if __name__ == "__main__":
     parser = argparse.ArgumentParser(description='Generate final dataset files')
     parser.add_argument('--build', type=str, default="./build/echr_database/")
     parser.add_argument('--title', type=str)
+    parser.add_argument('--doc_ids', type=str, default='')
     parser.add_argument('--cases', type=str, default="unstructured/cases.json")
     parser.add_argument('-f', action='store_true')
     parser.add_argument('-u', action='store_true')

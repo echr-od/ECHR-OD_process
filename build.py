@@ -27,6 +27,7 @@ LIMIT_TOKENS = 10000
 
 signal.signal(signal.SIGINT, signal.default_int_handler)
 
+
 def main(args):
     global console
     global print
@@ -36,17 +37,17 @@ def main(args):
         print = console.print  # Redefine print
 
     print(Panel.fit('[bold yellow] :scales: {} :scales: '.format(
-            "European Court of Human Rights Open Data Building Process".upper()), ), justify="center")
+        "European Court of Human Rights Open Data Building Process".upper()), ), justify="center")
 
-    workflow_steps, build_log_path, update, force = prepare_build(console, args)
+    workflow_steps, build_log_path, update, force, doc_ids = prepare_build(console, args)
 
-    def execute_step(step, build, args, title, index=None, chrono=True):
+    def execute_step(step, build, args, title, doc_ids, index=None, chrono=True):
         if index:
             print(Panel('[bold yellow] {}'.format(title.upper()), title='STEP {}.'.format(index)))
         else:
             print(Panel('[bold yellow] {}'.format(title)))
         step_start_time = datetime.now()
-        step.run(console=console, build=build, title=title, **args)
+        step.run(console=console, build=build, title=title, doc_ids=doc_ids, **args)
         step_stop_time = datetime.now()
         if chrono:
             step_delta = step_stop_time - step_start_time
@@ -64,13 +65,15 @@ def main(args):
         execute_step(
             step=step_executor,
             build=args.build,
+            doc_ids=doc_ids,
             args=step_args,
             title=step_info.get('title', 'Untitled'),
             index=i
         )
     stop_time = datetime.now()
     step_delta = stop_time - start_time
-    print('\n[blue]🕑 Building process executed in {}'.format(strfdelta(step_delta, "{hours}h {minutes}min {seconds}s")))
+    print(
+        '\n[blue]🕑 Building process executed in {}'.format(strfdelta(step_delta, "{hours}h {minutes}min {seconds}s")))
 
     print(Panel('[bold yellow] POST BUILD STEP'))
 
@@ -93,6 +96,7 @@ def main(args):
         except:
             print('[yellow] Could not reach the upgrade endpoint')
 
+
 def parse_args(parser):
     args = parser.parse_args()
     return args
@@ -104,8 +108,9 @@ if __name__ == "__main__":
     parser.add_argument('-f', '--force', action='store_true')
     parser.add_argument('-s', '--strict', action='store_true')
     parser.add_argument('--no-tty', action='store_true')
-    parser.add_argument('--upgrade_endpoint',  type=str, default='', help='Endpoint to upgrade '
-                                                                          'an instance of the explorer')
+    parser.add_argument('--upgrade_endpoint', type=str, default='', help='Endpoint to upgrade '
+                                                                         'an instance of the explorer')
+    parser.add_argument('--doc_ids', type=str, nargs='+')
     parser.add_argument('--max_documents', type=int, help='Maximum number of documents to retrieve')
     parser.add_argument('--params', type=str, help='Additional parameters to override workflow parameters')
     parser.add_argument('-w', '--workflow', type=str, default='local', help='Workflow to execute')

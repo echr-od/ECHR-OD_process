@@ -8,7 +8,7 @@ from rich.markdown import Markdown
 from echr.utils.config import config
 from echr.utils.cli import TAB
 from echr.utils.logger import getlogger
-from echr.utils.misc import get_from_path
+from echr.utils.misc import get_from_path, format_doc_ids
 
 log = getlogger()
 
@@ -37,6 +37,7 @@ def parse_argument(arg, cli_args):
         return arg, -1
     else:
         return arg, 0
+
 
 def parse_workflow(console, steps_names, workflow, workflow_path, actions_path):
     parsed_workflow = []
@@ -73,7 +74,8 @@ def parse_workflow(console, steps_names, workflow, workflow_path, actions_path):
             try:
                 with open(os.path.join(workflow_path, '{}.yml'.format(workflow_name))) as f:
                     new_workflow = yaml.safe_load(f)
-                    parsed_workflow += parse_workflow(console, parsed_workflow_steps_names, new_workflow, workflow_path, actions_path)
+                    parsed_workflow += parse_workflow(console, parsed_workflow_steps_names, new_workflow, workflow_path,
+                                                      actions_path)
             except Exception as e:
                 console.print_exception()
                 log.error(e)
@@ -86,6 +88,7 @@ def parse_workflow(console, steps_names, workflow, workflow_path, actions_path):
             exit(1)
     return parsed_workflow
 
+
 def load_workflow(console, args):
     WORKFLOW_PATH = './workflows'
     ACTION_PATH = os.path.join(WORKFLOW_PATH, 'actions')
@@ -97,7 +100,7 @@ def load_workflow(console, args):
                                os.path.splitext(f)[1] in ['.yaml', '.yml']]
         if workflow not in available_workflows:
             console.print(TAB + '  ⮡ [bold red]:double_exclamation_mark: Workflow {} does not exist. '
-                          'Available workflows are: {}'.format(workflow, ', '.join(available_workflows)))
+                                'Available workflows are: {}'.format(workflow, ', '.join(available_workflows)))
             exit(1)
         else:
             try:
@@ -165,8 +168,9 @@ def prepare_build_folder(console, args):
             except OSError as e:
                 console.print_exception()
                 log.error(e)
-                console.print(TAB + '  ⮡ [bold red]:double_exclamation_mark: Deletion of the build directory {} failed'.format(
-                    build))
+                console.print(
+                    TAB + '  ⮡ [bold red]:double_exclamation_mark: Deletion of the build directory {} failed'.format(
+                        build))
                 exit(1)
             else:
                 console.print(TAB + '  ⮡ [green]:heavy_check_mark: Successfully deleted the directory {}'.format(build))
@@ -205,7 +209,8 @@ def prepare_logs(console, args):
                     log_path))
             exit(1)
         else:
-            console.print(TAB + '  ⮡ [green]:heavy_check_mark: Successfully created the log directory {}'.format(log_path))
+            console.print(
+                TAB + '  ⮡ [green]:heavy_check_mark: Successfully created the log directory {}'.format(log_path))
 
     build_log_path = os.path.join(args.build, 'logs')
     console.print(TAB + '> Build log folder: {}'.format(build_log_path))
@@ -215,13 +220,16 @@ def prepare_logs(console, args):
         except OSError as e:
             console.print_exception()
             log.error(e)
-            console.print(TAB + '  ⮡ [bold red]:double_exclamation_mark: Creation of the build log directory {} failed'.format(
-                build_log_path))
+            console.print(
+                TAB + '  ⮡ [bold red]:double_exclamation_mark: Creation of the build log directory {} failed'.format(
+                    build_log_path))
             exit(1)
         else:
             console.print(
-                TAB + '  ⮡ [green]:heavy_check_mark: Successfully created the build log directory {}'.format(build_log_path))
+                TAB + '  ⮡ [green]:heavy_check_mark: Successfully created the build log directory {}'.format(
+                    build_log_path))
     return log_folder
+
 
 def place_lock(console, build='./build', name='.lock'):
     token_path = os.path.join(build, name)
@@ -232,8 +240,10 @@ def place_lock(console, build='./build', name='.lock'):
                 token_path))
         exit(1)
     else:
-        with open(token_path, 'w'): pass
+        with open(token_path, 'w'):
+            pass
         console.print(TAB + '  ⮡ [green]:heavy_check_mark: Successfully placed the lock')
+
 
 def remove_lock(console, build='./build', name='.lock'):
     token_path = os.path.join(build, name)
@@ -266,16 +276,36 @@ def add_build_info(build, name='build_info.yml'):
 
 def prepare_build(console, args):
     console.print(Markdown("- **Check the build configuration**"))
+
     console.print(TAB + '> Number of documents to retrieve:')
     if args.max_documents is None:
-        console.print(
-            TAB + '  ⮡ [bold blue]! No maximum number of documents specified, the number of documents to retrieve will be automatically determined.')
+        if args.doc_ids:
+            console.print(
+                TAB + '  ⮡ [bold blue]! Document ids provided. The number of documents to retrieve will be automatically determined.')
+        else:
+            console.print(
+                TAB + '  ⮡ [bold blue]! No maximum number of documents specified, the number of documents to retrieve will be automatically determined.')
     else:
         console.print(TAB + '  ⮡ [bold blue]! Database will be built with a maximum number of {} documents'.format(
             args.max_documents))
+
+    if args.doc_ids:
+        console.print(TAB + '> Documents for the build:')
+        f_ids = format_doc_ids(args.doc_ids)
+        try:
+            if len(f_ids) == 0:
+                raise Exception()
+            else:
+                console.print(TAB + '  ⮡ [bold blue]! Doc ids: {} provided in correct format'.format(f_ids))
+                doc_ids = f_ids
+        except Exception:
+            console.print(TAB + '  ⮡ [bold red]! All provided doc ids in wrong format')
+            exit(1)
+    else:
+        doc_ids = ''
 
     workflow = load_workflow(console, args)
     force, update = prepare_build_folder(console, args)
     place_lock(console)
     build_log_path = prepare_logs(console, args)
-    return workflow, build_log_path, update, force
+    return workflow, build_log_path, update, force, doc_ids
