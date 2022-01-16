@@ -278,7 +278,7 @@ def get_list_of_files(build):
             files_list.append(os.path.join(path, name))
     return files_list
 
-def run(console, method, build, params, detach=False, force=False, update=False):
+def run(console, method, build, doc_ids, params, detach=False, force=False, update=False):
     __console = console
     global print
     print = __console.print
