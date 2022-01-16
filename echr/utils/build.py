@@ -292,15 +292,12 @@ def prepare_build(console, args):
     if args.doc_ids:
         console.print(TAB + '> Documents for the build:')
         f_ids = format_doc_ids(args.doc_ids)
-        try:
-            if len(f_ids) == 0:
-                raise Exception()
-            else:
-                console.print(TAB + '  ⮡ [bold blue]! Doc ids: {} provided in correct format'.format(f_ids))
-                doc_ids = f_ids
-        except Exception:
+        if len(f_ids) == 0:
             console.print(TAB + '  ⮡ [bold red]! All provided doc ids in wrong format')
             exit(1)
+        else:
+            console.print(TAB + '  ⮡ [bold blue]! Doc ids: {} provided in correct format'.format(f_ids))
+            doc_ids = f_ids
     else:
         doc_ids = None
 
