@@ -107,7 +107,8 @@ def get_documents(console, id_list, folder, update):
 
         print(TAB + "> Downloading... [green][DONE]\n", )
     else:
-        print(TAB + "> No documents to download")
+        print(TAB + "> [red] No documents to download")
+        exit(1)
 
 
 def run(console, build, title, doc_ids=None, force=False, update=False):
