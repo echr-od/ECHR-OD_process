@@ -427,7 +427,7 @@ def generate_statistics(cases):
     return stats
 
 
-def run(console, build, title, force=False):
+def run(console, build, title, doc_ids, force=False):
     __console = console
     global print
     print = __console.print
@@ -566,7 +566,7 @@ def run(console, build, title, force=False):
 
 def main(args):
     console = Console(record=True)
-    run(console, args.build, args.title, args.force)
+    run(console, args.build, args.title, args.doc_ids, args.force)
 
 
 def parse_args(parser):
@@ -578,6 +578,7 @@ if __name__ == "__main__":
     parser = argparse.ArgumentParser(description='Filter and format ECHR cases information')
     parser.add_argument('--build', type=str, default="./build/echr_database/")
     parser.add_argument('--title', type=str)
+    parser.add_argument('--doc_ids', type=str, default='')
     parser.add_argument('-f', action='store_true')
     args = parse_args(parser)
 

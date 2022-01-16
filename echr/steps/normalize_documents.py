@@ -25,6 +25,7 @@ log = getlogger()
 
 __console = Console(record=True)
 
+
 def normalized_step(tokens, path='./', force=False, lemmatization=True):
     """
         Normalize the tokens
@@ -72,7 +73,7 @@ def ngram_step(original_tokens, freq=None, path='./', force=False):
     return allgrams
 
 
-def run(console, build, title, force=False, update=False):
+def run(console, build, title, doc_ids, force=False, update=False):
     __console = console
     global print
     print = __console.print
@@ -90,8 +91,14 @@ def run(console, build, title, force=False, update=False):
     print(TAB + '> Step folder: {}'.format(output_folder))
     make_build_folder(console, output_folder, force, strict=False)
 
-    files = sorted([os.path.join(input_folder, f) for f in listdir(input_folder) if isfile(join(input_folder, f)) if
-                    '_text_without_conclusion.txt' in f])
+    if doc_ids != '':
+        files = []
+        for f in listdir(input_folder):
+            if isfile(join(input_folder, f)) and '_text_without_conclusion.txt' in f and f.split('_')[0] in doc_ids:
+                files.append(os.path.join(input_folder, f))
+    else:
+        files = sorted([os.path.join(input_folder, f) for f in listdir(input_folder) if isfile(join(input_folder, f)) if
+                        '_text_without_conclusion.txt' in f])
     raw_corpus = []
     corpus_id = []
     print(Markdown('- **Load documents**'))
@@ -184,7 +191,6 @@ def run(console, build, title, force=False, update=False):
         json.dump(f, outfile, indent=4, sort_keys=True)
     print(TAB + '> Save the full dictionary [green][DONE]')
 
-
     with Progress(
             TAB + "> Save normalized documents... [IN PROGRESS]\n",
             BarColumn(30),
@@ -205,7 +211,7 @@ def run(console, build, title, force=False, update=False):
 
 def main(args):
     console = Console(record=True)
-    run(console, args.build, args.title, args.force, args.u)
+    run(console, args.build, args.title, args.doc_ids, args.force, args.u)
 
 
 def parse_args(parser):
@@ -219,6 +225,7 @@ if __name__ == "__main__":
     parser = argparse.ArgumentParser(description='Turn a collection of documents into a BoW and TF-IDF representation.')
     parser.add_argument('--build', type=str, default="./build/echr_database/")
     parser.add_argument('--title', type=str)
+    parser.add_argument('--doc_ids', type=str, default='')
     parser.add_argument('-f', action='store_true')
     parser.add_argument('-u', action='store_true')
     args = parse_args(parser)
