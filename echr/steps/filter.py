@@ -49,6 +49,7 @@ def split_and_format_article(article):
         :return: list of articles
         :rtype: [str]
     """
+
     def remove_incorrect_prefixes(art):
         if re.match(re.compile("^\W"), art):
             return art[1:]
@@ -427,7 +428,7 @@ def generate_statistics(cases):
     return stats
 
 
-def run(console, build, title, doc_ids, force=False):
+def run(console, build, title, doc_ids=None, force=False):
     __console = console
     global print
     print = __console.print
@@ -578,7 +579,7 @@ if __name__ == "__main__":
     parser = argparse.ArgumentParser(description='Filter and format ECHR cases information')
     parser.add_argument('--build', type=str, default="./build/echr_database/")
     parser.add_argument('--title', type=str)
-    parser.add_argument('--doc_ids', type=str, default='')
+    parser.add_argument('--doc_ids', type=str, default=None, nargs='+')
     parser.add_argument('-f', action='store_true')
     args = parse_args(parser)
 

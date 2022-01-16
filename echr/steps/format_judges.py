@@ -15,6 +15,7 @@ log = getlogger()
 
 JUDGE_LIST = './data/List_judges_since_1959_BIL.docx'
 
+
 def extract_judge_list(docx_file):
     doc = Document(docx_file)
     judges_per_country = {}
@@ -54,13 +55,14 @@ def extract_judge_list(docx_file):
                 }
     return judges_per_country
 
-def run(console, build, title, doc_ids, force=False):
+
+def run(console, build, title, doc_ids=None, force=False):
     __console = console
     global print
     print = __console.print
 
     print(Markdown("- **Step configuration**"))
-    output_folder = path.join(build, 'raw',)
+    output_folder = path.join(build, 'raw', )
     print(TAB + '> Step folder: {}'.format(path.join(build, 'judges')))
     make_build_folder(console, output_folder, force, strict=False)
 
@@ -87,7 +89,7 @@ if __name__ == "__main__":
     parser = argparse.ArgumentParser(description='Extract the list of judges')
     parser.add_argument('--build', type=str, default="./build/echr_database/")
     parser.add_argument('--title', type=str)
-    parser.add_argument('--doc_ids', type=str, default='')
+    parser.add_argument('--doc_ids', type=str, default=None, nargs='+')
     parser.add_argument('-f', action='store_true')
     args = parse_args(parser)
 

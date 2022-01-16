@@ -302,7 +302,7 @@ def prepare_build(console, args):
             console.print(TAB + '  ⮡ [bold red]! All provided doc ids in wrong format')
             exit(1)
     else:
-        doc_ids = ''
+        doc_ids = None
 
     workflow = load_workflow(console, args)
     force, update = prepare_build_folder(console, args)

@@ -71,7 +71,7 @@ internal_section_reference = {
                   "PROCEDURE AND FACTS", "FACTS AND PROCEDURE", "I.   THE GOVERNMENT’S PRELIMINARY OBJECTION"],
     'facts': ["THE FACTS", "AS TO THE FACTS", "COMPLAINTS", "COMPLAINT", "FACTS",
               "THE FACT", "THE FACTSITMarkFactsComplaintsStart"
-              "THE CIRCUMSTANCES OF THE CASE",
+                          "THE CIRCUMSTANCES OF THE CASE",
               "I.  THE CIRCUMSTANCES OF THE CASE",
               "I. THE PARTICULAR CIRCUMSTANCES OF THE CASE"
               'PROCEEDINGS', "PROCEEDINGS BEFORE THE COMMISSION",
@@ -224,7 +224,7 @@ def tag_elements(parsed):
             if any(section['content'].strip().upper().startswith(v.upper()) for v in values):
                 parsed['elements'][i]['section_name'] = section_reference
                 break
-        #if not 'section_name' in parsed['elements'][i]:
+        # if not 'section_name' in parsed['elements'][i]:
         #    print('Could not tag section {}'.format(section['content']))
         #    print(section['content'])
     return parsed
@@ -275,6 +275,7 @@ class Node:
     """
         Represent a rooted tree
     """
+
     def __init__(self, parent=None, level=0, content=None, node_type=None):
         """
             Initialize a node with content and parent.
@@ -352,6 +353,7 @@ def parse_document(doc, doc_id, build):
         :return: tree
         :rtype: Node
     """
+
     def format_table_tag(table_index):
         return 'table-{}'.format(table_index)
 
@@ -370,7 +372,7 @@ def parse_document(doc, doc_id, build):
             node_type = 'table'
         elif isinstance(e, CT_P):
             p = Paragraph(e, doc)
-            line_content = p.text.strip() # para_to_text(p)
+            line_content = p.text.strip()  # para_to_text(p)
             if not len(line_content):
                 continue
 
@@ -538,7 +540,20 @@ def select_parser(doc):
     else:
         return PARSER['new']
 
-def run(console, build, title, doc_ids, force=False, update=False):
+
+def get_files(doc_ids, input_folder):
+    if doc_ids:
+        files = []
+        for f in listdir(input_folder):
+            if isfile(join(input_folder, f)) and '.docx' in f and f.split('.')[0] in doc_ids:
+                files.append(os.path.join(input_folder, f))
+    else:
+        files = [os.path.join(input_folder, f) for f in listdir(input_folder) if isfile(join(input_folder, f)) if
+                 '.docx' in f]
+    return files
+
+
+def run(console, build, title, doc_ids=None, force=False, update=False):
     __console = console
     global print
     print = __console.print
@@ -550,7 +565,6 @@ def run(console, build, title, doc_ids, force=False, update=False):
     print(TAB + '> Step folder: {}'.format(output_folder))
     make_build_folder(console, output_folder, force, strict=False)
 
-
     stats = {
         'parser_type': {
             'OLD': 0,
@@ -561,7 +575,7 @@ def run(console, build, title, doc_ids, force=False, update=False):
     with open(input_file, 'r') as f:
         content = f.read()
         cases = json.loads(content)
-        if doc_ids != '':
+        if doc_ids:
             cases_index = {c['itemid']: i for i, c in enumerate(cases) if c['itemid'] in doc_ids}
         else:
             cases_index = {c['itemid']: i for i, c in enumerate(cases)}
@@ -570,17 +584,8 @@ def run(console, build, title, doc_ids, force=False, update=False):
     correctly_parsed = 0
     failed = []
 
-    if doc_ids != '':
-        files = []
-        for f in listdir(input_folder):
-            if isfile(join(input_folder, f)) and '.docx' in f and f.split('.')[0] in doc_ids:
-                files.append(os.path.join(input_folder, f))
-    else:
-        files = [os.path.join(input_folder, f) for f in listdir(input_folder) if isfile(join(input_folder, f)) if
-                 '.docx' in f]
-    #if doc_ids != '':
-    #   files = [os.path.join(input_folder, f) for f in listdir(input_folder) if isfile(join(input_folder, f)) if
-    #             '.docx' in f if f.split('.')[0] in doc_ids]
+    files = get_files(doc_ids, input_folder)
+
     decision_body_not_parsed = []
     print(Markdown('- **Preprocess documents**'))
     with Progress(
@@ -628,7 +633,7 @@ def run(console, build, title, doc_ids, force=False, update=False):
                     else:
                         raise Exception("OLD parser is not available yet.")
                 except Exception as e:
-                    #__console.print_exception()
+                    # __console.print_exception()
                     failed.append((id_doc, e))
                     error = "\n| Could not preprocess {}".format(id_doc)
                     error += "\n| {}".format(e)
@@ -644,7 +649,8 @@ def run(console, build, title, doc_ids, force=False, update=False):
         print(TAB + "[bold yellow]:warning: Some documents could not be preprocessed")
         print(TAB + "  [bold yellow]THE FINAL DATABASE WILL BE INCOMPLETE!")
     print(
-        TAB + '> Correctly parsed: {}/{} ({:.4f}%)'.format(correctly_parsed, len(files), (100. * correctly_parsed) / len(files)))
+        TAB + '> Correctly parsed: {}/{} ({:.4f}%)'.format(correctly_parsed, len(files),
+                                                           (100. * correctly_parsed) / len(files)))
 
     if correctly_parsed != len(files):
         print(TAB + '> List of failed documents:')
@@ -731,7 +737,7 @@ if __name__ == "__main__":
     parser = argparse.ArgumentParser(description='Filter and format ECHR cases information')
     parser.add_argument('--build', type=str, default="./build/echr_database/")
     parser.add_argument('--title', type=str)
-    parser.add_argument('--doc_ids', type=str, default='')
+    parser.add_argument('--doc_ids', type=str, default=None, nargs='+')
     parser.add_argument('-f', action='store_true')
     parser.add_argument('-u', action='store_true')
     args = parse_args(parser)

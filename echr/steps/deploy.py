@@ -15,9 +15,11 @@ from rich.progress import (
     BarColumn,
     TimeRemainingColumn,
 )
+
 log = getlogger()
 
 MAX_RETRY = 3
+
 
 def get_client(host, username, password):
     client = paramiko.SSHClient()
@@ -30,6 +32,7 @@ def get_client(host, username, password):
 def get_password():
     return os.environ.get('ECHR_PASSWORD')
 
+
 def parse_server_parameters(params_str):
     try:
         params = {e.split('=')[0]: e.split('=')[1] for e in params_str.split()}
@@ -41,6 +44,7 @@ def parse_server_parameters(params_str):
         return True, params
     except:
         return False, []
+
 
 def runner(params_str, build, title, detach, force, update):
     print(Markdown("- **Step configuration**"))
@@ -77,7 +81,7 @@ def runner(params_str, build, title, detach, force, update):
         print(TAB + "> Target folder already exists... [green][DONE]")
         print(stdout.read().decode().strip())
 
-    _, stdout, _ = client.exec_command("[ -d '{}' ] && echo 'exists'".format((REPO_PATH)),  get_pty=True)
+    _, stdout, _ = client.exec_command("[ -d '{}' ] && echo 'exists'".format((REPO_PATH)), get_pty=True)
     output = stdout.read().decode().strip()
     print(TAB + "> Check if the repository is cloned... [green][DONE]")
     if not output:
@@ -135,12 +139,12 @@ def upload_osf(params_str, build, detach, force, update):
     osf_files = [f.replace('osfstorage/', '').strip() for f in osf_files]
     files = get_list_of_files(build)
     with Progress(
-        TAB + "> Uploading... [IN PROGRESS]\n",
-        BarColumn(30),
-        TimeRemainingColumn(),
-        "| ({task.completed}/{task.total}) Uploading [blue]{task.fields[file]} [white]"
-        "{task.fields[error]}",
-        transient=True,
+            TAB + "> Uploading... [IN PROGRESS]\n",
+            BarColumn(30),
+            TimeRemainingColumn(),
+            "| ({task.completed}/{task.total}) Uploading [blue]{task.fields[file]} [white]"
+            "{task.fields[error]}",
+            transient=True,
     ) as progress:
         task = progress.add_task("Uploading...", total=len(files), error="", file=files[0])
         for file in files:
@@ -185,8 +189,8 @@ def upload_scp(params_str, build, detach, force, update):
 
     if 'No such file or directory' in server_files[0]:
         with Progress(
-            TAB + "> Creating the destination folder [IN PROGRESS]\n",
-            transient=True,
+                TAB + "> Creating the destination folder [IN PROGRESS]\n",
+                transient=True,
         ) as progress:
             _ = progress.add_task("Creating...")
             client = get_client(params['host'], username=params['user'], password=get_password())
@@ -195,6 +199,7 @@ def upload_scp(params_str, build, detach, force, update):
         print(TAB + "> Creating the destination folder [green][DONE]")
 
     start = datetime.datetime.now()
+
     def upload_status(sent, size):
         sent_mb = round(float(sent) / 1000000, 1)
         remaining_mb = round(float(size - sent) / 1000000, 1)
@@ -234,12 +239,12 @@ def upload_scp(params_str, build, detach, force, update):
     print(TAB + "> Upload... [green][DONE]\n")
 
     with Progress(
-        TAB + "> Decompress archives... [IN PROGRESS]\n",
-        BarColumn(30),
-        TimeRemainingColumn(),
-        "| ({task.completed}/{task.total}) Uploading [blue]{task.fields[file]} [white]"
-        "{task.fields[error]}",
-        transient=True,
+            TAB + "> Decompress archives... [IN PROGRESS]\n",
+            BarColumn(30),
+            TimeRemainingColumn(),
+            "| ({task.completed}/{task.total}) Uploading [blue]{task.fields[file]} [white]"
+            "{task.fields[error]}",
+            transient=True,
     ) as progress:
         task = progress.add_task("Decompress...", total=len(files), error="", file=files[0])
         client = get_client(params['host'], username=params['user'], password=get_password())
@@ -278,11 +283,13 @@ def get_list_of_files(build):
             files_list.append(os.path.join(path, name))
     return files_list
 
-def run(console, method, build, doc_ids, params, detach=False, force=False, update=False):
+
+def run(console, method, build, params, doc_ids=None, detach=False, force=False, update=False):
     __console = console
     global print
     print = __console.print
     METHODS.get(method)(params, build, detach, force, update)
+
 
 def main(args):
     console = Console(record=True)
@@ -296,6 +303,7 @@ def parse_args(parser):
         exit(2)
     return args
 
+
 METHODS = {
     'osf': upload_osf,
     'scp': upload_scp,
@@ -306,7 +314,7 @@ if __name__ == "__main__":
     parser = argparse.ArgumentParser(description='Deploy the dataset')
     parser.add_argument('--build', type=str, default="./build/echr_database/")
     parser.add_argument('--title', type=str)
-    parser.add_argument('--doc_ids', type=str, default='')
+    parser.add_argument('--doc_ids', type=str, default=None, nargs='+')
     parser.add_argument('--method', type=str, help='Method of deployment among: {}'.format(
         ', '.join(METHODS.keys())))
     parser.add_argument('--params', type=str, help='Parameters for the method')
