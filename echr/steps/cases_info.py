@@ -152,7 +152,6 @@ def get_case_info(console, base_url, max_documents, path):
         progress.update(task, advance=length, to_be_completed=start + 2 * length)
         return failed_to_get_some_cases
 
-
     with Progress(
             TAB + "> Downloading... [IN PROGRESS]\n",
             BarColumn(30),
@@ -177,7 +176,8 @@ def get_case_info(console, base_url, max_documents, path):
         print(TAB + '> Downloading... [green][DONE]')
         return 0
 
-def run(console, build, title, doc_ids='', max_documents=-1, force=False):
+
+def run(console, build, title, doc_ids=None, max_documents=-1, force=False):
     """
         Get case information from HUDOC
 
@@ -199,7 +199,7 @@ def run(console, build, title, doc_ids='', max_documents=-1, force=False):
 
     print(Markdown("- **Determining the number cases**"))
 
-    if doc_ids != '':
+    if doc_ids:
         _, max_documents = determine_max_documents(BASE_URL, 144579)
         print(TAB + "> Doc ids given")
 
@@ -207,14 +207,14 @@ def run(console, build, title, doc_ids='', max_documents=-1, force=False):
         if max_documents == -1:
             print(TAB + "> The total number of documents is not provided")
             with Progress(
-                TextColumn(TAB + "> Querying HUDOC...", justify="right"),
-                StatusColumn({
+                    TextColumn(TAB + "> Querying HUDOC...", justify="right"),
+                    StatusColumn({
                         None: '[IN PROGRESS]',
                         0: '[green] [DONE]',
                         1: '[red] [FAILED]'
-                }),
-                transient=True,
-                console=console
+                    }),
+                    transient=True,
+                    console=console
             ) as progress:
                 task = progress.add_task("Get total number of documents")
                 while not progress.finished:
@@ -238,7 +238,7 @@ if __name__ == "__main__":
     parser = argparse.ArgumentParser(description='Retrieve ECHR cases information')
     parser.add_argument('--build', type=str, default="./build/echr_database/")
     parser.add_argument('--title', type=str)
-    parser.add_argument('--doc_ids', type=str, default='')
+    parser.add_argument('--doc_ids', type=str, default=None, nargs='+')
     parser.add_argument('--max_documents', type=int, default=-1)
     parser.add_argument('-f', action='store_true')
     args = parse_args(parser)

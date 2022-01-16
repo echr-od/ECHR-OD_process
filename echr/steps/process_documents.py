@@ -25,7 +25,22 @@ log = getlogger()
 __console = Console(record=True)
 
 
-def run(console, build, title, doc_ids, limit_tokens, processed_folder='all', force=False, update=False):
+def get_files(doc_ids, input_folder, cases_index):
+    if doc_ids:
+        files = []
+        for f in listdir(input_folder):
+            if isfile(join(input_folder, f)) and '_normalized.txt' in f and f.split('/')[-1].split('_normalized.txt')[
+                0] in cases_index.keys() and f.split('_')[0] in doc_ids:
+                files.append(os.path.join(input_folder, f))
+    else:
+        files = [os.path.join(input_folder, f) for f in listdir(input_folder) \
+                 if isfile(join(input_folder, f)) if '_normalized.txt' in f \
+                 and f.split('/')[-1].split('_normalized.txt')[0] in cases_index.keys()]
+
+    return files
+
+
+def run(console, build, title, limit_tokens, doc_ids=None, processed_folder='all', force=False, update=False):
     __console = console
     global print
     print = __console.print
@@ -56,16 +71,7 @@ def run(console, build, title, doc_ids, limit_tokens, processed_folder='all', fo
         cases_index = {c['itemid']: i for i, c in enumerate(cases)}
         f.close()
 
-    if doc_ids != '':
-        files = []
-        for f in listdir(input_folder):
-            if isfile(join(input_folder, f)) and '_normalized.txt' in f and f.split('/')[-1].split('_normalized.txt')[
-                0] in cases_index.keys() and f.split('_')[0] in doc_ids:
-                files.append(os.path.join(input_folder, f))
-    else:
-        files = [os.path.join(input_folder, f) for f in listdir(input_folder) \
-                 if isfile(join(input_folder, f)) if '_normalized.txt' in f \
-                 and f.split('/')[-1].split('_normalized.txt')[0] in cases_index.keys()]
+    files = get_files(doc_ids, input_folder, cases_index)
 
     raw_corpus = []
     corpus_id = []
@@ -167,7 +173,7 @@ if __name__ == "__main__":
     parser = argparse.ArgumentParser(description='Turn a collection of documents into a BoW and TF-IDF representation.')
     parser.add_argument('--build', type=str, default="./build/echr_database/")
     parser.add_argument('--title', type=str)
-    parser.add_argument('--doc_ids', type=str, default='')
+    parser.add_argument('--doc_ids', type=str, default=None, nargs='+')
     parser.add_argument('--processed_folder', type=str, default="all")
     parser.add_argument('--limit_tokens', type=int, default=10000)
     parser.add_argument('-f', action='store_true')

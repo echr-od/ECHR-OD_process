@@ -153,7 +153,7 @@ def flatten_dataset(X, flat_type_mapping, schema_hints=None):
                     if type_ == 'array':
                         item_types = flat_type_mapping.get(k + '.items')
                         a = get_by_path(c_x, k.split('.'))
-                        if isinstance(item_types,  list):
+                        if isinstance(item_types, list):
                             try:
                                 a = sorted(a)
                             except:
@@ -245,7 +245,20 @@ def normalize(X, schema_hints=None):
     return df, schema, flat_schema, flat_type_mapping, flat_domain_mapping
 
 
-def run(console, build, title, doc_ids, output_prefix='cases', force=False):
+def get_files(doc_ids, input_folder):
+    if doc_ids:
+        cases_files = []
+        for f in listdir(input_folder):
+            if isfile(os.path.join(input_folder, f)) and '.json' in f and f.split('_')[0] in doc_ids:
+                cases_files.append(os.path.join(input_folder, f))
+    else:
+        cases_files = [os.path.join(input_folder, f) for f in listdir(input_folder)
+                       if isfile(os.path.join(input_folder, f)) and '.json' in f]
+
+    return cases_files
+
+
+def run(console, build, title, doc_ids=None, output_prefix='cases', force=False):
     __console = console
     global print
     print = __console.print
@@ -259,14 +272,7 @@ def run(console, build, title, doc_ids, output_prefix='cases', force=False):
     print(Markdown("- **Normalize database**"))
     input_folder = os.path.join(build, 'raw', 'preprocessed_documents')
 
-    if doc_ids != '':
-        cases_files = []
-        for f in listdir(input_folder):
-            if isfile(os.path.join(input_folder, f)) and '.json' in f and f.split('_')[0] in doc_ids:
-                cases_files.append(os.path.join(input_folder, f))
-    else:
-        cases_files = [os.path.join(input_folder, f) for f in listdir(input_folder)
-                       if isfile(os.path.join(input_folder, f)) and '.json' in f]
+    cases_files = get_files(doc_ids, input_folder)
 
     print(TAB + "> Prepare unstructured cases [green][DONE]")
     # Unstructured
@@ -282,7 +288,7 @@ def run(console, build, title, doc_ids, output_prefix='cases', force=False):
 
     # Structured
     print(TAB + "> Generate flat cases [green][DONE]")
-    flat_cases , representatives, extractedapp, scl, decision_body = format_structured_json(cases_files)
+    flat_cases, representatives, extractedapp, scl, decision_body = format_structured_json(cases_files)
     print(TAB + "> Flat cases size: {}MiB".format(sys.getsizeof(flat_cases) / 1000))
     schema_hints = {
         'article': {
@@ -332,7 +338,7 @@ def run(console, build, title, doc_ids, output_prefix='cases', force=False):
     print(TAB + '> Generate appnos matrice [green][DONE]')
     matrice_appnos = {}
     for k, v in extractedapp.items():
-        matrice_appnos[k] = {e:1 for e in v['appnos']}
+        matrice_appnos[k] = {e: 1 for e in v['appnos']}
     with open(os.path.join(output_path, 'matrice_appnos.json'), 'w') as outfile:
         json.dump(matrice_appnos, outfile, indent=4)
 
@@ -353,7 +359,7 @@ def run(console, build, title, doc_ids, output_prefix='cases', force=False):
     print(TAB + '> Generate decision body matrice [green][DONE]')
     matrice_decision_body = {}
     for k, v in decision_body.items():
-        matrice_decision_body[k] = {k:v for k,v in v['role'].items()}
+        matrice_decision_body[k] = {k: v for k, v in v['role'].items()}
     with open(os.path.join(output_path, 'matrice_decision_body.json'), 'w') as outfile:
         json.dump(matrice_decision_body, outfile, indent=4)
 
@@ -373,6 +379,7 @@ def run(console, build, title, doc_ids, output_prefix='cases', force=False):
                     if not filename.endswith('.zip'):
                         filePath = os.path.join(folderName, filename)
                         zipObj.write(filePath)
+
 
 def main(args):
     console = Console(record=True)
@@ -394,7 +401,7 @@ if __name__ == "__main__":
     parser = argparse.ArgumentParser(description='Normalize any databse of arbitrarily nested documents.')
     parser.add_argument('--build', type=str, default="./build/echr_database/")
     parser.add_argument('--title', type=str)
-    parser.add_argument('--doc_ids', type=str, default='')
+    parser.add_argument('--doc_ids', type=str, default=None, nargs='+')
     parser.add_argument('--schema_hints', type=str)
     parser.add_argument('--output_prefix', type=str)
     parser.add_argument('-f', action='store_true')
@@ -402,4 +409,3 @@ if __name__ == "__main__":
     args = parse_args(parser)
 
     main(args)
-

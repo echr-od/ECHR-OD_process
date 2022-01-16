@@ -45,10 +45,9 @@ def create_tables():
                           Mention, Party, PartyCase, Representative, RepresentativeCase, KPThesaurus, ExternalSource,
                           Issue, DocumentCollectionId, ExtractedApp, SCL, SCLCase, Attachment, Table])
 
-def populate_database(console, build, update, doc_ids):
-    input_folder = os.path.join(build, 'raw', 'preprocessed_documents')
 
-    if doc_ids != '':
+def get_files(doc_ids, input_folder):
+    if doc_ids:
         cases_files = []
         for f in listdir(input_folder):
             if isfile(os.path.join(input_folder, f)) and '.json' in f and f.split('_')[0] in doc_ids:
@@ -56,6 +55,14 @@ def populate_database(console, build, update, doc_ids):
     else:
         cases_files = [os.path.join(input_folder, f) for f in listdir(input_folder)
                        if isfile(os.path.join(input_folder, f)) and '.json' in f]
+
+    return cases_files
+
+
+def populate_database(console, build, update, doc_ids):
+    input_folder = os.path.join(build, 'raw', 'preprocessed_documents')
+
+    cases_files = get_files(doc_ids, input_folder)
 
     db.connect()
     if True:
@@ -154,7 +161,8 @@ def populate_database(console, build, update, doc_ids):
                             for member in decisionbody:
                                 if member['role'] == 'judge':
                                     Judge.get_or_create(name=member['name'], **member.get('info'))
-                                bodymember = DecisionBodyMember.get_or_create(name=member['name'], role=member.get('role', '').title())
+                                bodymember = DecisionBodyMember.get_or_create(name=member['name'],
+                                                                              role=member.get('role', '').title())
                                 DecisionBodyCase.get_or_create(member=bodymember[0], case=i)
 
                             for party in parties:
@@ -217,7 +225,7 @@ def populate_database(console, build, update, doc_ids):
     db.close()
 
 
-def run(console, build, title, doc_ids, cases=None, force=True, update=True):
+def run(console, build, title, doc_ids=None, cases=None, force=True, update=True):
     __console = console
     global print
     print = __console.print
@@ -242,14 +250,14 @@ def run(console, build, title, doc_ids, cases=None, force=True, update=True):
     db.init(db_path, pragmas={'foreign_keys': 1})
     print(TAB + "> Create database... [green][DONE]")
     if db_recreated:
-            with Progress(
-                    TAB + "> Create tables... [IN PROGRESS]",
-                    transient=True,
-                    console=console
-            ) as progress:
-                _ = progress.add_task("Loading...")
-                create_tables()
-            print(TAB + "> Create tables... [green][DONE]")
+        with Progress(
+                TAB + "> Create tables... [IN PROGRESS]",
+                transient=True,
+                console=console
+        ) as progress:
+            _ = progress.add_task("Loading...")
+            create_tables()
+        print(TAB + "> Create tables... [green][DONE]")
 
     populate_database(console, build, update, doc_ids)
 
@@ -264,6 +272,7 @@ def main(args):
         force=args.f,
         update=args.u)
 
+
 def parse_args(parser):
     args = parser.parse_args()
 
@@ -275,7 +284,7 @@ if __name__ == "__main__":
     parser = argparse.ArgumentParser(description='Generate final dataset files')
     parser.add_argument('--build', type=str, default="./build/echr_database/")
     parser.add_argument('--title', type=str)
-    parser.add_argument('--doc_ids', type=str, default='')
+    parser.add_argument('--doc_ids', type=str, default=None, nargs='+')
     parser.add_argument('--cases', type=str, default="unstructured/cases.json")
     parser.add_argument('-f', action='store_true')
     parser.add_argument('-u', action='store_true')

@@ -110,7 +110,7 @@ if __name__ == "__main__":
     parser.add_argument('--no-tty', action='store_true')
     parser.add_argument('--upgrade_endpoint', type=str, default='', help='Endpoint to upgrade '
                                                                          'an instance of the explorer')
-    parser.add_argument('--doc_ids', type=str, nargs='+')
+    parser.add_argument('--doc_ids', type=str, default=None, nargs='+')
     parser.add_argument('--max_documents', type=int, help='Maximum number of documents to retrieve')
     parser.add_argument('--params', type=str, help='Additional parameters to override workflow parameters')
     parser.add_argument('-w', '--workflow', type=str, default='local', help='Workflow to execute')

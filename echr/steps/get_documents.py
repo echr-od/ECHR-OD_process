@@ -4,7 +4,6 @@ import requests
 import json
 import os
 import urllib3
-import re
 from concurrent.futures import ThreadPoolExecutor
 
 from echr.utils.folders import make_build_folder
@@ -26,6 +25,20 @@ urllib3.util.ssl_.DEFAULT_CIPHERS = 'ALL:@SECLEVEL=1'
 BASE_URL = "https://hudoc.echr.coe.int/app/conversion/"
 PERMA_URL = "https://hudoc.echr.coe.int/eng?i="
 MAX_RETRY = 5
+
+
+def get_files(doc_ids, id_list):
+    in_build = []
+
+    for j in id_list:
+        for i in doc_ids:
+            if i == j[0]:
+                in_build.append(i)
+
+    id_list = [(i, True) for i in in_build]
+    not_in_build = [i for i in doc_ids if i not in in_build]
+
+    return id_list, in_build, not_in_build
 
 
 def get_documents(console, id_list, folder, update):
@@ -97,7 +110,7 @@ def get_documents(console, id_list, folder, update):
         print(TAB + "> No documents to download")
 
 
-def run(console, build, title, doc_ids, force=False, update=False):
+def run(console, build, title, doc_ids=None, force=False, update=False):
     __console = console
     global print
     print = __console.print
@@ -119,19 +132,10 @@ def run(console, build, title, doc_ids, force=False, update=False):
 
     print(Markdown("- **Get documents from HUDOC**"))
 
-    if doc_ids != '':
-        temp = []
-        not_in_build = []
-        for j in id_list:
-            for i in doc_ids:
-                if i == j[0]:
-                    temp.append(i)
-
-        id_list = [(i, True) for i in temp]
-        not_in_build = [i for i in doc_ids if i not in temp]
-
+    if doc_ids:
+        id_list, in_build, not_in_build = get_files(doc_ids, id_list)
         if len(id_list):
-            print(TAB + '> Documenents: {} downloaded from HUDOC'.format(temp))
+            print(TAB + '> Documenents: {} downloaded from HUDOC'.format(in_build))
         if len(not_in_build):
             print(TAB + '> Failed to download documents: {} '.format(not_in_build))
 
@@ -153,7 +157,7 @@ if __name__ == "__main__":
     parser = argparse.ArgumentParser(description='Filter and format ECHR cases information')
     parser.add_argument('--build', type=str, default="./build/echr_database/")
     parser.add_argument('--title', type=str)
-    parser.add_argument('--doc_ids', type=str, default='')
+    parser.add_argument('--doc_ids', type=str, default=None, nargs='+')
     parser.add_argument('-f', action='store_true')
     parser.add_argument('-u', action='store_true')
     args = parse_args(parser)
