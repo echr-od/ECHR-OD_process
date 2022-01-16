@@ -4,6 +4,7 @@ import requests
 import json
 import os
 import urllib3
+import re
 from concurrent.futures import ThreadPoolExecutor
 
 from echr.utils.folders import make_build_folder
@@ -75,13 +76,14 @@ def get_documents(console, id_list, folder, update):
         else:
             error = "\n| Skip as document exists already"
         progress.update(task, advance=1, error=error, doc=doc_id[0])
+
     if id_list:
         with Progress(
-            TAB + "> Downloading... [IN PROGRESS]\n",
-            BarColumn(30),
-            TimeRemainingColumn(),
-            "| Fetching document of case [blue]{task.fields[doc]} [white]({task.completed}/{task.total})"
-            "{task.fields[error]}",
+                TAB + "> Downloading... [IN PROGRESS]\n",
+                BarColumn(30),
+                TimeRemainingColumn(),
+                "| Fetching document of case [blue]{task.fields[doc]} [white]({task.completed}/{task.total})"
+                "{task.fields[error]}",
                 transient=True,
                 console=console
         ) as progress:
@@ -90,11 +92,12 @@ def get_documents(console, id_list, folder, update):
             with ThreadPoolExecutor(16) as executor:
                 executor.map(f, id_list)
 
-        print(TAB + "> Downloading... [green][DONE]\n",)
+        print(TAB + "> Downloading... [green][DONE]\n", )
     else:
         print(TAB + "> No documents to download")
 
-def run(console, build, title, force=False, update=False):
+
+def run(console, build, title, doc_ids, force=False, update=False):
     __console = console
     global print
     print = __console.print
@@ -115,12 +118,29 @@ def run(console, build, title, force=False, update=False):
         exit(1)
 
     print(Markdown("- **Get documents from HUDOC**"))
+
+    if doc_ids != '':
+        temp = []
+        not_in_build = []
+        for j in id_list:
+            for i in doc_ids:
+                if i == j[0]:
+                    temp.append(i)
+
+        id_list = [(i, True) for i in temp]
+        not_in_build = [i for i in doc_ids if i not in temp]
+
+        if len(id_list):
+            print(TAB + '> Documenents: {} downloaded from HUDOC'.format(temp))
+        if len(not_in_build):
+            print(TAB + '> Failed to download documents: {} '.format(not_in_build))
+
     get_documents(console, id_list, output_folder, update)
 
 
 def main(args):
     console = Console(record=True)
-    run(console, args.build, args.title, args.force, args.u)
+    run(console, args.build, args.title, args.doc_ids, args.force, args.u)
 
 
 def parse_args(parser):
@@ -133,6 +153,7 @@ if __name__ == "__main__":
     parser = argparse.ArgumentParser(description='Filter and format ECHR cases information')
     parser.add_argument('--build', type=str, default="./build/echr_database/")
     parser.add_argument('--title', type=str)
+    parser.add_argument('--doc_ids', type=str, default='')
     parser.add_argument('-f', action='store_true')
     parser.add_argument('-u', action='store_true')
     args = parse_args(parser)

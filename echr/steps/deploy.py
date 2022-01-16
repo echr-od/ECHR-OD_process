@@ -286,7 +286,7 @@ def run(console, method, build, params, detach=False, force=False, update=False)
 
 def main(args):
     console = Console(record=True)
-    run(console, args.method, args.build, args.title, args.params, args.force, args.update)
+    run(console, args.method, args.build, args.title, args.doc_ids, args.params, args.force, args.update)
 
 
 def parse_args(parser):
@@ -306,6 +306,7 @@ if __name__ == "__main__":
     parser = argparse.ArgumentParser(description='Deploy the dataset')
     parser.add_argument('--build', type=str, default="./build/echr_database/")
     parser.add_argument('--title', type=str)
+    parser.add_argument('--doc_ids', type=str, default='')
     parser.add_argument('--method', type=str, help='Method of deployment among: {}'.format(
         ', '.join(METHODS.keys())))
     parser.add_argument('--params', type=str, help='Parameters for the method')
