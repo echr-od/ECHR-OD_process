@@ -107,8 +107,7 @@ def get_documents(console, id_list, folder, update):
 
         print(TAB + "> Downloading... [green][DONE]\n", )
     else:
-        print(TAB + "> [red] No documents to download")
-        exit(1)
+        print(TAB + "> No documents to download")
 
 
 def run(console, build, title, doc_ids=None, force=False, update=False):
@@ -135,10 +134,13 @@ def run(console, build, title, doc_ids=None, force=False, update=False):
 
     if doc_ids:
         id_list, in_build, not_in_build = get_files(doc_ids, id_list)
-        if len(id_list):
-            print(TAB + '> Documenents: {} downloaded from HUDOC'.format(in_build))
         if len(not_in_build):
             print(TAB + '> Failed to download documents: {} '.format(not_in_build))
+        if len(id_list):
+            print(TAB + '> Documenents: {} downloaded from HUDOC'.format(in_build))
+        else:
+            print(TAB + "> [red] No documents to download")
+            exit(1)
 
     get_documents(console, id_list, output_folder, update)
 
