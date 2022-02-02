@@ -14,6 +14,7 @@ from collections import OrderedDict
 from functools import reduce  # forward compatibility for Python 3
 import operator
 import sys
+import time
 
 from echr.utils.folders import make_build_folder
 from echr.utils.cli import TAB
@@ -65,17 +66,26 @@ def format_structured_json(cases_list):
         c['introductiondate'] = c['introductiondate'].split(' ')[0]
         c['kpdate'] = c['kpdate'].split(' ')[0]
         c['separateopinion'] = True if c['separateopinion'] == 'TRUE' else False
+        c['country'] = c['country']['alpha2']
+        c['parties'] = c['parties'][0]
+        c['decision_body'] = [e['name'] for e in c['decision_body']]
 
+        del c['docname']
+        del c['attachments']
         del c['representedby']
         del c['extractedappno']
-        del c['decision_body']
+        #del c['decision_body']
+        del c['_decision_body']
+        del c['application']
         del c['scl']
+        del c['ecli']
         del c['documents']
         del c['content']
         del c['externalsources']
         del c['kpthesaurus']
         del c['__conclusion']
         del c['__articles']
+
         if not len(c['issue']):
             del c['issue']
         else:
@@ -186,7 +196,7 @@ def hot_one_encoder_on_list(df, column):
         np.bincount(i * m + f, minlength=n * m).reshape(n, m),
         df.index, map(lambda x: str(column) + '=' + str(x), u)
     )
-    return df.drop(column, 1).join(dummies)
+    return df.drop(columns=column).join(dummies)
 
 
 def normalize(X, schema_hints=None):
@@ -206,7 +216,7 @@ def normalize(X, schema_hints=None):
     for c in df.columns:
         f = next((k for k in columns_to_encode if c.startswith(k)), None)
         if f:
-            df = df.drop(c, 1)
+            df = df.drop(columns=c)
     encoded = []
     for c in columns_to_encode:
         type_ = flat_type_mapping[c]
@@ -272,10 +282,13 @@ def run(console, build, title, doc_ids=None, output_prefix='cases', force=False)
     print(Markdown("- **Normalize database**"))
     input_folder = os.path.join(build, 'raw', 'preprocessed_documents')
 
+    start = time.perf_counter()
     cases_files = get_files(doc_ids, input_folder)
+    stop = time.perf_counter()
 
-    print(TAB + "> Prepare unstructured cases [green][DONE]")
+    print(TAB + "> Prepare unstructured cases in {:0.4f}s [green][DONE]".format(stop - start))
     # Unstructured
+    start = time.perf_counter()
     with open(os.path.join(build, 'unstructured', 'cases.json'), 'w') as outfile:
         outfile.write('[\n')
         for i, f in enumerate(cases_files):
@@ -285,11 +298,14 @@ def run(console, build, title, doc_ids=None, output_prefix='cases', force=False)
                 if i != len(cases_files) - 1:
                     outfile.write(',\n')
         outfile.write('\n]')
+    stop = time.perf_counter()
 
     # Structured
-    print(TAB + "> Generate flat cases [green][DONE]")
+    print(TAB + "> Generate flat cases in {:0.4f}s [green][DONE]".format(stop - start))
+    start = time.perf_counter()
     flat_cases, representatives, extractedapp, scl, decision_body = format_structured_json(cases_files)
-    print(TAB + "> Flat cases size: {}MiB".format(sys.getsizeof(flat_cases) / 1000))
+    stop = time.perf_counter()
+    print(TAB + "> Flat cases size: {}MiB in {:0.4f}s".format(sys.getsizeof(flat_cases) / 1000, stop - start))
     schema_hints = {
         'article': {
             'col_type': COL_HINT.HOT_ONE
@@ -301,6 +317,9 @@ def run(console, build, title, doc_ids=None, output_prefix='cases', force=False)
             'col_type': COL_HINT.HOT_ONE
         },
         'paragraphs': {
+            'col_type': COL_HINT.HOT_ONE
+        },
+        'decision_body': {
             'col_type': COL_HINT.HOT_ONE
         },
         'conclusion': {
@@ -317,6 +336,7 @@ def run(console, build, title, doc_ids=None, output_prefix='cases', force=False)
         json.dump(schema_hints, outfile, indent=4)
 
     X = flat_cases
+    start = time.perf_counter()
     df, schema, flat_schema, flat_type_mapping, flat_domain_mapping = normalize(X, schema_hints)
     df.to_json(os.path.join(output_path, '{}.json'.format(output_prefix)), orient='records')
     df.to_csv(os.path.join(output_path, '{}.csv'.format(output_prefix)))
@@ -335,7 +355,9 @@ def run(console, build, title, doc_ids=None, output_prefix='cases', force=False)
     os.remove(os.path.join(output_path, 'cases_flat_schema.json'))
     os.remove(os.path.join(output_path, 'cases_flat_type_mapping.json'))
 
-    print(TAB + '> Generate appnos matrice [green][DONE]')
+    stop = time.perf_counter()
+
+    print(TAB + '> Generate appnos matrice in {:0.4f}s [green][DONE]'.format(stop - start))
     matrice_appnos = {}
     for k, v in extractedapp.items():
         matrice_appnos[k] = {e: 1 for e in v['appnos']}
