@@ -156,3 +156,4 @@ docker run -ti --mount src=$(pwd),dst=/tmp/echr_process/,type=bind echr_build te
 
 -   Alexandre Quemy <mailto:alexandre.quemy@gmail.com>
 -   Paweł Mróz <mailto:pawel.j.mroz@ibm.com>
+-   Natalia Łopuszyńska <mailto:nlopuszynska@gmail.com>
