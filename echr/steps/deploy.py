@@ -125,7 +125,7 @@ def runner(params_str, build, title, detach, force, update):
     client.exec_command((cmd))
 
 
-def upload_osf(params_str, build, detach, force, update):
+def upload_osf(params_str, build, title, detach, force, update):
     params = {e.split('=')[0]: e.split('=')[1] for e in params_str.split()}
     dst = params['folder']
     with Progress(
@@ -168,7 +168,7 @@ def upload_osf(params_str, build, detach, force, update):
     print(TAB + "> Upload... [green][DONE]\n")
 
 
-def upload_scp(params_str, build, detach, force, update):
+def upload_scp(params_str, build, title, detach, force, update):
     params = {e.split('=')[0]: e.split('=')[1] for e in params_str.split()}
     dst = params['folder']
     dst_without_update = os.path.join(dst, 'raw', 'judgments')
@@ -284,11 +284,11 @@ def get_list_of_files(build):
     return files_list
 
 
-def run(console, method, build, params, doc_ids=None, detach=False, force=False, update=False):
+def run(console, method, build, params, title, doc_ids=None, detach=False, force=False, update=False):
     __console = console
     global print
     print = __console.print
-    METHODS.get(method)(params, build, detach, force, update)
+    METHODS.get(method)(params, build, title, detach, force, update)
 
 
 def main(args):
