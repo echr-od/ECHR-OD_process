@@ -67,31 +67,44 @@ def runner(params_str, build, title, detach, force, update):
 
     client = get_client(params['host'], username=params['user'], password=params['password'])
 
-    _, stdout, _ = client.exec_command("[ -d '{}' ] && echo 'exists'".format((params['folder'])), get_pty=True)
+    _, stdout, stderr = client.exec_command("[ -d '{}' ] && echo 'exists'".format((params['folder'])), get_pty=True)
     output = stdout.read().decode().strip()
+    output_err = stderr.read().decode().strip()
+    if output_err:
+        print(output_err)
     print(TAB + "> Check if the target folder exists... [green][DONE]")
     if not output:
         cmd = [
             'mkdir -p {}'.format(params['folder']),
         ]
-        _, stdout, _ = client.exec_command((';'.join(cmd)))
+        _, stdout, stderr = client.exec_command((';'.join(cmd)))
         print(stdout.read().decode().strip())
+        output_err = stderr.read().decode().strip()
+        if output_err:
+            print(output_err)
         print(TAB + "> Create the target folder... [green][DONE]")
     else:
         print(TAB + "> Target folder already exists... [green][DONE]")
         print(stdout.read().decode().strip())
 
-    _, stdout, _ = client.exec_command("[ -d '{}' ] && echo 'exists'".format((REPO_PATH)), get_pty=True)
+    _, stdout, stderr = client.exec_command("[ -d '{}' ] && echo 'exists'".format((REPO_PATH)), get_pty=True)
     output = stdout.read().decode().strip()
+    print(output)
+    output_err = stderr.read().decode().strip()
+    if output_err:
+        print(output_err)
     print(TAB + "> Check if the repository is cloned... [green][DONE]")
     if not output:
         cmd = [
             'cd {}'.format(params['folder']),
             'git clone {}'.format(GIT_REPO)
         ]
-        _, stdout, _ = client.exec_command((';'.join(cmd)))
+        _, stdout, stderr = client.exec_command((';'.join(cmd)))
         print(TAB + "> Clone repository... [green][DONE]")
         print(stdout.read().decode().strip())
+        output_err = stderr.read().decode().strip()
+        if output_err:
+            print(output_err)
     else:
         print(TAB + "> Repository already cloned... [green][DONE]")
         print(stdout.read().decode().strip())
@@ -101,9 +114,12 @@ def runner(params_str, build, title, detach, force, update):
         'cd {}'.format(REPO_PATH),
         'git fetch origin {}'.format(params.get('branch', DEFAULT_BRANCH)),
     ]
-    _, stdout, _ = client.exec_command((';'.join(cmd)))
+    _, stdout, stderr = client.exec_command((';'.join(cmd)))
     output = stdout.read().decode().strip()
     print(output)
+    output_err = stderr.read().decode().strip()
+    if output_err:
+        print(output_err)
     cmd = [
         'cd {}'.format(REPO_PATH),
         'git rebase origin {}'.format(params.get('branch', DEFAULT_BRANCH))
