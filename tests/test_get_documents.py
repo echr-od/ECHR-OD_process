@@ -30,7 +30,7 @@ class TestGetDocuments:
             id_list = [("101", 0), ("202", 1), ("303", 1)]
             path = "/tmp"
 
-            get_documents(Console(), id_list, path, update=False)
+            get_documents(Console(), id_list, path, update=False, force=False)
 
             files_list = ["101.pdf", "202.docx", "303.docx"]
             open_args = [call(os.path.join(path, f), 'wb') for f in files_list]
@@ -46,7 +46,7 @@ class TestGetDocuments:
             id_list = [("101", 0), ("202", 1), ("303", 1)]
             path = "/tmp"
 
-            get_documents(Console(), id_list, path, update=True)
+            get_documents(Console(), id_list, path, update=True, force=True)
 
             files_list = ["101.pdf", "202.docx", "303.docx"]
             open_args = [call(os.path.join(path, f), 'wb') for f in files_list]
@@ -58,7 +58,7 @@ class TestGetDocuments:
             id_list = []
             path = "/tmp"
 
-            get_documents(Console(), id_list, path, update=True)
+            get_documents(Console(), id_list, path, update=True, force=False)
 
             mck_open.assert_not_called()
 
@@ -70,7 +70,7 @@ class TestGetDocuments:
                 get.return_value.iter_content.return_value = []
                 id_list = [("101", 0), ("202", 1), ("303", 1)]
 
-                get_documents(Console(), id_list, tmpdir.strpath, update=True)
+                get_documents(Console(), id_list, tmpdir.strpath, update=True, force=True)
 
                 files_list = ["101.pdf", "202.docx", "303.docx"]
                 files_exist = [os.path.exists(tmpdir.join(f)) for f in files_list]
