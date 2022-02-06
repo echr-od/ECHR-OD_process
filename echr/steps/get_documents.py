@@ -41,7 +41,7 @@ def get_files(doc_ids, id_list):
     return id_list, in_build, not_in_build
 
 
-def get_documents(console, id_list, folder, update):
+def get_documents(console, id_list, folder, update, force):
     """
         Get documents according to the specified list
 
@@ -59,7 +59,7 @@ def get_documents(console, id_list, folder, update):
         else:
             filename = "%s.pdf" % (doc_id[0].strip())
         filename = os.path.join(folder, filename)
-        if update or not os.path.isfile(filename):
+        if (not update and not os.path.isfile(filename)) or force:
             if doc_id[1]:
                 url = BASE_URL + "docx/?library=ECHR&filename=please_give_me_the_document.docx&id=" + doc_id[0].strip()
             else:
@@ -142,7 +142,7 @@ def run(console, build, title, doc_ids=None, force=False, update=False):
             print(TAB + "> [red] No documents to download")
             exit(1)
 
-    get_documents(console, id_list, output_folder, update)
+    get_documents(console, id_list, output_folder, update, force)
 
 
 def main(args):
