@@ -59,7 +59,7 @@ def get_documents(console, id_list, folder, update, force):
         else:
             filename = "%s.pdf" % (doc_id[0].strip())
         filename = os.path.join(folder, filename)
-        if (update and not os.path.isfile(filename)) or force:
+        if not os.path.isfile(filename) or force:
             if doc_id[1]:
                 url = BASE_URL + "docx/?library=ECHR&filename=please_give_me_the_document.docx&id=" + doc_id[0].strip()
             else:
