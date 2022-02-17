@@ -35,7 +35,13 @@ def format_doc_ids(docs):
         :rtype: list
     """
     doc_ids = []
-    for i in docs:
-        if re.match('[0][0][1]\-\d{5,6}$', i):
-            doc_ids.append(i.strip())
+    try:
+        with open(docs[0], 'r') as f:
+            doc_ids = f.readlines()
+        doc_ids = list(map(str.strip, doc_ids))
+    except Exception as e:
+        print(e)
+        for i in docs:
+            if re.match('[0][0][1]\-\d{5,6}$', i):
+                doc_ids.append(i.strip())
     return doc_ids
