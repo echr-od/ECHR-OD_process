@@ -296,7 +296,7 @@ def prepare_build(console, args):
             console.print(TAB + '  ⮡ [bold red]! All provided doc ids in wrong format')
             exit(1)
         else:
-            console.print(TAB + '  ⮡ [bold blue]! Doc ids: {} provided in correct format'.format(f_ids))
+            console.print(TAB + '  ⮡ [bold blue]! Doc ids provided in correct format')
             doc_ids = f_ids
     else:
         doc_ids = None
