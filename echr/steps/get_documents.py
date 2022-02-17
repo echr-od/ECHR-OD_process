@@ -59,7 +59,7 @@ def get_documents(console, id_list, folder, update, force):
         else:
             filename = "%s.pdf" % (doc_id[0].strip())
         filename = os.path.join(folder, filename)
-        if (not update and not os.path.isfile(filename)) or force:
+        if (update and not os.path.isfile(filename)) or force:
             if doc_id[1]:
                 url = BASE_URL + "docx/?library=ECHR&filename=please_give_me_the_document.docx&id=" + doc_id[0].strip()
             else:
@@ -128,7 +128,7 @@ def run(console, build, title, doc_ids=None, force=False, update=False):
             id_list = [(i['itemid'], i["application"].startswith("MS WORD")) for i in cases]
     except Exception as e:
         print(e)
-        exit(1)
+        return
 
     print(Markdown("- **Get documents from HUDOC**"))
 
@@ -140,7 +140,7 @@ def run(console, build, title, doc_ids=None, force=False, update=False):
             print(TAB + '> Documenents: {} downloaded from HUDOC'.format(in_build))
         else:
             print(TAB + "> [red] No documents to download")
-            exit(1)
+            return
 
     get_documents(console, id_list, output_folder, update, force)
 
