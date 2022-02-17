@@ -59,10 +59,19 @@ def get_files(doc_ids, input_folder):
     return cases_files
 
 
+def save_cases_list(build, cases_files):
+    path = os.path.join(build, 'build_cases.txt')
+    with open(path, 'w') as f:
+        for l in cases_files:
+            f.write('{}\n'.format(l.split('/')[-1].split('_')[0]))
+
+
+
 def populate_database(console, build, update, doc_ids):
     input_folder = os.path.join(build, 'raw', 'preprocessed_documents')
 
     cases_files = get_files(doc_ids, input_folder)
+    save_cases_list(build, cases_files)
 
     db.connect()
     if True:
