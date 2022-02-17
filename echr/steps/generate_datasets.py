@@ -236,16 +236,16 @@ def run(console, build, title, doc_ids=None, articles=[], processed_folder='all'
         ccl = c[conclusion_key]
         for e in ccl:
             if e['type'] in ['violation', 'no-violation']:
-                if e['article'] not in outcomes:
-                    outcomes[e['article']] = {
+                if e['base_article'] not in outcomes:
+                    outcomes[e['base_article']] = {
                         'violation': 0,
                         'no-violation': 0,
                         'total': 0
                     }
                 # if e['article'] == '8' and e['type'] == 'no-violation':
                 #    print(c['docname'])
-                outcomes[e['article']][e['type']] += 1
-                outcomes[e['article']]['total'] += 1
+                outcomes[e['base_article']][e['type']] += 1
+                outcomes[e['base_article']]['total'] += 1
         # Determine output
     encoded_outcomes = {}
     count = 1
