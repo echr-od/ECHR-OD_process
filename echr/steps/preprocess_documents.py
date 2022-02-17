@@ -617,7 +617,7 @@ def run(console, build, title, doc_ids=None, force=False, update=False):
                                   'w') as toutfile:
                             toutfile.write(json_to_text(parsed,
                                                         text_only=True,
-                                                        except_section=['conclusion', 'law'],
+                                                        except_section=['conclusion'],
                                                         attachments=attachments))
                         parsed['documents'] = ['{}.docx'.format(id_doc)]
                         parsed['content'] = {
