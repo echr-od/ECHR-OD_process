@@ -34,9 +34,9 @@ def generate_dataset(cases, keys, keys_list, encoded_outcomes, feature_index, fe
             classes = []
             for e in c[conclusion_key]:
                 if e['type'] in ['violation', 'no-violation']:
-                    if 'article' in e and e['article'] in encoded_outcomes:
-                        g = encoded_outcomes[e['article']]
-                        if filter_classes is None or e['article'] in filter_classes:
+                    if 'base_article' in e and e['base_article'] in encoded_outcomes:
+                        g = encoded_outcomes[e['base_article']]
+                        if filter_classes is None or e['base_article'] in filter_classes:
                             classes.append('{}:{}'.format(g, 1 if e['type'] == 'violation' else 0))
             classes = list(set(classes))
             opposed_classes = any(
@@ -46,11 +46,11 @@ def generate_dataset(cases, keys, keys_list, encoded_outcomes, feature_index, fe
                 f.write(' '.join(classes) + '\n')
                 for e in c[conclusion_key]:
                     if e['type'] in ['violation', 'no-violation']:
-                        if 'article' in e and e['article'] in encoded_outcomes:
-                            if filter_classes is None or e['article'] in filter_classes:
-                                if e['article'] not in outcome_distribution:
-                                    outcome_distribution[e['article']] = {'violation': 0, 'no-violation': 0}
-                                outcome_distribution[e['article']][e['type']] += 1
+                        if 'base_article' in e and e['base_article'] in encoded_outcomes:
+                            if filter_classes is None or e['base_article'] in filter_classes:
+                                if e['base_article'] not in outcome_distribution:
+                                    outcome_distribution[e['base_article']] = {'violation': 0, 'no-violation': 0}
+                                outcome_distribution[e['base_article']][e['type']] += 1
                                 if name != 'multilabel':
                                     break
                 for k, v in c.items():
