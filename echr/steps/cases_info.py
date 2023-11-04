@@ -8,12 +8,11 @@ import urllib3
 from concurrent.futures import ThreadPoolExecutor
 
 from echr.utils.logger import getlogger
-from echr.utils.cli import StatusColumn, TAB
+from echr.utils.cli import TAB
 from echr.utils.folders import make_build_folder
 from rich.markdown import Markdown
 from rich.console import Console
 from rich.progress import (
-    TextColumn,
     Progress,
     BarColumn,
     TimeRemainingColumn,
@@ -62,46 +61,13 @@ fields = [
     "separateopinion",
     "scl"
 ]
-BASE_URL = "http://hudoc.echr.coe.int/app/query/results" \
-           "?query=((((((((((((((((((((%20contentsitename%3AECHR%20AND%20(NOT%20(doctype%3DPR%20OR%20" \
-           "doctype%3DHFCOMOLD%20OR%20doctype%3DHECOMOLD)))%20XRANK(cb%3D14)%20doctypebranch%3AGRANDCHAMBER" \
-           ")%20XRANK(cb%3D13)%20doctypebranch%3ADECGRANDCHAMBER)%20XRANK(cb%3D12)%20doctypebranch%3ACHAMBER)" \
-           "%20XRANK(cb%3D11)%20doctypebranch%3AADMISSIBILITY)%20XRANK(cb%3D10)%20doctypebranch%3ACOMMITTEE)" \
-           "%20XRANK(cb%3D9)%20doctypebranch%3AADMISSIBILITYCOM)%20XRANK(cb%3D8)%20doctypebranch%3ADECCOMMISSION)" \
-           "%20XRANK(cb%3D7)%20doctypebranch%3ACOMMUNICATEDCASES)%20XRANK(cb%3D6)%20doctypebranch%3ACLIN)%20" \
-           "XRANK(cb%3D5)%20doctypebranch%3AADVISORYOPINIONS)%20XRANK(cb%3D4)%20doctypebranch%3AREPORTS)%20" \
-           "XRANK(cb%3D3)%20doctypebranch%3AEXECUTION)%20XRANK(cb%3D2)%20doctypebranch%3AMERITS)%20XRANK(cb%3D1)" \
-           "%20doctypebranch%3ASCREENINGPANEL)%20XRANK(cb%3D4)%20importance%3A1)%20XRANK(cb%3D3)%20importance%3A2)" \
-           "%20XRANK(cb%3D2)%20importance%3A3)%20XRANK(cb%3D1)%20importance%3A4)%20XRANK(cb%3D2)%20" \
-           "languageisocode%3AENG)%20XRANK(cb%3D1)%20languageisocode%3AFRE" \
-           "&select={}&sort=&rankingModelId=4180000c-8692-45ca-ad63-74bc4163871b".format(','.join(fields))
-LENGTH = 500  # maximum number of items per request
 
-
-def determine_max_documents(base_url, default_value):
-    """
-        Automatically determine the number of available documents in HUDOC
-
-        :param default_value: fallback value
-        :type default_value: [int]
-    """
-    url = base_url + "&start={}&length={}".format(0, 1)
-    for i in range(MAX_RETRY):
-        try:
-            r = requests.get(url)
-            if not r.ok:
-                print('\t({}/{}) Failed to fetch max document numbers'.format(i + 1, MAX_RETRY))
-                continue
-            else:
-                output = json.loads(r.content)
-                return 0, int(output['resultcount'])
-        except Exception as e:
-            __console.print_exception()
-            log.error(e)
-            print(TAB + '({}/{}) Failed to fetch max document numbers'.format(i + 1, MAX_RETRY))
-    print(TAB + "[bold yellow]:warning: Fallback to the default number of cases: {}".format(default_value))
-    max_documents = default_value
-    return 1, max_documents
+BASE_URL = 'https://hudoc.echr.coe.int/app/query/results?query=contentsitename:ECHR' \
+     ' AND (NOT (doctype=PR OR doctype=HFCOMOLD OR doctype=HECOMOLD)) AND ((languageisocode="ENG"))' \
+     ' AND (kpdate>="YEAR-01-01T00:00:00.0Z" AND kpdate<="YEAR_1-01-01T00:00:00.0Z")' \
+     ' AND ((organisations:"ECHR"))&select={}&sort=&start=0&length=10000&rankingModelId=11111111-0000-0000-0000-000000000000'.format(','.join(fields))
+LENGTH = 10_000  # maximum number of items per request
+YEARS = range(1959, 2023+1)
 
 
 def get_case_info(console, base_url, max_documents, path):
@@ -115,16 +81,12 @@ def get_case_info(console, base_url, max_documents, path):
         :param: path: path to store the information
         :type: str
     """
-    length = min(LENGTH, max_documents)
-    if length <= 0:
-        return 2
-
-    def get_cases_info_step(start, length, progress, task):
+    def get_cases_info_step(year, progress, task):
         error = ""
-        file_path = os.path.join(path, "{}.json".format(start))
+        file_path = os.path.join(path, "{}.json".format(year))
         failed_to_get_some_cases = False
         with open(file_path, 'wb') as f:
-            url = base_url + "&start=%d&length=%d" % (start, length)
+            url = base_url.replace('YEAR_1', str(year+1)).replace('YEAR', str(year))
             for i in range(MAX_RETRY):
                 error = ""
                 try:
@@ -140,31 +102,31 @@ def get_case_info(console, base_url, max_documents, path):
                     except OSError:
                         pass
                     __console.print_exception()
-                    log.error('({}/{}) Failed to fetch information {} to {}'.format(
-                        i + 1, MAX_RETRY, start, start + length))
-                    error = '\n| ({}/{}) Failed to fetch information {} to {}'.format(
-                        i + 1, MAX_RETRY, start, start + length)
+                    log.error('({}/{}) Failed to fetch information for year {}'.format(
+                        i + 1, MAX_RETRY, year))
+                    error = '\n| ({}/{}) Failed to fetch information for year {}'.format(
+                        i + 1, MAX_RETRY, year)
                     time.sleep(0.001)
                 if error:
                     progress.update(task, advance=0, error=error)
             else:
                 failed_to_get_some_cases = True
-        progress.update(task, advance=length, to_be_completed=start + 2 * length)
+        progress.update(task, advance=1, to_be_completed=len(YEARS))
         return failed_to_get_some_cases
 
     with Progress(
             TAB + "> Downloading... [IN PROGRESS]\n",
             BarColumn(30),
             TimeRemainingColumn(),
-            "| ({task.completed}/{task.total}) Fetching information from cases {task.completed} to {task.fields[to_be_completed]}"
+            "| ({task.completed}/{task.total}) Fetching cases information for year {task.completed}"
             "{task.fields[error]}",
             transient=True,
             console=console
     ) as progress:
-        task = progress.add_task("Downloading...", total=max_documents, to_be_completed=length, error="")
-        f = lambda x: get_cases_info_step(x, length, progress, task)
+        task = progress.add_task("Downloading...", total=len(YEARS), to_be_completed=len(YEARS), error="")
+        f = lambda x: get_cases_info_step(x, progress, task)
         with ThreadPoolExecutor(16) as executor:
-            results = list(executor.map(f, range(0, max_documents, length)))
+            results = list(executor.map(f, YEARS))
     failed_to_get_some_cases = all(results)
     if failed_to_get_some_cases:
         print(TAB + '> Downloading... [yellow][WARNING]')
@@ -198,29 +160,8 @@ def run(console, build, title, doc_ids=None, max_documents=-1, force=False):
     make_build_folder(console, output_folder, force, strict=False)
 
     print(Markdown("- **Determining the number cases**"))
-
     if doc_ids:
-        _, max_documents = determine_max_documents(BASE_URL, 144579)
         print(TAB + "> Doc ids given")
-
-    else:
-        if max_documents == -1:
-            print(TAB + "> The total number of documents is not provided")
-            with Progress(
-                    TextColumn(TAB + "> Querying HUDOC...", justify="right"),
-                    StatusColumn({
-                        None: '[IN PROGRESS]',
-                        0: '[green] [DONE]',
-                        1: '[red] [FAILED]'
-                    }),
-                    transient=True,
-                    console=console
-            ) as progress:
-                task = progress.add_task("Get total number of documents")
-                while not progress.finished:
-                    rc, max_documents = determine_max_documents(BASE_URL, 144579)  # v1.0.0 value
-                    progress.update(task, rc=rc)
-    print(TAB + "> The total number of documents to retrieve: {}".format(max_documents))
     print(Markdown("- **Get case information from HUDOC**"))
     get_case_info(console, BASE_URL, max_documents, output_folder)
 

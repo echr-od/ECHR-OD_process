@@ -332,12 +332,12 @@ def format_cases(console, cases):
             cases[i]['originatingbody_type'] = ORIGINATING_BODY[cases[i]['originatingbody']]['type']
             cases[i]['originatingbody_name'] = ORIGINATING_BODY[cases[i]['originatingbody']]['name']
 
-            cases[i]["rank"] = cases[i]['Rank']
-            del cases[i]["Rank"]
+            #cases[i]["rank"] = cases[i]['Rank']
+            #del cases[i]["Rank"]
 
             del cases[i]["isplaceholder"]
-            cases[i]["kpdate"] = cases[i]['kpdateAsText']
-            del cases[i]['kpdateAsText']
+            #cases[i]["kpdate"] = cases[i]['kpdateAsText']
+            #del cases[i]['kpdateAsText']
             del cases[i]["documentcollectionid2"]
             cases[i]["kpthesaurus"] = cases[i]["kpthesaurus"].split(';')
             cases[i]["scl"] = cases[i]["scl"].split(';') if cases[i]["scl"].strip() else []
