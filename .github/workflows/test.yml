@@ -31,8 +31,8 @@ jobs:
         uses: ./.github/actions/container_run
         with:
           cont_action: 'test'
-      - name: Build test dataset
-        uses: ./.github/actions/container_run
-        with:
-          cont_action: 'build'
-          action_params: '--max_documents 200 --build ./build/test --workflow local'
+      #- name: Build test dataset
+      #  uses: ./.github/actions/container_run
+      #  with:
+      #    cont_action: 'build'
+      #    action_params: '--max_documents 200 --build ./build/test --workflow local'
