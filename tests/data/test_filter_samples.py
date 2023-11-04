@@ -294,7 +294,7 @@ raw_cases_input = [{
     u'extractedappno': u'8675/15;8697/15;16483/12;47/15;646/16;444/17;391/16;77/17;78/17;2011/95;27765/09;60125/11;16643/09;30880/10;56437/07;25424/05;41744/10;41805/10;43611/11;41738/10;23531/94;39630/09;20261/12;52207/99;24833/94;48787/99;36925/07;71503/01;30696/09;55721/07;13255/07;18670/03;2344/02;2005/85;2013/32;37201/06;26565/05;44774/98;50541/08;5809/08;25781/94;59793/17;17056/06;42750/09;25424/09;59166/12;25389/05;12552/12;47287/15;45917/99;16387/03;45223/05;45302/05;41872/10;17502/07',
     u'typedescription': u'15', u'article': u'1;13;13+P4-4;34;35;35-1;35-3-a;37;37-1;37-1-b;37-1-c;P4-4',
     u'externalsources': u'Guidelines of the Committee of Ministers of the Council of Europe on Forced Return, adopted on 4 May 2005;Report of the European Committee for the Prevention of Torture and Inhuman or Degrading Treatment or Punishment (CPT) on their visit to Spain in July 2014 (published on 9 April 2015);The 2015 annual activity report by the Commissioner for Human Rights of the Council of Europe;Report of the fact-finding mission by the Special Representative of the Secretary General of the Council of Europe on migration and refugees, to Spain, March 2018 (SG/Inf(2018)25);Resolution 2299 (2019) of the Parliamentary Assembly of the Council of Europe on the pushback policies and practice in Council of Europe member States;Charter of the United Nations (UN Charter), signed on 26 June 1945 in San Francisco;Articles 27, 31 and 32 of the Vienna Convention on the Law of Treaties of 23 May 1969;Geneva Convention of 28 July 1951 relating to the Status of Refugees;Convention against Torture and Other Cruel, Inhuman or Degrading Treatment or Punishment of 10 December 1984 (UNCAT);Declaration on Territorial Asylum adopted by the United Nations General Assembly on 14 December 1967 (Resolution 2312 (XXII));Draft Articles on the Expulsion of Aliens adopted by the International Law Commission at their sixty-sixth session (2014) of which the United Nations General Assembly took note (Resolution A/RES/69/119 of 10 December 2014);Second report on the expulsion of aliens, dated 20 July 2006 (Document A/CN.4/573), by Mr Maurice Kamto, Special Rapporteur;Conclusions on International Protection adopted by the Executive Committee of the UNHCR Programme 1975 \u2013 2017;Views adopted by the Committee on the Rights of the Child on 12 February 2019 under the Optional Protocol to the Convention on the Rights of the Child on a communications procedure, concerning communication No. 4/2016',
-    u'meetingnumber': u'', u'doctype': u'HEJUD', u'Rank': u'25.8842315673828',
+    u'meetingnumber': u'', u'doctype': u'HEJUD', u'rank': u'25.8842315673828',
     u'conclusion': u'Preliminary objection dismissed (Article 34 - Victim);Preliminary objection dismissed (Article 35-1 - Exhaustion of domestic remedies);Preliminary objection dismissed (Article 37-1 - Respect for human rights;Article 37-1-b - Matter resolved;Article 37-1-c - Continued examination not justified);Preliminary objection joined to merits and dismissed (Article 35-3-a - Ratione materiae);No violation of Article 4 of Protocol No. 4 - Prohibition of collective expulsion of aliens-{general} (Article 4 of Protocol No. 4 - Prohibition of collective expulsion of aliens);No violation of Article 13+P4-4 - Right to an effective remedy (Article 13 - Effective remedy) (Article 4 of Protocol No. 4 - Prohibition of collective expulsion of aliens-{general};Prohibition of collective expulsion of aliens)'
 },
 {
@@ -312,7 +312,7 @@ raw_cases_input = [{
      u'ecli': u'ECLI:CE:ECHR:2007:0515JUD005239199', u'importance': u'1', u'kpdate': u'5/15/2007 12:00:00 AM',
      u'judgementdate': u'15/05/2007 00:00:00', u'extractedappno': u'52391/99', u'typedescription': u'15',
      u'article': u'2;2-2;2-1;6;6-1;13;41', u'externalsources': u'source', u'meetingnumber': u'1', u'doctype': u'HJUDAZE',
-     u'Rank': u'17.1129493713379',
+     u'rank': u'17.1129493713379',
      u'conclusion': u'Violation of Art. 2;No violation of Art. 2;No separate issue under Art. 13;Non-pecuniary damage - financial award;Costs and expenses award - domestic proceedings;Costs and expenses partial award - Convention proceedings'
 },
 {
@@ -332,7 +332,7 @@ raw_cases_input = [{
      u'extractedappno': u'74613/01;58442/00;32492/96;32547/96;32548/96;33209/96;33210/96;16875/90;17495/90;27077/95;30943/96;31871/96;34044/96;35532/97;44801/98;37201/97',
      u'typedescription': u'14', u'article': u'5;5-1-a;5-1;6;6-1;6-3-d;7;7-1;29;29-3',
      u'externalsources': u'Convention on the Prevention and Punishment of the Crime of Genocide (1948);Convention on the Prevention and Suppression of Genocide (1948);Resolution of the UN General Assembly 47/121 of 18 December 1992;Case-law of the ICTY (Prosecutor v. Krstic, judgment of 2 August 2001;Prosecutor v. Kupreskic and Others, judgment of 14 January 2000) and ICJ (Bosnia and Herzegovina v. Serbia and Montenegro, judgment of 26 February 2007)',
-     u'meetingnumber': u'', u'doctype': u'HJUDGEO', u'Rank': u'15.1129503250122',
+     u'meetingnumber': u'', u'doctype': u'HJUDGEO', u'rank': u'15.1129503250122',
      u'conclusion': u'Remainder inadmissible;No violation of Art. 6-1 or 5-1;No violation of Art. 7'
 },
 {
@@ -348,7 +348,7 @@ raw_cases_input = [{
      u'issue': u'Code de proc\xe9dure p\xe9nale, articles 174-185, 197', u'ecli': u'ECLI:CE:ECHR:2000:0725JUD002495494',
      u'importance': u'1', u'kpdate': u'7/25/2000 12:00:00 AM', u'judgementdate': u'25/07/2000 00:00:00',
      u'extractedappno': u'24954/94;24971/94;24972/94;22774/93', u'typedescription': u'15', u'article': u'6;6-1;41',
-     u'externalsources': u'', u'meetingnumber': u'', u'doctype': u'HEJUD', u'Rank': u'16.1129493713379',
+     u'externalsources': u'', u'meetingnumber': u'', u'doctype': u'HEJUD', u'rank': u'16.1129493713379',
      u'conclusion': u"Violation de l'Art. 6-1 du fait du manque d'impartialit\xe9 du tribunal;Violation de l'Art. 6-1 du fait de l'impossibilit\xe9 d'\xeatre entendu en personne par le juge d'appel;Dommage mat\xe9riel - demande rejet\xe9e;Pr\xe9judice moral - r\xe9paration p\xe9cuniaire;Remboursement partiel frais et d\xe9pens"
 },
 {
@@ -363,7 +363,7 @@ raw_cases_input = [{
      u'kpdate': u'5/12/2020 12:00:00 AM', u'judgementdate': u'12/05/2020 00:00:00',
      u'extractedappno': u'8211/10;25253/08;36391/02;27422/05;38802/08;21980/04;36658/05;71409/10;57837/09;50541/08;22744/07;76577/13;34779/09;4268/04;42371/02;25703/11;2308/06;48016/06;7817/07;9106/09;46661/09;7851/05;38907/09;30733/08',
      u'typedescription': u'15', u'article': u'6;6+6-1;6-1;6-3-c', u'externalsources': u'', u'meetingnumber': u'',
-     u'doctype': u'HEJUD', u'Rank': u'12.1129503250122',
+     u'doctype': u'HEJUD', u'rank': u'12.1129503250122',
      u'conclusion': u'Article 6+6-1 - Right to a fair trial (Article 6-3-c - Defence through legal assistance) (Article 6 - Right to a fair trial;Criminal proceedings;Article 6-1 - Fair hearing)'
 },
 {
@@ -377,7 +377,7 @@ raw_cases_input = [{
      u'ecli': u'ECLI:CE:ECHR:2020:0519JUD004554009', u'importance': u'4', u'kpdate': u'5/19/2020 12:00:00 AM',
      u'judgementdate': u'19/05/2020 00:00:00', u'extractedappno': u'', u'typedescription': u'15',
      u'article': u'11;11-1', u'externalsources': u'', u'meetingnumber': u'', u'doctype': u'HEJUD',
-     u'Rank': u'',
+     u'rank': u'',
      u'conclusion': u'Violation of Article 11 - Freedom of assembly and association (Article 11-1 - Freedom of peaceful assembly)'
 }
 ]
