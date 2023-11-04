@@ -6,6 +6,7 @@ import os
 import time
 import urllib3
 from concurrent.futures import ThreadPoolExecutor
+import datetime
 
 from echr.utils.logger import getlogger
 from echr.utils.cli import TAB
@@ -67,7 +68,7 @@ BASE_URL = 'https://hudoc.echr.coe.int/app/query/results?query=contentsitename:E
      ' AND (kpdate>="YEAR-01-01T00:00:00.0Z" AND kpdate<="YEAR_1-01-01T00:00:00.0Z")' \
      ' AND ((organisations:"ECHR"))&select={}&sort=&start=0&length=10000&rankingModelId=11111111-0000-0000-0000-000000000000'.format(','.join(fields))
 LENGTH = 10_000  # maximum number of items per request
-YEARS = range(1959, 2023+1)
+YEARS = range(1959, datetime.date.today().year+1)
 
 
 def get_case_info(console, base_url, max_documents, path):
