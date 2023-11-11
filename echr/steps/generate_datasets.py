@@ -198,7 +198,7 @@ def run(console, build, title, doc_ids=None, articles=[], processed_folder='all'
         "originatingbody_type",
         "originatingbody_name",
         "respondent",
-        "respondentOrderEng",
+        #"respondentOrderEng",
         "separateopinion",
         "typedescription"
 
@@ -206,6 +206,8 @@ def run(console, build, title, doc_ids=None, articles=[], processed_folder='all'
 
     keys_list = ["article", "documentcollectionid", "externalsources", "extractedappno", "kpthesaurus", "parties",
                  "scl", "representedby"]
+    
+
 
     feature_index = {k: i for i, k in enumerate(keys + keys_list)}
     feature_to_value = dict(zip(keys + keys_list, [None] * (len(keys) + len(keys_list))))
