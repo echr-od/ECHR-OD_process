@@ -1,4 +1,4 @@
-requests==2.27.1
+requests==2.31.0
 gensim==4.1.2
 python-docx==0.8.11
 unidecode
