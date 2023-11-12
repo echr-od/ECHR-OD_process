@@ -206,7 +206,7 @@ def run(console, build, title, doc_ids=None, articles=[], processed_folder='all'
 
     keys_list = ["article", "documentcollectionid", "externalsources", "extractedappno", "kpthesaurus", "parties",
                  "scl", "representedby"]
-    
+
 
 
     feature_index = {k: i for i, k in enumerate(keys + keys_list)}
