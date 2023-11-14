@@ -94,12 +94,15 @@ def populate_database(console, build, update, doc_ids):
                     try:
                         with db.atomic():
                             date_keys = ['decisiondate', 'introductiondate', 'judgementdate', 'kpdate']
+                            formats = ['%d/%m/%Y %H:%M:%S', '%d/%m/%YT%H:%M:%S', '%d/%m/%Y']
                             for k in date_keys:
                                 if case[k]:
-                                    try:
-                                        case[k] = datetime.strptime(case[k], '%d/%m/%Y %H:%M:%S')
-                                    except:
-                                        case[k] = datetime.strptime(case[k], '%d/%m/%Y')
+                                    for fmt in formats:
+                                        try:
+                                            case[k] = datetime.strptime(case[k], fmt)
+                                            break
+                                        except:
+                                            continue
                                 else:
                                     del case[k]
                             parties = case.get('parties', [])
