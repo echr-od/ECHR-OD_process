@@ -61,14 +61,15 @@ def format_structured_json(cases_list):
         c['respondent'] = c['respondent'].split(';')  #
         c['applicability'] = c['applicability'].strip().split(';')
         c['appno'] = c['appno'].split(';')[0]
-        c['decisiondate'] = c['decisiondate'].split(' ')[0]
-        c['judgementdate'] = c['judgementdate'].split(' ')[0]
-        c['introductiondate'] = c['introductiondate'].split(' ')[0]
-        c['kpdate'] = c['kpdate'].split(' ')[0]
+        c['decisiondate'] = c['decisiondate'].split(' ')[0].split('T')[0].replace('-', '/')
+        c['judgementdate'] = c['judgementdate'].split(' ')[0].split('T')[0].replace('-', '/')
+        c['introductiondate'] = c['introductiondate'].split(' ')[0].split('T')[0].replace('-', '/')
+        c['kpdate'] = c['kpdate'].split(' ')[0].split('T')[0]
         c['separateopinion'] = True if c['separateopinion'] == 'TRUE' else False
         c['country'] = c['country']['alpha2']
         c['parties'] = c['parties'][0]
         c['decision_body'] = [e['name'] for e in c['decision_body']]
+
 
         del c['docname']
         del c['attachments']

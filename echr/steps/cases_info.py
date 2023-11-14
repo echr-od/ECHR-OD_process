@@ -112,19 +112,19 @@ def get_case_info(console, base_url, max_documents, path):
                     progress.update(task, advance=0, error=error)
             else:
                 failed_to_get_some_cases = True
-        progress.update(task, advance=1, to_be_completed=len(YEARS))
+        progress.update(task, advance=1, to_be_completed=len(YEARS), year=year)
         return failed_to_get_some_cases
 
     with Progress(
             TAB + "> Downloading... [IN PROGRESS]\n",
             BarColumn(30),
             TimeRemainingColumn(),
-            "| ({task.completed}/{task.total}) Fetching cases information for year {task.completed}"
+            "| ({task.completed}/{task.total}) Fetching cases information for year {task.fields[year]}"
             "{task.fields[error]}",
             transient=True,
             console=console
     ) as progress:
-        task = progress.add_task("Downloading...", total=len(YEARS), to_be_completed=len(YEARS), error="")
+        task = progress.add_task("Downloading...", total=len(YEARS), to_be_completed=len(YEARS), year=YEARS[0], error="")
         f = lambda x: get_cases_info_step(x, progress, task)
         with ThreadPoolExecutor(16) as executor:
             results = list(executor.map(f, YEARS))
