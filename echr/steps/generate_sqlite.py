@@ -99,7 +99,11 @@ def populate_database(console, build, update, doc_ids):
                                     try:
                                         case[k] = datetime.strptime(case[k], '%d/%m/%Y %H:%M:%S')
                                     except:
-                                        case[k] = datetime.strptime(case[k], '%d/%m/%Y')
+                                        try:
+                                            case[k] = datetime.strptime(case[k], '%Y-%m-%dT%H:%M:%S')
+                                        except:
+                                            case[k] = datetime.strptime(case[k], '%d/%m/%Y')
+                                    
                                 else:
                                     del case[k]
                             parties = case.get('parties', [])

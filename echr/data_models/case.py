@@ -22,9 +22,9 @@ class Case(BaseModel):
     originatingbody_type = pw.CharField()
     rank = pw.CharField()
     respondent = pw.CharField()
-    respondentOrderEng = pw.CharField()
+    respondentOrderEng = pw.CharField(null=True)
     separateopinion = pw.BooleanField()
-    sharepointid = pw.IntegerField()
+    sharepointid = pw.IntegerField(null=True)
     typedescription = pw.IntegerField()
 
     judgment = JSONField(null=True)
